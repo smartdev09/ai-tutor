@@ -1,0 +1,356 @@
+You are an expert full-stack developer, proficient in JavaScript/TypeScript, Supabase, NextJs, TailwindCss, Shadcn, MagicUI and web development.
+
+Code Style and Structure
+- Write clear, modular TypeScript code with proper type definitions
+- Follow functional programming patterns; avoid classes
+- Use descriptive variable names (e.g., isLoading, hasPermission)
+- Structure files logically: popup, background, content scripts, utils
+- Implement proper error handling and logging
+- Document code with JSDoc comments
+
+Architecture and Best Practices
+- Strictly follow Manifest V3 specifications
+- Divide responsibilities between background, content scripts and popup
+- Configure permissions following the principle of least privilege
+- Implement proper version control and change management
+
+Current File structure: 
+tree -L 4 -a -I 'node_modules|.git|_pycache_|.DS_Store|.pytest_cache|.vscode'
+
+ai-tutor/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/
+│   │   ├── register/
+│   │   └── layout.tsx
+│   ├── (dashboard)/
+│   │   ├── courses/
+│   │   │   ├── [courseId]/
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── topics/[topicId]/
+│   │   │   │   │   ├── page.tsx
+│   │   │   │   │   ├── assignments/page.tsx
+│   │   │   │   │   └── chat/page.tsx
+│   │   │   └── create/page.tsx
+│   │   ├── dashboard/page.tsx
+│   │   └── layout.tsx
+│   ├── api/
+│   │   ├── auth/
+│   │   ├── courses/
+│   │   │   ├── generate/route.ts
+│   │   │   └── [courseId]/route.ts
+│   │   ├── topics/
+│   │   │   ├── content/[topicId]/route.ts
+│   │   │   └── [topicId]/route.ts
+│   │   ├── assignments/
+│   │   │   ├── generate/[topicId]/route.ts
+│   │   │   └── [assignmentId]/route.ts
+│   │   └── chat/route.ts
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── ui/
+│   ├── auth/
+│   ├── courses/
+│   │   ├── course-card.tsx
+│   │   ├── course-form.tsx
+│   │   ├── topic-list.tsx
+│   │   └── topic-content.tsx
+│   ├── topics/
+│   │   ├── content-display.tsx
+│   │   └── content-generator.tsx
+│   ├── assignments/
+│   │   ├── assignment-card.tsx
+│   │   ├── assignment-form.tsx
+│   │   └── quiz-interface.tsx
+│   ├── chat/
+│   │   ├── chat-interface.tsx
+│   │   └── message-bubble.tsx
+│   └── gamification/
+│       ├── xp-progress.tsx
+│       ├── achievement-badge.tsx
+│       └── level-indicator.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts
+│   │   ├── server.ts
+│   │   └── schema.ts
+│   ├── openai/
+│   │   ├── client.ts
+│   │   └── prompts.ts
+│   ├── utils.ts
+│   └── types.ts
+├── middleware.ts
+├── next.config.js
+├── package.json
+├── postcss.config.js
+├── tailwind.config.js
+└── tsconfig.json
+
+
+Security and Privacy
+- Implement Content Security Policy (CSP)
+- Handle user data securely
+- Prevent XSS and injection attacks
+- Use secure messaging between components
+- Handle cross-origin requests safely
+- Implement secure data encryption
+- Follow web_accessible_resources best practices
+
+Performance and Optimization
+- Minimize resource usage and avoid memory leaks
+- Optimize background script performance
+- Implement proper caching mechanisms
+- Handle asynchronous operations efficiently
+- Monitor and optimize CPU/memory usage
+
+UI and User Experience
+- Follow Material Design guidelines
+- Implement responsive popup windows
+- Provide clear user feedback
+- Support keyboard navigation
+- Ensure proper loading states
+- Add appropriate animations
+
+Backend and Database
+
+- Use Supabase for backend services, including authentication and database interactions.
+- Follow Supabase guidelines for security and performance.
+- Whenever a new database table or relationship is required, give the sql and I will execute it myself on the dashboard. 
+- Use Zod schemas to validate data exchanged with the backend.
+
+Accessibility
+- Implement ARIA labels
+- Ensure sufficient color contrast
+- Support screen readers
+- Add keyboard shortcuts
+
+Testing and Debugging
+- Use Chrome DevTools effectively
+- Test cross-browser compatibility
+- Monitor performance metrics
+- Handle error scenarios
+
+Publishing and Maintenance
+- Prepare store listings and screenshots
+- Write clear privacy policies
+- Implement update mechanisms
+- Handle user feedback
+- Maintain documentation
+
+Output Expectations
+- Provide clear, working code examples
+- Include necessary error handling
+- Follow security best practices
+- Ensure cross-browser compatibility
+- Write maintainable and scalable code
+
+Database Schema
+-- Users table
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  email TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  username TEXT UNIQUE,
+  avatar_url TEXT,
+  experience_points INTEGER DEFAULT 0,
+  level INTEGER DEFAULT 1
+);
+
+-- Courses table
+CREATE TABLE courses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  subject TEXT NOT NULL, -- 'math' or 'science'
+  sub_category TEXT NOT NULL, -- e.g., 'algebra', 'physics', etc.
+  difficulty_level TEXT NOT NULL, -- 'beginner', 'intermediate', 'advanced'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  cover_image_url TEXT,
+  published BOOLEAN DEFAULT FALSE
+);
+
+-- Course Topics table
+CREATE TABLE course_topics (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  course_id UUID REFERENCES courses(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  sequence_number INTEGER NOT NULL, -- For ordering topics
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Topic Content table
+CREATE TABLE topic_contents (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  topic_id UUID REFERENCES course_topics(id) ON DELETE CASCADE,
+  content TEXT NOT NULL, -- Markdown content
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Assignments table
+CREATE TABLE assignments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  topic_id UUID REFERENCES course_topics(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  assignment_type TEXT NOT NULL, -- 'homework', 'quiz'
+  difficulty INTEGER NOT NULL, -- 1-5 scale
+  content TEXT NOT NULL, -- Markdown content with questions
+  solution_hints TEXT, -- Tips, not full solutions
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- User Progress table
+CREATE TABLE user_progress (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  course_id UUID REFERENCES courses(id) ON DELETE CASCADE,
+  topic_id UUID REFERENCES course_topics(id) ON DELETE CASCADE,
+  completed BOOLEAN DEFAULT FALSE,
+  progress_percentage INTEGER DEFAULT 0,
+  last_accessed TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, topic_id)
+);
+
+-- Assignment Submissions table
+CREATE TABLE assignment_submissions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  assignment_id UUID REFERENCES assignments(id) ON DELETE CASCADE,
+  submission_content TEXT NOT NULL,
+  submission_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  score INTEGER, -- Can be null if not yet graded
+  feedback TEXT,
+  UNIQUE(user_id, assignment_id)
+);
+
+-- Chat Sessions table
+CREATE TABLE chat_sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  course_id UUID REFERENCES courses(id),
+  topic_id UUID REFERENCES course_topics(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  last_active TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Chat Messages table
+CREATE TABLE chat_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  session_id UUID REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  sender_type TEXT NOT NULL, -- 'user' or 'ai'
+  message_content TEXT NOT NULL,
+  timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Achievements table
+CREATE TABLE achievements (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  icon_url TEXT,
+  experience_points INTEGER NOT NULL
+);
+
+-- User Achievements table
+CREATE TABLE user_achievements (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  achievement_id UUID REFERENCES achievements(id) ON DELETE CASCADE,
+  earned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, achievement_id)
+);
+
+-- Create indexes for better performance
+CREATE INDEX idx_courses_creator ON courses(creator_id);
+CREATE INDEX idx_topics_course ON course_topics(course_id);
+CREATE INDEX idx_contents_topic ON topic_contents(topic_id);
+CREATE INDEX idx_assignments_topic ON assignments(topic_id);
+CREATE INDEX idx_progress_user ON user_progress(user_id);
+CREATE INDEX idx_progress_course ON user_progress(course_id);
+CREATE INDEX idx_progress_topic ON user_progress(topic_id);
+CREATE INDEX idx_submissions_user ON assignment_submissions(user_id);
+CREATE INDEX idx_submissions_assignment ON assignment_submissions(assignment_id);
+CREATE INDEX idx_chat_user ON chat_sessions(user_id);
+CREATE INDEX idx_chat_messages_session ON chat_messages(session_id);
+
+-- First, let's create the new tables
+-- Rate limiting
+CREATE TABLE rate_limits (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    endpoint TEXT NOT NULL,
+    requests_count INTEGER DEFAULT 0,
+    last_reset TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, endpoint)
+);
+
+-- Enhance assignments table with new columns
+ALTER TABLE assignments 
+    ADD COLUMN solution_steps JSONB[] DEFAULT ARRAY[]::JSONB[],
+    ADD COLUMN difficulty_factor FLOAT DEFAULT 1.0,
+    ADD COLUMN max_attempts INTEGER DEFAULT 3,
+    ADD COLUMN time_limit_seconds INTEGER DEFAULT 1800;
+
+-- Track assignment attempts
+CREATE TABLE assignment_attempts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    assignment_id UUID REFERENCES assignments(id) ON DELETE CASCADE,
+    attempt_number INTEGER NOT NULL,
+    score INTEGER,
+    time_taken_seconds INTEGER,
+    submitted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, assignment_id, attempt_number)
+);
+
+-- Achievement categories for better organization
+CREATE TABLE achievement_categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    description TEXT,
+    icon_url TEXT
+);
+
+-- Add new columns to achievements
+ALTER TABLE achievements 
+    ADD COLUMN category_id UUID REFERENCES achievement_categories(id),
+    ADD COLUMN required_actions JSONB DEFAULT '{}'::JSONB,
+    ADD COLUMN tier INTEGER DEFAULT 1;
+
+-- Leaderboard system
+CREATE TABLE leaderboards (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    start_date TIMESTAMP WITH TIME ZONE,
+    end_date TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE leaderboard_entries (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    leaderboard_id UUID REFERENCES leaderboards(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    score INTEGER NOT NULL,
+    rank INTEGER,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(leaderboard_id, user_id)
+);
+
+-- Create indexes for performance
+CREATE INDEX idx_rate_limits_user ON rate_limits(user_id, endpoint);
+CREATE INDEX idx_assignment_attempts_user ON assignment_attempts(user_id);
+CREATE INDEX idx_leaderboard_entries_score ON leaderboard_entries(leaderboard_id, score DESC);
+
+
+
+
+
+
+

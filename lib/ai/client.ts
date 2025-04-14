@@ -1,6 +1,8 @@
 // lib/ai/client.ts
-import { streamText } from 'ai';
 import { deepseek } from '@ai-sdk/deepseek';
+import { streamText } from 'ai';
+
+type MessageRole = 'system' | 'user' | 'assistant' | 'data';
 
 // Interface for unified model parameters
 export interface ModelParams {
@@ -9,6 +11,7 @@ export interface ModelParams {
   topP?: number;
   frequencyPenalty?: number;
   presencePenalty?: number;
+  system?: string;
 }
 
 // Default parameters for different contexts
@@ -35,8 +38,8 @@ const DEFAULT_PARAMS: Record<string, ModelParams> = {
   },
 };
 
-// Unified function to stream text from DeepSeek
-export async function streamResponse(
+// Unified function to stream text from any model
+export async function streamTextResponse(
   prompt: string,
   context: keyof typeof DEFAULT_PARAMS = 'chat',
   customParams: Partial<ModelParams> = {}
@@ -45,42 +48,17 @@ export async function streamResponse(
   
   const result = streamText({
     model: deepseek('deepseek-chat'),
-    messages: [{ role: 'user', content: prompt }],
+    messages: [
+      ...(params.system ? [{ role: 'system' as MessageRole, content: params.system }] : []),
+      { role: 'user' as MessageRole, content: prompt }
+    ],
     temperature: params.temperature,
     maxTokens: params.maxTokens,
     topP: params.topP,
   });
 
-  return result.toDataStreamResponse();
+  return result.toDataStreamResponse({
+    sendReasoning: false,
+  });
 }
 
-// Function to generate text without streaming (for cases where we need the full response)
-export async function generateText(
-  prompt: string,
-  context: keyof typeof DEFAULT_PARAMS = 'chat',
-  customParams: Partial<ModelParams> = {}
-): Promise<string> {
-  const params = { ...DEFAULT_PARAMS[context], ...customParams };
-  
-  try {
-    const response = await deepseek('deepseek-chat').chat.completions.create({
-      messages: [{ role: 'user', content: prompt }],
-      temperature: params.temperature,
-      max_tokens: params.maxTokens,
-      top_p: params.topP,
-      stream: false,
-    });
-
-    return response.choices[0].message.content;
-  } catch (error) {
-    console.error('Error generating text:', error);
-    throw new Error('Failed to generate text');
-  }
-}
-
-// Process markdown content from LLM output
-export function processMarkdown(content: string): string {
-  // Sanitize and process markdown content
-  // This could include fixing formatting, ensuring safe content, etc.
-  return content;
-}

@@ -48,7 +48,7 @@ export function AICourse() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-indigo-50 py-10">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-indigo-50">
       <div className="w-full max-w-4xl mx-auto p-6">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center mb-4">

@@ -15,7 +15,7 @@ export function generateMetadata({ params }: AICourseDynamicPageProps) {
 
 export default function AICourseDynamicPage({ params }: AICourseDynamicPageProps) {
   return (
-    <main className="min-h-screen bg-gray-50 py-10">
+    <main className="min-h-screen bg-gray-50">
       <GetAICourse courseSlug={params.courseSlug} />
     </main>
   );

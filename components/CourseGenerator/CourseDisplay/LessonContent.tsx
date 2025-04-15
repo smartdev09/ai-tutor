@@ -10,7 +10,7 @@ interface LessonContentProps {
 }
 
 export function LessonContent({ module, onModuleProcessed, viewMode }: LessonContentProps) {
-  const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(0);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [processedLessons, setProcessedLessons] = useState<Record<number, string>>({});
 
@@ -34,7 +34,7 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
   // Reset state when module changes
   useEffect(() => {
     setCurrentLessonIndex(0);
-    
+
     // Only start processing if not in view mode
     if (!viewMode) {
       setIsProcessing(true);
@@ -50,10 +50,10 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
         ...prev,
         [currentLessonIndex]: completion
       }));
-      
+
       // Wait a moment after streaming completes before moving to next lesson
       const timer = setTimeout(() => {
-        if (currentLessonIndex < module?.lessons?.length - 1) {
+        if (currentLessonIndex < module?.lessons?.length) {
           // Move to next lesson in the module
           setCurrentLessonIndex(prevIndex => prevIndex + 1);
           // Trigger API call for the next lesson
@@ -65,7 +65,7 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
           setCurrentLessonIndex(0)
         }
       }, 1500); // Adjust timing as needed
-      
+
       return () => clearTimeout(timer);
     }
   }, [isLoading, completion, currentLessonIndex, module?.lessons?.length, onModuleProcessed, complete, isProcessing, viewMode]);
@@ -79,20 +79,20 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
 
   return (
     <div className="space-y-4">
-      <div className="bg-muted/20 p-4 rounded-lg">
-        <h2 className="text-xl font-bold mb-2">{module?.title}</h2>
+      <div className="bg-muted/20 p-4 rounded-xl bg-primary">
+        <h2 className="text-xl text-white font-bold mb-2">{module?.title}</h2>
         <div className="flex justify-between items-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white">
             {`Lesson ${currentLessonIndex} of ${module?.lessons?.length}: ${module?.lessons[currentLessonIndex - 1] || ''}`}
           </p>
           {isLoading && !viewMode && (
-            <div className="flex items-center gap-2 text-xs text-primary">
-              <div className="h-2 w-2 bg-primary rounded-full animate-pulse"></div>
+            <div className="flex items-center gap-2 text-xs text-white">
+              <div className="h-2 w-2 bg-white rounded-full animate-pulse"></div>
               <span>Streaming content...</span>
             </div>
           )}
         </div>
-        
+
         {/* Lesson navigation in view mode */}
         {viewMode && module?.lessons?.length > 1 && (
           <div className="flex gap-2 mt-4 flex-wrap">
@@ -100,11 +100,10 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
               <button
                 key={index}
                 onClick={() => navigateToLesson(index)}
-                className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                  currentLessonIndex === index 
-                    ? 'bg-primary text-primary-foreground' 
+                className={`px-3 py-1 text-xs rounded-full transition-colors ${currentLessonIndex === index
+                    ? 'bg-primary text-primary-foreground'
                     : 'bg-muted hover:bg-muted/80'
-                }`}
+                  }`}
               >
                 {index + 1}
               </button>
@@ -112,41 +111,41 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
           </div>
         )}
       </div>
-      
-      <div 
-        className="prose prose-sm max-w-none relative min-h-[200px]"
-        dangerouslySetInnerHTML={{ __html: parsedContent }}
-      />
-      
+
+      <div className='bg-gray-100 p-8 min-h-[85vh]'>
+        <div
+          className="prose prose-sm max-w-none relative min-h-[200px]"
+          dangerouslySetInnerHTML={{ __html: parsedContent }}
+        />
+      </div>
+
       {error && !viewMode && (
         <div className="text-destructive p-4 border border-destructive/20 rounded-lg mt-4">
           Error loading lesson content. Please try again.
         </div>
       )}
-      
+
       {/* Lesson navigation buttons */}
       {viewMode && (
         <div className="flex justify-between mt-6">
           <button
             onClick={() => navigateToLesson(currentLessonIndex - 1)}
             disabled={currentLessonIndex === 0}
-            className={`px-4 py-2 rounded-md text-sm ${
-              currentLessonIndex === 0 
-                ? 'bg-muted text-muted-foreground cursor-not-allowed' 
+            className={`px-4 py-2 rounded-md text-sm ${currentLessonIndex === 0
+                ? 'bg-muted text-muted-foreground cursor-not-allowed'
                 : 'bg-primary/10 text-primary hover:bg-primary/20'
-            }`}
+              }`}
           >
             Previous Lesson
           </button>
-          
+
           <button
             onClick={() => navigateToLesson(currentLessonIndex + 1)}
             disabled={currentLessonIndex === module?.lessons?.length - 1}
-            className={`px-4 py-2 rounded-md text-sm ${
-              currentLessonIndex === module?.lessons?.length - 1 
-                ? 'bg-muted text-muted-foreground cursor-not-allowed' 
+            className={`px-4 py-2 rounded-md text-sm ${currentLessonIndex === module?.lessons?.length - 1
+                ? 'bg-muted text-muted-foreground cursor-not-allowed'
                 : 'bg-primary/10 text-primary hover:bg-primary/20'
-            }`}
+              }`}
           >
             Next Lesson
           </button>

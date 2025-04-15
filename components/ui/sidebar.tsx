@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { PanelLeft, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -299,7 +299,7 @@ const SidebarRail = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<"button">
 >(({ className, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar, open } = useSidebar()
 
   return (
     <button
@@ -319,7 +319,12 @@ const SidebarRail = React.forwardRef<
         className
       )}
       {...props}
-    />
+    >
+      <div className="relative mt-3">
+        <PanelLeftClose size={30} className={`text-primary ${open ? 'block' : 'hidden'}`} />
+        <PanelLeftOpen size={30} className={`text-primary ${open ? 'hidden' : 'block'}`} />
+      </div>
+    </button>
   )
 })
 SidebarRail.displayName = "SidebarRail"

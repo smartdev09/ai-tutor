@@ -4,7 +4,7 @@ import type { Module } from "@/types"
 import { LessonItem } from "./LessonItem"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 
 interface ModuleItemProps {
@@ -13,6 +13,8 @@ interface ModuleItemProps {
   isSelected?: boolean
   onSelect?: () => void
   isStreaming?: boolean
+  isExpanded?: boolean
+  onExpandChange?: (isExpanded: boolean) => void
 }
 
 export function ModuleItem({
@@ -21,8 +23,25 @@ export function ModuleItem({
   isSelected,
   onSelect,
   isStreaming = false,
+  isExpanded,
+  onExpandChange,
 }: ModuleItemProps) {
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Sync with parent's expanded state when controlled externally
+  useEffect(() => {
+    if (isExpanded !== undefined) {
+      setIsOpen(isExpanded);
+    }
+  }, [isExpanded]);
+  
+  // Notify parent of expansion state changes
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (onExpandChange) {
+      onExpandChange(open);
+    }
+  };
 
   return (
     <div
@@ -31,7 +50,7 @@ export function ModuleItem({
         isSelected && "bg-primary/5 rounded-lg",
       )}
     >
-      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
+      <Collapsible open={isOpen} onOpenChange={handleOpenChange} className="w-full">
         <CollapsibleTrigger
           className={cn(
             "flex items-center justify-between w-full p-3 rounded-lg transition-colors",

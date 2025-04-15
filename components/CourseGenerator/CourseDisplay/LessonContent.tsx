@@ -1,6 +1,6 @@
 import { Module } from '@/types';
 import { useCompletion } from '@ai-sdk/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { parseContentFromMarkdown } from '@/lib/utils';
 
 interface LessonContentProps {
@@ -13,6 +13,7 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
   const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [processedLessons, setProcessedLessons] = useState<Record<number, string>>({});
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const {
     completion,
@@ -70,6 +71,24 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
     }
   }, [isLoading, completion, currentLessonIndex, module?.lessons?.length, onModuleProcessed, complete, isProcessing, viewMode]);
 
+  // Auto-scroll to keep streaming content visible
+  useEffect(() => {
+    if (contentRef.current && (!viewMode || isLoading)) {
+      const scrollableDiv = contentRef.current;
+      
+      // Smooth scroll to follow the content
+      const scrollToBottom = () => {
+        const scrollHeight = scrollableDiv.scrollHeight;
+        const height = scrollableDiv.clientHeight;
+        const maxScrollTop = scrollHeight - height;
+        scrollableDiv.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+      };
+      
+      // Schedule scroll update
+      requestAnimationFrame(scrollToBottom);
+    }
+  }, [parsedContent, isLoading, viewMode]);
+
   // Handle lesson navigation in view mode
   const navigateToLesson = (index: number) => {
     if (viewMode && index >= 0 && index < module?.lessons?.length) {
@@ -100,10 +119,11 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
               <button
                 key={index}
                 onClick={() => navigateToLesson(index)}
-                className={`px-3 py-1 text-xs rounded-full transition-colors ${currentLessonIndex === index
+                className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                  currentLessonIndex === index
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted hover:bg-muted/80'
-                  }`}
+                }`}
               >
                 {index + 1}
               </button>
@@ -112,11 +132,20 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
         )}
       </div>
 
-      <div className='bg-gray-100 p-8 min-h-[85vh]'>
-        <div
-          className="prose prose-sm max-w-none relative min-h-[200px]"
-          dangerouslySetInnerHTML={{ __html: parsedContent }}
-        />
+      {/* Live streaming content display area */}
+      <div className="bg-gray-100 p-8 min-h-[85vh] overflow-auto" ref={contentRef}>
+        <div className="prose prose-sm max-w-none relative min-h-[200px]">
+          {/* Always render the content with live parsing */}
+          <div 
+            className="content-container"
+            dangerouslySetInnerHTML={{ __html: parsedContent }}
+          />
+          
+          {/* Cursor blink effect during streaming */}
+          {isLoading && !viewMode && (
+            <span className="inline-block h-4 w-1 bg-primary animate-pulse ml-0.5 align-bottom"></span>
+          )}
+        </div>
       </div>
 
       {error && !viewMode && (
@@ -131,10 +160,11 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
           <button
             onClick={() => navigateToLesson(currentLessonIndex - 1)}
             disabled={currentLessonIndex === 0}
-            className={`px-4 py-2 rounded-md text-sm ${currentLessonIndex === 0
+            className={`px-4 py-2 rounded-md text-sm ${
+              currentLessonIndex === 0
                 ? 'bg-muted text-muted-foreground cursor-not-allowed'
                 : 'bg-primary/10 text-primary hover:bg-primary/20'
-              }`}
+            }`}
           >
             Previous Lesson
           </button>
@@ -142,10 +172,11 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
           <button
             onClick={() => navigateToLesson(currentLessonIndex + 1)}
             disabled={currentLessonIndex === module?.lessons?.length - 1}
-            className={`px-4 py-2 rounded-md text-sm ${currentLessonIndex === module?.lessons?.length - 1
+            className={`px-4 py-2 rounded-md text-sm ${
+              currentLessonIndex === module?.lessons?.length - 1
                 ? 'bg-muted text-muted-foreground cursor-not-allowed'
                 : 'bg-primary/10 text-primary hover:bg-primary/20'
-              }`}
+            }`}
           >
             Next Lesson
           </button>

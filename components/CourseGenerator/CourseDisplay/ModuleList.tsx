@@ -18,7 +18,6 @@ interface ModuleListProps {
 
 export function ModuleList({ isLoading, course, handleRegenerate, streamingModuleIndex = -1 }: ModuleListProps) {
   const [currentModuleIndex, setCurrentModuleIndex] = useState<number | null>(null)
-  const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const [moduleProcessed, setModuleProcessed] = useState<boolean[]>([])
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
   const [expandedModules, setExpandedModules] = useState<number[]>([])
@@ -37,11 +36,9 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
     }
   }, [isLoading, streamingModuleIndex, course.modules.length])
 
-  // Handle module selection
+  // Handle module selection - immediately select the module without checking isProcessing
   const handleModuleSelection = (index: number) => {
-    if (!isProcessing) {
-      setCurrentModuleIndex(index)
-    }
+    setCurrentModuleIndex(index)
   }
 
   // Handle module processing completion
@@ -50,7 +47,6 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
       const newProcessed = [...moduleProcessed]
       newProcessed[currentModuleIndex] = true
       setModuleProcessed(newProcessed)
-      setIsProcessing(false)
     }
   }
 
@@ -59,13 +55,6 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
     setExpandedModules([])
     setCurrentModuleIndex(null)
   }
-
-  // Start processing when a module is selected
-  useEffect(() => {
-    if (currentModuleIndex !== null) {
-      setIsProcessing(true)
-    }
-  }, [currentModuleIndex])
 
   // Check if all modules are processed
   const allProcessed = moduleProcessed.length > 0 && moduleProcessed.every((processed) => processed)
@@ -91,13 +80,14 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
               <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-600">
                 Course Modules
               </h2>
-              {!isLoading && (<button
-                onClick={collapseAll}
-                className="ml-auto flex items-center gap-1 px-2 py-1 bg-purple-50 rounded-full border border-purple-100 shadow-sm hover:bg-purple-100 transition-colors"
-                title="Collapse all sections"
-              >
-                <Minimize2 className="h-3.5 w-3.5 text-purple-600" />
-              </button>
+              {!isLoading && (
+                <button
+                  onClick={collapseAll}
+                  className="ml-auto flex items-center gap-1 px-2 py-1 bg-purple-50 rounded-full border border-purple-100 shadow-sm hover:bg-purple-100 transition-colors"
+                  title="Collapse all sections"
+                >
+                  <Minimize2 className="h-3.5 w-3.5 text-purple-600" />
+                </button>
               )}
               {((streamingModuleIndex !== undefined && streamingModuleIndex >= 0) || isLoading) && (
                 <div className="ml-2 flex items-center gap-2 px-3 py-1.5 bg-purple-50 rounded-full border border-purple-100 shadow-sm">
@@ -105,7 +95,6 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
                     <Sparkles className="h-4 w-4 text-purple-500 animate-pulse" />
                     <span className="absolute -top-1 -right-1 h-2 w-2 bg-purple-400 rounded-full animate-ping"></span>
                   </div>
-                  {/* <span className="text-sm font-medium text-purple-700 animate-pulse">Creating magic...</span> */}
                 </div>
               )}
             </div>
@@ -133,9 +122,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
       </SidebarProvider>
 
       <div className="w-full p-6">
-        {/* <div className="w-fit flex right-4 top-4"> */}
         <RegenerateButton onRegenerate={handleRegenerate} />
-        {/* </div> */}
 
         {!allModulesGenerated ? (
           <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-4">

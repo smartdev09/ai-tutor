@@ -322,7 +322,7 @@ const SidebarRail = React.forwardRef<
     >
       <div className="relative mt-3">
         <PanelLeftClose size={30} className={`text-primary ${open ? 'block' : 'hidden'}`} />
-        <PanelLeftOpen size={30} className={`text-primary ${open ? 'hidden' : 'block'}`} />
+        <PanelLeftOpen size={30} fill="#AE6BE7" color="white" className={`rounded-lg bg-primary ${open ? 'hidden' : 'block'}`} />
       </div>
     </button>
   )

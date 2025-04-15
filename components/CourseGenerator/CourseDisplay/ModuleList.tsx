@@ -76,14 +76,14 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
                 Course Modules
               </h2>
               {((streamingModuleIndex !== undefined && streamingModuleIndex >= 0) || isLoading) && (
-        <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-purple-50 rounded-full border border-purple-100 shadow-sm">
-          <div className="relative">
-            <Sparkles className="h-4 w-4 text-purple-500 animate-pulse" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 bg-purple-400 rounded-full animate-ping"></span>
-          </div>
-          <span className="text-sm font-medium text-purple-700 animate-pulse">Creating magic...</span>
-        </div>
-      )}
+                <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-purple-50 rounded-full border border-purple-100 shadow-sm">
+                  <div className="relative">
+                    <Sparkles className="h-4 w-4 text-purple-500 animate-pulse" />
+                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-purple-400 rounded-full animate-ping"></span>
+                  </div>
+                  <span className="text-sm font-medium text-purple-700 animate-pulse">Creating magic...</span>
+                </div>
+              )}
             </div>
             <div className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-purple-200 via-purple-400 to-purple-200 rounded-full"></div>
           </SidebarHeader>

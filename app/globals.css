@@ -82,3 +82,52 @@
     @apply bg-background text-foreground;
   }
 }
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Custom styling for children's content */
+.prose img {
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  color: theme("colors.purple.700");
+  font-weight: 700;
+}
+
+.prose p {
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+
+.prose ul li::before {
+  background-color: theme("colors.purple.400");
+}
+
+.prose blockquote {
+  border-left-color: theme("colors.purple.300");
+  background-color: theme("colors.purple.50");
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-style: normal;
+}
+
+.prose code {
+  background-color: theme("colors.purple.50");
+  color: theme("colors.purple.700");
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.4rem;
+  font-weight: 500;
+}
+
+/* Fun highlight effect for important content */
+.prose .highlight {
+  background: linear-gradient(120deg, rgba(167, 139, 250, 0.2) 0%, rgba(139, 92, 246, 0.3) 100%);
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.4rem;
+}

@@ -62,6 +62,7 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
           // All lessons in this module are processed
           setIsProcessing(false);
           onModuleProcessed();
+          setCurrentLessonIndex(0)
         }
       }, 1500); // Adjust timing as needed
       
@@ -82,7 +83,7 @@ export function LessonContent({ module, onModuleProcessed, viewMode }: LessonCon
         <h2 className="text-xl font-bold mb-2">{module?.title}</h2>
         <div className="flex justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            {`Lesson ${currentLessonIndex + 1} of ${module?.lessons?.length}: ${module?.lessons[currentLessonIndex] || ''}`}
+            {`Lesson ${currentLessonIndex} of ${module?.lessons?.length}: ${module?.lessons[currentLessonIndex - 1] || ''}`}
           </p>
           {isLoading && !viewMode && (
             <div className="flex items-center gap-2 text-xs text-primary">

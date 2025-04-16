@@ -4,7 +4,7 @@ import type { Module } from "@/types"
 import { LessonItem } from "./LessonItem"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 
 interface ModuleItemProps {
@@ -31,6 +31,7 @@ export function ModuleItem({
   selectedLessonIndex,
 }: ModuleItemProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const prevIsSelected = useRef(isSelected)
   
   // Sync with parent's expanded state when controlled externally
   useEffect(() => {
@@ -39,15 +40,16 @@ export function ModuleItem({
     }
   }, [isExpanded]);
   
-  // Automatically expand module when selected
+  // Automatically expand module when newly selected
   useEffect(() => {
-    if (isSelected && !isOpen) {
+    if (isSelected && !prevIsSelected.current) {
       setIsOpen(true);
       if (onExpandChange) {
         onExpandChange(true);
       }
     }
-  }, [isSelected, isOpen, onExpandChange]);
+    prevIsSelected.current = isSelected;
+  }, [isSelected, onExpandChange]);
 
   // Notify parent of expansion state changes
   const handleOpenChange = (open: boolean) => {

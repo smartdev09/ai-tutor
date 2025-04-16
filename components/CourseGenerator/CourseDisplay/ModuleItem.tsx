@@ -15,6 +15,8 @@ interface ModuleItemProps {
   isStreaming?: boolean
   isExpanded?: boolean
   onExpandChange?: (isExpanded: boolean) => void
+  onLessonSelect?: (moduleIndex: number, lessonIndex: number) => void
+  selectedLessonIndex?: number
 }
 
 export function ModuleItem({
@@ -25,6 +27,8 @@ export function ModuleItem({
   isStreaming = false,
   isExpanded,
   onExpandChange,
+  onLessonSelect,
+  selectedLessonIndex,
 }: ModuleItemProps) {
   const [isOpen, setIsOpen] = useState(false)
   
@@ -35,11 +39,27 @@ export function ModuleItem({
     }
   }, [isExpanded]);
   
+  // Automatically expand module when selected
+  useEffect(() => {
+    if (isSelected && !isOpen) {
+      setIsOpen(true);
+      if (onExpandChange) {
+        onExpandChange(true);
+      }
+    }
+  }, [isSelected, isOpen, onExpandChange]);
+
   // Notify parent of expansion state changes
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (onExpandChange) {
       onExpandChange(open);
+    }
+  };
+
+  const handleModuleClick = () => {
+    if (onSelect) {
+      onSelect();
     }
   };
 
@@ -58,7 +78,7 @@ export function ModuleItem({
               ? "bg-primary/10 text-primary" 
               : "hover:bg-primary/5 hover:text-primary",
           )}
-          onClick={onSelect}
+          onClick={handleModuleClick}
         >
           <div className="flex items-center gap-3">
             <div
@@ -102,7 +122,9 @@ export function ModuleItem({
                 key={lesson}
                 lesson={lesson}
                 lessonNumber={index + 1}
+                isActive={isSelected && selectedLessonIndex === index}
                 isStreaming={isStreaming && index === module.lessons.length - 1}
+                onClick={() => onLessonSelect && onLessonSelect(moduleNumber - 1, index)}
               />
             ))}
           </ul>

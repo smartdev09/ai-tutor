@@ -10,10 +10,11 @@ import { Progress } from "@/components/ui/progress"
 interface LessonContentProps {
   module: Module
   onModuleProcessed: () => void
+  initialLessonIndex?: number
 }
 
-export function LessonContent({ module, onModuleProcessed }: LessonContentProps) {
-  const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(0)
+export function LessonContent({ module, onModuleProcessed, initialLessonIndex = 0 }: LessonContentProps) {
+  const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(initialLessonIndex)
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const [processedLessons, setProcessedLessons] = useState<Record<number, string>>({})
   const [generatingLessonIndex, setGeneratingLessonIndex] = useState<number>(0)
@@ -28,23 +29,30 @@ export function LessonContent({ module, onModuleProcessed }: LessonContentProps)
   const parsedContent = parseContentFromMarkdown(isProcessing ? (completion || "") : currentContent)
 
   useEffect(() => {
+    if (!isProcessing) {
+      setCurrentLessonIndex(initialLessonIndex);
+    }
+  }, [initialLessonIndex, isProcessing]);
+
+  useEffect(() => {
     if (moduleRef.current !== module?.title) {
       moduleRef.current = module?.title || ""
-      setCurrentLessonIndex(0)
+      
+      setCurrentLessonIndex(initialLessonIndex)
       setGeneratingLessonIndex(0)
       setProcessedLessons({})
-      
       setIsProcessing(true)
+      
       setTimeout(() => {
         complete("", { 
           body: {
             moduleTitle: module?.title,
-            lessonTitle: module?.lessons[generatingLessonIndex] || ""
+            lessonTitle: module?.lessons[0] || ""
           }
         })
       }, 100)
     }
-  }, [module?.title, complete, generatingLessonIndex, module?.lessons])
+  }, [module?.title, complete, module?.lessons, initialLessonIndex])
 
   useEffect(() => {
     if (!isLoading && completion && isProcessing) {
@@ -55,11 +63,13 @@ export function LessonContent({ module, onModuleProcessed }: LessonContentProps)
 
       const timer = setTimeout(() => {
         if (generatingLessonIndex < module?.lessons?.length - 1) {
-          setGeneratingLessonIndex((prevIndex) => prevIndex + 1)
+          const nextIndex = generatingLessonIndex + 1
+          setGeneratingLessonIndex(nextIndex)
+          
           complete("", { 
             body: {
               moduleTitle: module?.title,
-              lessonTitle: module?.lessons[generatingLessonIndex + 1] || ""
+              lessonTitle: module?.lessons[nextIndex] || ""
             }
           })
         } else {

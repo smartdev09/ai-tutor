@@ -18,6 +18,7 @@ interface ModuleListProps {
 
 export function ModuleList({ isLoading, course, handleRegenerate, streamingModuleIndex = -1 }: ModuleListProps) {
   const [currentModuleIndex, setCurrentModuleIndex] = useState<number | null>(null)
+  const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(0)
   const [moduleProcessed, setModuleProcessed] = useState<boolean[]>([])
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
   const [expandedModules, setExpandedModules] = useState<number[]>([])
@@ -39,6 +40,13 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
   // Handle module selection - immediately select the module without checking isProcessing
   const handleModuleSelection = (index: number) => {
     setCurrentModuleIndex(index)
+    setCurrentLessonIndex(0) // Reset lesson index when selecting a new module
+  }
+
+  // Handle lesson selection
+  const handleLessonSelection = (moduleIndex: number, lessonIndex: number) => {
+    setCurrentModuleIndex(moduleIndex)
+    setCurrentLessonIndex(lessonIndex)
   }
 
   // Handle module processing completion
@@ -113,6 +121,8 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
                   onExpandChange={(isExpanded) => handleModuleExpand(index, isExpanded)}
                   onSelect={() => handleModuleSelection(index)}
                   isStreaming={index === streamingModuleIndex}
+                  onLessonSelect={handleLessonSelection}
+                  selectedLessonIndex={currentModuleIndex === index ? currentLessonIndex : undefined}
                 />
               ))}
             </div>
@@ -154,6 +164,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
           <LessonContent
             module={course.modules[currentModuleIndex]}
             onModuleProcessed={handleModuleProcessed}
+            initialLessonIndex={currentLessonIndex}
           />
         )}
       </div>

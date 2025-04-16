@@ -154,7 +154,6 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
           <LessonContent
             module={course.modules[currentModuleIndex]}
             onModuleProcessed={handleModuleProcessed}
-            viewMode={false}
           />
         )}
       </div>

@@ -131,3 +131,104 @@
   border-radius: 0.25rem;
   padding: 0.2rem 0.4rem;
 }
+
+.lesson-content {
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+.lesson-content h1 {
+  @apply text-3xl font-bold mt-8 mb-4 text-purple-800;
+}
+
+.lesson-content h2 {
+  @apply text-2xl font-bold mt-6 mb-3 text-purple-700;
+}
+
+.lesson-content h3 {
+  @apply text-xl font-bold mt-5 mb-2 text-purple-600;
+}
+
+.lesson-content p {
+  @apply my-4 leading-relaxed;
+}
+
+.lesson-content ul,
+.lesson-content ol {
+  @apply my-4 ml-6 space-y-2;
+}
+
+.lesson-content li {
+  @apply leading-relaxed;
+}
+
+.lesson-content a {
+  @apply text-purple-600 hover:text-purple-800 underline;
+}
+
+/* Code block styling */
+.lesson-content pre {
+  @apply bg-gray-900 text-gray-100 p-4 rounded-lg my-6 overflow-x-auto;
+  font-family: "Fira Code", monospace;
+}
+
+.lesson-content code {
+  @apply bg-gray-100 px-1.5 py-0.5 rounded text-purple-700 text-sm;
+  font-family: "Fira Code", monospace;
+}
+
+.lesson-content pre code {
+  @apply bg-transparent text-gray-100 p-0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Blockquote styling */
+.lesson-content blockquote {
+  @apply border-l-4 border-purple-300 pl-4 italic my-6 text-gray-700 bg-purple-50 p-3 rounded-r-lg;
+}
+
+/* Table styling */
+.lesson-content table {
+  @apply w-full border-collapse my-6;
+}
+
+.lesson-content th {
+  @apply bg-purple-100 text-purple-800 p-2 text-left border border-purple-200;
+}
+
+.lesson-content td {
+  @apply p-2 border border-purple-200;
+}
+
+/* Image styling */
+.lesson-content img {
+  @apply rounded-lg shadow-md my-6 mx-auto;
+}
+
+/* Highlight important content */
+.lesson-content .highlight {
+  @apply bg-yellow-100 px-1 rounded;
+}
+
+/* Gamification elements */
+.lesson-content .tip {
+  @apply bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg my-6;
+}
+
+.lesson-content .challenge {
+  @apply bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-lg my-6;
+}
+
+.lesson-content .achievement {
+  @apply bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg my-6;
+}
+
+/* Animation for code blocks */
+.lesson-content pre {
+  transition: transform 0.2s ease-in-out;
+}
+
+.lesson-content pre:hover {
+  transform: scale(1.01);
+}

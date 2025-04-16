@@ -43,14 +43,12 @@ export function LessonContent({ module, onModuleProcessed, initialLessonIndex = 
       setProcessedLessons({})
       setIsProcessing(true)
       
-      setTimeout(() => {
         complete("", { 
           body: {
             moduleTitle: module?.title,
             lessonTitle: module?.lessons[0] || ""
           }
         })
-      }, 100)
     }
   }, [module?.title, complete, module?.lessons, initialLessonIndex])
 
@@ -61,7 +59,6 @@ export function LessonContent({ module, onModuleProcessed, initialLessonIndex = 
         [generatingLessonIndex]: completion,
       }))
 
-      const timer = setTimeout(() => {
         if (generatingLessonIndex < module?.lessons?.length - 1) {
           const nextIndex = generatingLessonIndex + 1
           setGeneratingLessonIndex(nextIndex)
@@ -76,9 +73,6 @@ export function LessonContent({ module, onModuleProcessed, initialLessonIndex = 
           setIsProcessing(false)
           onModuleProcessed()
         }
-      }, 1500)
-
-      return () => clearTimeout(timer)
     }
   }, [
     isLoading,

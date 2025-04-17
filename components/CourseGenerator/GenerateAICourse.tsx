@@ -27,7 +27,8 @@ export function GenerateAICourse() {
   // Use the completion hook for streaming course generation
   const {
     completion,
-    complete
+    complete,
+    isLoading
   } = useCompletion({
     api: '/api/generate-course',
     body: {
@@ -126,7 +127,7 @@ export function GenerateAICourse() {
 
   return (
     <div className="w-full">
-      <ModuleList course={course} handleRegenerate={handleRegenerate}/>
+      <ModuleList isLoading={isLoading} course={course} handleRegenerate={handleRegenerate}/>
     </div>
   );
 }

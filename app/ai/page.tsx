@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function AIPage() {
   return (
-    <main className="min-h-screen bg-gray-50 py-10">
+    <main className="min-h-screen bg-gray-50">
       <AICourse />
     </main>
   );

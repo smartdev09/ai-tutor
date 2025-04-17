@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function AISearchPage() {
   return (
-    <main className="min-h-screen bg-gray-50 py-10">
+    <main className="min-h-screen bg-gray-50">
       <GenerateAICourse />
     </main>
   );

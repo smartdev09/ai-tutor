@@ -18,6 +18,7 @@ interface ModuleItemProps {
   onLessonSelect?: (moduleIndex: number, lessonIndex: number) => void
   selectedLessonIndex?: number
   waitingForLesson?: boolean
+  disabled?: boolean
 }
 
 export function ModuleItem({
@@ -31,6 +32,7 @@ export function ModuleItem({
   onLessonSelect,
   selectedLessonIndex,
   waitingForLesson = false,
+  disabled = false,
 }: ModuleItemProps) {
   const [isOpen, setIsOpen] = useState(false)
   const prevIsSelected = useRef(isSelected)
@@ -69,6 +71,7 @@ export function ModuleItem({
       className={cn(
         "mb-2 overflow-hidden transition-all duration-300",
         isSelected && "bg-primary/5 rounded-lg",
+        disabled && !isSelected && "opacity-50 pointer-events-none"
       )}
     >
       <Collapsible open={isOpen} onOpenChange={handleOpenChange} className="w-full">
@@ -78,8 +81,10 @@ export function ModuleItem({
             isSelected 
               ? "bg-primary/10 text-primary" 
               : "hover:bg-primary/5 hover:text-primary",
+            disabled && !isSelected && "cursor-not-allowed hover:bg-transparent"
           )}
-          onClick={handleModuleClick}
+          onClick={disabled && !isSelected ? undefined : handleModuleClick}
+          disabled={disabled && !isSelected}
         >
           <div className="flex items-center gap-3">
             <div

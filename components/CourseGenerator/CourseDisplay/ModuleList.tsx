@@ -37,6 +37,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
   
   const [waitingForLesson, setWaitingForLesson] = useState<boolean>(false)
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
+  const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (!isLoading && streamingModuleIndex === -1 && course.modules.length > 0) {
@@ -45,9 +46,12 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
   }, [isLoading, streamingModuleIndex, course.modules.length])
 
   const handleModuleSelection = (index: number) => {
+    if (processingModuleIndex !== null) return
+    
     dispatch(setCurrentModule(index))
     dispatch(setCurrentLesson(0))
     setWaitingForLesson(false)
+    setProcessingModuleIndex(index)
   }
 
   // Handle lesson selection
@@ -64,6 +68,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
   const handleModuleProcessed = () => {
     if (currentModuleIndex !== null) {
       dispatch(setProcessedModule(currentModuleIndex))
+      setProcessingModuleIndex(null)
     }
   }
 
@@ -163,6 +168,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
                   onLessonSelect={handleLessonSelection}
                   selectedLessonIndex={currentModuleIndex === index ? currentLessonIndex : undefined}
                   waitingForLesson={currentModuleIndex === index ? waitingForLesson : false}
+                  disabled={processingModuleIndex !== null && processingModuleIndex !== index}
                 />
               ))}
             </div>

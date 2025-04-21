@@ -7,6 +7,7 @@ interface LessonItemProps {
   isStreaming?: boolean
   isWaiting?: boolean 
   onClick?: () => void
+  disabled?: boolean
 }
 
 export function LessonItem({ 
@@ -15,6 +16,7 @@ export function LessonItem({
   isActive = false, 
   isStreaming = false,
   isWaiting = false,
+  disabled = false,
   onClick
 }: LessonItemProps) {
   return (
@@ -23,8 +25,9 @@ export function LessonItem({
         className={cn(
           "flex items-center py-2 px-3 rounded-lg cursor-pointer transition-all",
           isActive ? "bg-primary/10 text-primary" : "hover:bg-primary/5 hover:text-primary",
+          disabled && "opacity-50 pointer-events-none"
         )}
-        onClick={onClick}
+        onClick={disabled ? undefined : onClick}
       >
         <span className="text-xs text-muted-foreground mr-2 group-hover:text-primary transition-colors">
           {lessonNumber}.

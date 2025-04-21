@@ -17,6 +17,7 @@ interface ModuleItemProps {
   onExpandChange?: (isExpanded: boolean) => void
   onLessonSelect?: (moduleIndex: number, lessonIndex: number) => void
   selectedLessonIndex?: number
+  waitingForLesson?: boolean
 }
 
 export function ModuleItem({
@@ -29,18 +30,17 @@ export function ModuleItem({
   onExpandChange,
   onLessonSelect,
   selectedLessonIndex,
+  waitingForLesson = false,
 }: ModuleItemProps) {
   const [isOpen, setIsOpen] = useState(false)
   const prevIsSelected = useRef(isSelected)
   
-  // Sync with parent's expanded state when controlled externally
   useEffect(() => {
     if (isExpanded !== undefined) {
       setIsOpen(isExpanded);
     }
   }, [isExpanded]);
   
-  // Automatically expand module when newly selected
   useEffect(() => {
     if (isSelected && !prevIsSelected.current) {
       setIsOpen(true);
@@ -51,7 +51,6 @@ export function ModuleItem({
     prevIsSelected.current = isSelected;
   }, [isSelected, onExpandChange]);
 
-  // Notify parent of expansion state changes
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (onExpandChange) {
@@ -126,6 +125,7 @@ export function ModuleItem({
                 lessonNumber={index + 1}
                 isActive={isSelected && selectedLessonIndex === index}
                 isStreaming={isStreaming && index === module.lessons.length - 1}
+                isWaiting={isSelected && selectedLessonIndex === index && waitingForLesson}
                 onClick={() => onLessonSelect && onLessonSelect(moduleNumber - 1, index)}
               />
             ))}

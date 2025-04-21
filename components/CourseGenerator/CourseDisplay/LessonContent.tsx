@@ -4,75 +4,201 @@ import type { Module } from "@/types"
 import { useCompletion } from "@ai-sdk/react"
 import { useState, useEffect, useRef } from "react"
 import { parseContentFromMarkdown } from "@/lib/utils"
-import { BookOpen } from "lucide-react"
+import { BookOpen, Loader } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { addProcessedLesson } from "@/store/courseSlice"
 
 interface LessonContentProps {
   module: Module
   onModuleProcessed: () => void
   initialLessonIndex?: number
+  waitingForLesson?: boolean
+  onLessonReached?: (lessonIndex: number) => void
 }
 
-export function LessonContent({ module, onModuleProcessed, initialLessonIndex = 0 }: LessonContentProps) {
+export function LessonContent({ 
+  module, 
+  onModuleProcessed, 
+  initialLessonIndex = 0,
+  waitingForLesson = false,
+  onLessonReached
+}: LessonContentProps) {
+  const dispatch = useAppDispatch()
+  const currentModuleIndex = useAppSelector(state => state.course.currentModuleIndex)
+  const reduxProcessedLessons = useAppSelector(state => state.course.processedLessons)
+  
   const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(initialLessonIndex)
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const [processedLessons, setProcessedLessons] = useState<Record<number, string>>({})
   const [generatingLessonIndex, setGeneratingLessonIndex] = useState<number>(0)
+  const [userSelectedLesson, setUserSelectedLesson] = useState<boolean>(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const moduleRef = useRef<string>("")
+  const processedModulesRef = useRef<{[key: string]: boolean}>({})
 
   const { completion, complete, isLoading, error } = useCompletion({
     api: "/api/generate-lesson",
   })
 
+  useEffect(() => {
+    if (currentModuleIndex !== null && reduxProcessedLessons[currentModuleIndex]) {
+      setProcessedLessons(reduxProcessedLessons[currentModuleIndex])
+    }
+  }, [currentModuleIndex, reduxProcessedLessons])
+
   const currentContent = processedLessons[currentLessonIndex] || ""
-  const parsedContent = parseContentFromMarkdown(isProcessing ? (completion || "") : currentContent)
+  const parsedContent = parseContentFromMarkdown(
+    generatingLessonIndex === currentLessonIndex && isProcessing 
+      ? (completion || "") 
+      : currentContent
+  )
 
   useEffect(() => {
-    if (!isProcessing) {
+    if (initialLessonIndex !== currentLessonIndex) {
       setCurrentLessonIndex(initialLessonIndex);
+      setUserSelectedLesson(true);
     }
-  }, [initialLessonIndex, isProcessing]);
+  }, [initialLessonIndex, currentLessonIndex]);
+
+  useEffect(() => {
+    if (isProcessing && !userSelectedLesson) {
+      setCurrentLessonIndex(generatingLessonIndex);
+    }
+  }, [generatingLessonIndex, isProcessing, userSelectedLesson]);
 
   useEffect(() => {
     if (moduleRef.current !== module?.title) {
       moduleRef.current = module?.title || ""
+      setUserSelectedLesson(false)
       
-      setCurrentLessonIndex(initialLessonIndex)
-      setGeneratingLessonIndex(0)
-      setProcessedLessons({})
-      setIsProcessing(true)
+      const moduleKey = module?.title || ""
+      const moduleLessons = currentModuleIndex !== null ? reduxProcessedLessons[currentModuleIndex] : {}
       
-        complete("", { 
-          body: {
-            moduleTitle: module?.title,
-            lessonTitle: module?.lessons[0] || ""
+      if (
+        moduleLessons && 
+        Object.keys(moduleLessons).length === module?.lessons?.length &&
+        module?.lessons?.every((_, index) => !!moduleLessons[index])
+      ) {
+        setProcessedLessons(moduleLessons)
+        setIsProcessing(false)
+        onModuleProcessed()
+        
+        if (waitingForLesson && onLessonReached) {
+          onLessonReached(currentLessonIndex)
+        }
+        
+        processedModulesRef.current[moduleKey] = true
+      } else {
+        let nextLessonToGenerate = 0
+        if (moduleLessons) {
+          while (nextLessonToGenerate < module?.lessons?.length && moduleLessons[nextLessonToGenerate]) {
+            nextLessonToGenerate++
           }
-        })
-    }
-  }, [module?.title, complete, module?.lessons, initialLessonIndex])
-
-  useEffect(() => {
-    if (!isLoading && completion && isProcessing) {
-      setProcessedLessons((prev) => ({
-        ...prev,
-        [generatingLessonIndex]: completion,
-      }))
-
-        if (generatingLessonIndex < module?.lessons?.length - 1) {
-          const nextIndex = generatingLessonIndex + 1
-          setGeneratingLessonIndex(nextIndex)
-          
+        }
+        
+        setGeneratingLessonIndex(nextLessonToGenerate)
+        if (!userSelectedLesson) {
+          setCurrentLessonIndex(nextLessonToGenerate)
+        }
+        setIsProcessing(true)
+        
+        if (nextLessonToGenerate < module?.lessons?.length) {
           complete("", { 
             body: {
               moduleTitle: module?.title,
-              lessonTitle: module?.lessons[nextIndex] || ""
+              lessonTitle: module?.lessons[nextLessonToGenerate] || ""
             }
           })
         } else {
           setIsProcessing(false)
           onModuleProcessed()
         }
+      }
+    }
+  }, [module?.title, module?.lessons, currentModuleIndex, reduxProcessedLessons, complete, onModuleProcessed, waitingForLesson, onLessonReached, currentLessonIndex, userSelectedLesson])
+
+  useEffect(() => {
+    if (!isLoading && completion && isProcessing) {
+      const currentGeneratingIndex = generatingLessonIndex
+      
+      setProcessedLessons((prev) => ({
+        ...prev,
+        [currentGeneratingIndex]: completion,
+      }))
+      
+      if (currentModuleIndex !== null) {
+        dispatch(addProcessedLesson({
+          moduleIndex: currentModuleIndex,
+          lessonIndex: currentGeneratingIndex,
+          content: completion
+        }))
+      }
+      
+      if (onLessonReached && currentGeneratingIndex === currentLessonIndex) {
+        onLessonReached(currentGeneratingIndex)
+      }
+
+      if (currentGeneratingIndex < module?.lessons?.length - 1) {
+        const nextIndex = currentGeneratingIndex + 1
+        setGeneratingLessonIndex(nextIndex)
+        
+        if (!userSelectedLesson) {
+          setCurrentLessonIndex(nextIndex)
+        }
+        
+        const hasNextLessonInRedux = 
+          currentModuleIndex !== null && 
+          reduxProcessedLessons[currentModuleIndex] && 
+          reduxProcessedLessons[currentModuleIndex][nextIndex]
+        
+        if (hasNextLessonInRedux) {
+          setProcessedLessons((prev) => ({
+            ...prev,
+            [nextIndex]: reduxProcessedLessons[currentModuleIndex][nextIndex]
+          }))
+          
+          let futureIndex = nextIndex + 1
+          while (
+            futureIndex < module?.lessons?.length && 
+            currentModuleIndex !== null &&
+            reduxProcessedLessons[currentModuleIndex] && 
+            reduxProcessedLessons[currentModuleIndex][futureIndex]
+          ) {
+            setProcessedLessons((prev) => ({
+              ...prev,
+              [futureIndex]: reduxProcessedLessons[currentModuleIndex][futureIndex]
+            }))
+            futureIndex++
+          }
+          
+          if (futureIndex < module?.lessons?.length) {
+            setGeneratingLessonIndex(futureIndex)
+            if (!userSelectedLesson) {
+              setCurrentLessonIndex(futureIndex)
+            }
+            complete("", { 
+              body: {
+                moduleTitle: module?.title,
+                lessonTitle: module?.lessons[futureIndex] || ""
+              }
+            })
+          } else {
+            setIsProcessing(false)
+            onModuleProcessed()
+          }
+        } else {
+          complete("", { 
+            body: {
+              moduleTitle: module?.title,
+              lessonTitle: module?.lessons[nextIndex] || ""
+            }
+          })
+        }
+      } else {
+        setIsProcessing(false)
+        onModuleProcessed()
+      }
     }
   }, [
     isLoading,
@@ -83,27 +209,23 @@ export function LessonContent({ module, onModuleProcessed, initialLessonIndex = 
     complete,
     isProcessing,
     module?.title,
+    onLessonReached,
+    currentLessonIndex,
+    currentModuleIndex,
+    dispatch,
+    reduxProcessedLessons,
+    userSelectedLesson
   ])
 
-  const navigateToLesson = (index: number) => {
-    if (index >= 0 && index < module?.lessons?.length && !isProcessing) {
-      setCurrentLessonIndex(index)
-    }
-  }
-
   const progressPercentage = module?.lessons?.length
-    ? ((generatingLessonIndex + 1) / module.lessons.length) * 100
+    ? ((Object.keys(processedLessons).length) / module.lessons.length) * 100
     : 0
 
-  const currentLessonTitle = isProcessing 
-    ? module?.lessons[generatingLessonIndex] || ""
-    : module?.lessons[currentLessonIndex] || ""
-  
-  const currentLessonNumber = isProcessing 
-    ? generatingLessonIndex + 1
-    : currentLessonIndex + 1
-    
-  const hasMultipleLessons = module?.lessons?.length > 1
+  const currentLessonTitle = module?.lessons[currentLessonIndex] || ""
+  const currentLessonNumber = currentLessonIndex + 1
+  const isLessonGenerated = !!processedLessons[currentLessonIndex]
+  const isCurrentLessonBeingGenerated = isProcessing && generatingLessonIndex === currentLessonIndex
+  const showLoader = userSelectedLesson && !isLessonGenerated && !isCurrentLessonBeingGenerated
 
   return (
     <div className="space-y-4 w-full mx-auto">
@@ -114,10 +236,10 @@ export function LessonContent({ module, onModuleProcessed, initialLessonIndex = 
             <h2 className="text-2xl text-white font-bold">{module?.title}</h2>
           </div>
 
-          {isLoading && isProcessing && (
-            <div className="flex items-center gap-2 text-sm text-white bg-white/20 px-3 py-1 rounded-full">
+          {isProcessing && (
+            <div className="flex items-center gap-2 text-sm text-white bg-white/20 px-3 py-1.5 rounded-full">
               <div className="h-2 w-2 bg-white rounded-full animate-pulse"></div>
-              <span>Generating magic...</span>
+              <span>Generating content...</span>
             </div>
           )}
         </div>
@@ -136,28 +258,14 @@ export function LessonContent({ module, onModuleProcessed, initialLessonIndex = 
               {currentLessonNumber}/{module?.lessons?.length}
             </span>
             <span className="text-sm font-medium">{currentLessonTitle}</span>
+            {waitingForLesson && !isLessonGenerated && !isCurrentLessonBeingGenerated && (
+              <span className="inline-flex items-center bg-white/20 px-2 py-1 rounded-full text-xs">
+                <Loader className="h-3 w-3 mr-1 animate-spin" />
+                Waiting for content...
+              </span>
+            )}
           </p>
         </div>
-
-        {hasMultipleLessons && (
-          <div className="flex gap-2 mt-4 flex-wrap">
-            {module?.lessons?.map((lesson, index) => (
-              <button
-                key={index}
-                onClick={() => navigateToLesson(index)}
-                className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                  (isProcessing ? false : currentLessonIndex === index)
-                    ? "bg-white text-purple-700 font-medium shadow-md"
-                    : "bg-white/20 text-white hover:bg-white/30"
-                } ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}`}
-                aria-label={`Lesson ${index + 1}`}
-                disabled={isProcessing}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {error && (
@@ -177,13 +285,30 @@ export function LessonContent({ module, onModuleProcessed, initialLessonIndex = 
         className="bg-white rounded-xl p-8 min-h-[85vh] overflow-auto shadow-md border border-gray-100"
         ref={contentRef}
       >
-        <div className="prose prose-lg max-w-none relative min-h-[200px] lesson-content">
-          <div className="content-container" dangerouslySetInnerHTML={{ __html: parsedContent }} />
+        {showLoader ? (
+          <div className="flex flex-col items-center justify-center h-full space-y-6 text-center">
+            <div className="relative">
+              <div className="bg-purple-100 p-5 rounded-full">
+                <Loader className="h-12 w-12 text-purple-600 animate-spin" />
+              </div>
+              <div className="absolute -top-2 -right-2 h-4 w-4 bg-purple-500 rounded-full animate-ping"></div>
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-xl font-bold text-gray-800">Preparing your lesson</h3>
+              <p className="text-muted-foreground max-w-md">
+                Your selected lesson is being prepared. Please wait while we generate content for lessons in sequence.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="prose prose-lg max-w-none relative min-h-[200px] lesson-content">
+            <div className="content-container" dangerouslySetInnerHTML={{ __html: parsedContent }} />
 
-          {isLoading && isProcessing && (
-            <span className="inline-block h-5 w-2 bg-purple-500 animate-pulse ml-0.5 align-bottom"></span>
-          )}
-        </div>
+            {isCurrentLessonBeingGenerated && (
+              <span className="inline-block h-5 w-2 bg-purple-500 animate-pulse ml-0.5 align-bottom"></span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

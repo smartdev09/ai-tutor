@@ -5,6 +5,7 @@ interface LessonItemProps {
   lessonNumber: number
   isActive?: boolean
   isStreaming?: boolean
+  isWaiting?: boolean 
   onClick?: () => void
 }
 
@@ -13,6 +14,7 @@ export function LessonItem({
   lessonNumber, 
   isActive = false, 
   isStreaming = false,
+  isWaiting = false,
   onClick
 }: LessonItemProps) {
   return (
@@ -34,6 +36,15 @@ export function LessonItem({
             <div className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </div>
+          </div>
+        )}
+        
+        {isWaiting && (
+          <div className="ml-auto flex items-center">
+            <div className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
             </div>
           </div>
         )}

@@ -1,13 +1,25 @@
 "use client"
 
-import type { AiCourse } from "@/types"
+import type { AiCourse, DBCourse } from "@/types"
 import { ModuleItem } from "./ModuleItem"
-import { BookOpen, GraduationCap, Sparkles, Minimize2 } from "lucide-react"
+import { BookOpen, GraduationCap, Sparkles, Minimize2, Save, Loader } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sidebar, SidebarHeader, SidebarProvider, SidebarRail } from "@/components/ui/sidebar"
 import { useState, useEffect } from "react"
 import { LessonContent } from "./LessonContent"
 import { RegenerateButton } from "../CourseControls/RegenerateButton"
+import { Button } from "@/components/ui/button"
+import { courseService } from "@/lib/services/course"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import {
+  setCurrentModule,
+  setCurrentLesson,
+  setExpandedModules,
+  setProcessedModule,
+  toggleModuleExpansion,
+  setIsSaving
+} from "@/store/courseSlice"
+import { toast } from "@/hooks/use-toast"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -17,62 +29,89 @@ interface ModuleListProps {
 }
 
 export function ModuleList({ isLoading, course, handleRegenerate, streamingModuleIndex = -1 }: ModuleListProps) {
-  const [currentModuleIndex, setCurrentModuleIndex] = useState<number | null>(null)
-  const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(0)
-  const [moduleProcessed, setModuleProcessed] = useState<boolean[]>([])
+  const dispatch = useAppDispatch()
+  const currentModuleIndex = useAppSelector(state => state.course.currentModuleIndex)
+  const currentLessonIndex = useAppSelector(state => state.course.currentLessonIndex)
+  const expandedModules = useAppSelector(state => state.course.expandedModules)
+  const isSaving = useAppSelector(state => state.course.isSaving)
+  
+  const [waitingForLesson, setWaitingForLesson] = useState<boolean>(false)
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
-  const [expandedModules, setExpandedModules] = useState<number[]>([])
 
-  // Initialize the moduleProcessed array when modules are loaded
-  useEffect(() => {
-    if (course.modules.length > 0) {
-      setModuleProcessed(new Array(course.modules.length).fill(false))
-    }
-  }, [course.modules.length])
-
-  // Check if all modules are generated
   useEffect(() => {
     if (!isLoading && streamingModuleIndex === -1 && course.modules.length > 0) {
       setAllModulesGenerated(true)
     }
   }, [isLoading, streamingModuleIndex, course.modules.length])
 
-  // Handle module selection - immediately select the module without checking isProcessing
   const handleModuleSelection = (index: number) => {
-    setCurrentModuleIndex(index)
-    setCurrentLessonIndex(0) // Reset lesson index when selecting a new module
+    dispatch(setCurrentModule(index))
+    dispatch(setCurrentLesson(0))
+    setWaitingForLesson(false)
   }
 
   // Handle lesson selection
   const handleLessonSelection = (moduleIndex: number, lessonIndex: number) => {
-    setCurrentModuleIndex(moduleIndex)
-    setCurrentLessonIndex(lessonIndex)
-  }
+    dispatch(setCurrentModule(moduleIndex))
+    dispatch(setCurrentLesson(lessonIndex))
+    setWaitingForLesson(true)
 
-  // Handle module processing completion
-  const handleModuleProcessed = () => {
-    if (currentModuleIndex !== null) {
-      const newProcessed = [...moduleProcessed]
-      newProcessed[currentModuleIndex] = true
-      setModuleProcessed(newProcessed)
+    if (!expandedModules.includes(moduleIndex)) {
+      dispatch(toggleModuleExpansion(moduleIndex))
     }
   }
 
-  // Collapse all opened modules
-  const collapseAll = () => {
-    setExpandedModules([])
-    setCurrentModuleIndex(null)
+  const handleModuleProcessed = () => {
+    if (currentModuleIndex !== null) {
+      dispatch(setProcessedModule(currentModuleIndex))
+    }
   }
 
-  // Check if all modules are processed
-  const allProcessed = moduleProcessed.length > 0 && moduleProcessed.every((processed) => processed)
+  const collapseAll = () => {
+    dispatch(setExpandedModules([]))
+    dispatch(setCurrentModule(null))
+  }
 
-  // Add the handleModuleExpand function
   const handleModuleExpand = (index: number, isExpanded: boolean) => {
-    if (isExpanded && !expandedModules.includes(index)) {
-      setExpandedModules([...expandedModules, index])
-    } else if (!isExpanded && expandedModules.includes(index)) {
-      setExpandedModules(expandedModules.filter((i) => i !== index))
+    if (isExpanded !== expandedModules.includes(index)) {
+      dispatch(toggleModuleExpansion(index))
+    }
+  }
+
+  const handleLessonReached = (lessonIndex: number) => {
+    if (waitingForLesson && lessonIndex === currentLessonIndex) {
+      setWaitingForLesson(false)
+    }
+  }
+
+  const handleSaveCourse = async () => {
+    try {
+      dispatch(setIsSaving(true))
+      
+      const dbCourse: DBCourse = {
+        title: course.title,
+        difficulty: course.difficulty,
+        slug: course.slug,
+        modules: course.modules.map((module, moduleIndex) => ({
+          title: module.title,
+          position: moduleIndex,
+          lessons: module.lessons.map((lesson, lessonIndex) => ({
+            title: lesson,
+            position: lessonIndex
+          }))
+        }))
+      }
+
+      await courseService.createCourse(dbCourse)
+      toast({
+        title: "Success",
+        description: "Course saved successfully!"
+      })
+    } catch (error) {
+      console.error('Error saving course:', error)
+      alert('Error saving course')
+    } finally {
+      dispatch(setIsSaving(false))
     }
   }
 
@@ -123,6 +162,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
                   isStreaming={index === streamingModuleIndex}
                   onLessonSelect={handleLessonSelection}
                   selectedLessonIndex={currentModuleIndex === index ? currentLessonIndex : undefined}
+                  waitingForLesson={currentModuleIndex === index ? waitingForLesson : false}
                 />
               ))}
             </div>
@@ -132,7 +172,26 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
       </SidebarProvider>
 
       <div className="w-full p-6">
-        <RegenerateButton onRegenerate={handleRegenerate} />
+        <div className="flex mb-4">
+          <RegenerateButton onRegenerate={handleRegenerate} />
+          <Button
+            onClick={handleSaveCourse}
+            className="ml-2"
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Course
+              </>
+            )}
+          </Button>
+        </div>
 
         {!allModulesGenerated ? (
           <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-4">
@@ -141,16 +200,6 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
             </div>
             <h2 className="text-2xl font-bold">Generating Course Content</h2>
             <p className="text-muted-foreground max-w-md">Please wait while all modules are being generated...</p>
-          </div>
-        ) : allProcessed ? (
-          <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-4">
-            <div className="bg-primary/10 p-6 rounded-full">
-              <BookOpen className="h-12 w-12 text-primary" />
-            </div>
-            <h2 className="text-2xl font-bold">You have completed the course!</h2>
-            <p className="text-muted-foreground max-w-md">
-              All modules have been shown. You can now review the course or regenerate the content.
-            </p>
           </div>
         ) : currentModuleIndex === null ? (
           <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-4">
@@ -165,6 +214,8 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
             module={course.modules[currentModuleIndex]}
             onModuleProcessed={handleModuleProcessed}
             initialLessonIndex={currentLessonIndex}
+            waitingForLesson={waitingForLesson}
+            onLessonReached={handleLessonReached}
           />
         )}
       </div>

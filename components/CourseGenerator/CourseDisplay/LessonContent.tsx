@@ -17,9 +17,9 @@ interface LessonContentProps {
   onLessonReached?: (lessonIndex: number) => void
 }
 
-export function LessonContent({ 
-  module, 
-  onModuleProcessed, 
+export function LessonContent({
+  module,
+  onModuleProcessed,
   initialLessonIndex = 0,
   waitingForLesson = false,
   onLessonReached
@@ -27,7 +27,7 @@ export function LessonContent({
   const dispatch = useAppDispatch()
   const currentModuleIndex = useAppSelector(state => state.course.currentModuleIndex)
   const reduxProcessedLessons = useAppSelector(state => state.course.processedLessons)
-  
+
   const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(initialLessonIndex)
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const [processedLessons, setProcessedLessons] = useState<Record<number, string>>({})
@@ -35,7 +35,7 @@ export function LessonContent({
   const [userSelectedLesson, setUserSelectedLesson] = useState<boolean>(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const moduleRef = useRef<string>("")
-  const processedModulesRef = useRef<{[key: string]: boolean}>({})
+  const processedModulesRef = useRef<{ [key: string]: boolean }>({})
 
   const { completion, complete, isLoading, error } = useCompletion({
     api: "/api/generate-lesson",
@@ -49,8 +49,8 @@ export function LessonContent({
 
   const currentContent = processedLessons[currentLessonIndex] || ""
   const parsedContent = parseContentFromMarkdown(
-    generatingLessonIndex === currentLessonIndex && isProcessing 
-      ? (completion || "") 
+    generatingLessonIndex === currentLessonIndex && isProcessing
+      ? (completion || "")
       : currentContent
   )
 
@@ -71,23 +71,23 @@ export function LessonContent({
     if (moduleRef.current !== module?.title) {
       moduleRef.current = module?.title || ""
       setUserSelectedLesson(false)
-      
+
       const moduleKey = module?.title || ""
       const moduleLessons = currentModuleIndex !== null ? reduxProcessedLessons[currentModuleIndex] : {}
-      
+
       if (
-        moduleLessons && 
+        moduleLessons &&
         Object.keys(moduleLessons).length === module?.lessons?.length &&
         module?.lessons?.every((_, index) => !!moduleLessons[index])
       ) {
         setProcessedLessons(moduleLessons)
         setIsProcessing(false)
         onModuleProcessed()
-        
+
         if (waitingForLesson && onLessonReached) {
           onLessonReached(currentLessonIndex)
         }
-        
+
         processedModulesRef.current[moduleKey] = true
       } else {
         let nextLessonToGenerate = 0
@@ -96,15 +96,15 @@ export function LessonContent({
             nextLessonToGenerate++
           }
         }
-        
+
         setGeneratingLessonIndex(nextLessonToGenerate)
         if (!userSelectedLesson) {
           setCurrentLessonIndex(nextLessonToGenerate)
         }
         setIsProcessing(true)
-        
+
         if (nextLessonToGenerate < module?.lessons?.length) {
-          complete("", { 
+          complete("", {
             body: {
               moduleTitle: module?.title,
               lessonTitle: module?.lessons[nextLessonToGenerate] || ""
@@ -121,12 +121,12 @@ export function LessonContent({
   useEffect(() => {
     if (!isLoading && completion && isProcessing) {
       const currentGeneratingIndex = generatingLessonIndex
-      
+
       setProcessedLessons((prev) => ({
         ...prev,
         [currentGeneratingIndex]: completion,
       }))
-      
+
       if (currentModuleIndex !== null) {
         dispatch(addProcessedLesson({
           moduleIndex: currentModuleIndex,
@@ -134,7 +134,7 @@ export function LessonContent({
           content: completion
         }))
       }
-      
+
       if (onLessonReached && currentGeneratingIndex === currentLessonIndex) {
         onLessonReached(currentGeneratingIndex)
       }
@@ -142,27 +142,26 @@ export function LessonContent({
       if (currentGeneratingIndex < module?.lessons?.length - 1) {
         const nextIndex = currentGeneratingIndex + 1
         setGeneratingLessonIndex(nextIndex)
-        
-        if (!userSelectedLesson) {
-          setCurrentLessonIndex(nextIndex)
-        }
-        
-        const hasNextLessonInRedux = 
-          currentModuleIndex !== null && 
-          reduxProcessedLessons[currentModuleIndex] && 
+
+        setCurrentLessonIndex(nextIndex)
+        setUserSelectedLesson(false)
+
+        const hasNextLessonInRedux =
+          currentModuleIndex !== null &&
+          reduxProcessedLessons[currentModuleIndex] &&
           reduxProcessedLessons[currentModuleIndex][nextIndex]
-        
+
         if (hasNextLessonInRedux) {
           setProcessedLessons((prev) => ({
             ...prev,
             [nextIndex]: reduxProcessedLessons[currentModuleIndex][nextIndex]
           }))
-          
+
           let futureIndex = nextIndex + 1
           while (
-            futureIndex < module?.lessons?.length && 
+            futureIndex < module?.lessons?.length &&
             currentModuleIndex !== null &&
-            reduxProcessedLessons[currentModuleIndex] && 
+            reduxProcessedLessons[currentModuleIndex] &&
             reduxProcessedLessons[currentModuleIndex][futureIndex]
           ) {
             setProcessedLessons((prev) => ({
@@ -171,13 +170,13 @@ export function LessonContent({
             }))
             futureIndex++
           }
-          
+
           if (futureIndex < module?.lessons?.length) {
             setGeneratingLessonIndex(futureIndex)
             if (!userSelectedLesson) {
               setCurrentLessonIndex(futureIndex)
             }
-            complete("", { 
+            complete("", {
               body: {
                 moduleTitle: module?.title,
                 lessonTitle: module?.lessons[futureIndex] || ""
@@ -188,7 +187,7 @@ export function LessonContent({
             onModuleProcessed()
           }
         } else {
-          complete("", { 
+          complete("", {
             body: {
               moduleTitle: module?.title,
               lessonTitle: module?.lessons[nextIndex] || ""

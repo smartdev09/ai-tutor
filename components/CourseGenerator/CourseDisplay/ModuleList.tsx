@@ -40,12 +40,21 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
 
   useEffect(() => {
+    if (course.modules.length > 0 && (isLoading || streamingModuleIndex !== -1)) {
+      const moduleIndices = course.modules.map((_, index) => index)
+      dispatch(setExpandedModules(moduleIndices))
+    }
+  }, [course.modules, course.modules.length, dispatch, isLoading, streamingModuleIndex])
+
+  useEffect(() => {
     if (!isLoading && streamingModuleIndex === -1 && course.modules.length > 0) {
       setAllModulesGenerated(true)
     }
   }, [isLoading, streamingModuleIndex, course.modules.length])
 
   const handleModuleSelection = (index: number) => {
+    if (isLoading || streamingModuleIndex !== -1) return
+    
     if (processingModuleIndex !== null) return
     
     dispatch(setCurrentModule(index))
@@ -54,8 +63,9 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
     setProcessingModuleIndex(index)
   }
 
-  // Handle lesson selection
   const handleLessonSelection = (moduleIndex: number, lessonIndex: number) => {
+    if (isLoading || streamingModuleIndex !== -1) return
+    
     dispatch(setCurrentModule(moduleIndex))
     dispatch(setCurrentLesson(lessonIndex))
     setWaitingForLesson(true)
@@ -73,11 +83,15 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
   }
 
   const collapseAll = () => {
+    if (isLoading || streamingModuleIndex !== -1) return
+    
     dispatch(setExpandedModules([]))
     dispatch(setCurrentModule(null))
   }
 
   const handleModuleExpand = (index: number, isExpanded: boolean) => {
+    if (isLoading || streamingModuleIndex !== -1) return
+    
     if (isExpanded !== expandedModules.includes(index)) {
       dispatch(toggleModuleExpansion(index))
     }
@@ -132,7 +146,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
               <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-600">
                 Course Modules
               </h2>
-              {!isLoading && (
+              {!isLoading && streamingModuleIndex === -1 && (
                 <button
                   onClick={collapseAll}
                   className="ml-auto flex items-center gap-1 px-2 py-1 bg-purple-50 rounded-full border border-purple-100 shadow-sm hover:bg-purple-100 transition-colors"
@@ -155,22 +169,29 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
 
           <ScrollArea className="flex-1">
             <div className="p-4 space-y-1">
-              {course.modules.map((module, index) => (
-                <ModuleItem
-                  key={module.title}
-                  module={module}
-                  moduleNumber={index + 1}
-                  isSelected={currentModuleIndex === index}
-                  isExpanded={expandedModules.includes(index)}
-                  onExpandChange={(isExpanded) => handleModuleExpand(index, isExpanded)}
-                  onSelect={() => handleModuleSelection(index)}
-                  isStreaming={index === streamingModuleIndex}
-                  onLessonSelect={handleLessonSelection}
-                  selectedLessonIndex={currentModuleIndex === index ? currentLessonIndex : undefined}
-                  waitingForLesson={currentModuleIndex === index ? waitingForLesson : false}
-                  disabled={processingModuleIndex !== null && processingModuleIndex !== index}
-                />
-              ))}
+              {course.modules.map((module, index) => {
+                // During generation, all modules should be disabled
+                // During processing of a specific module, only other modules should be disabled
+                const isModuleDisabled = isLoading || streamingModuleIndex !== -1 || 
+                                        (processingModuleIndex !== null && processingModuleIndex !== index);
+                
+                return (
+                  <ModuleItem
+                    key={module.title}
+                    module={module}
+                    moduleNumber={index + 1}
+                    isSelected={currentModuleIndex === index}
+                    isExpanded={expandedModules.includes(index)}
+                    onExpandChange={(isExpanded) => handleModuleExpand(index, isExpanded)}
+                    onSelect={() => handleModuleSelection(index)}
+                    isStreaming={index === streamingModuleIndex}
+                    onLessonSelect={handleLessonSelection}
+                    selectedLessonIndex={currentModuleIndex === index ? currentLessonIndex : undefined}
+                    waitingForLesson={currentModuleIndex === index ? waitingForLesson : false}
+                    disabled={isModuleDisabled}
+                  />
+                );
+              })}
             </div>
           </ScrollArea>
           <SidebarRail />
@@ -183,7 +204,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
           <Button
             onClick={handleSaveCourse}
             className="ml-2"
-            disabled={isSaving}
+            disabled={isSaving || isLoading || streamingModuleIndex !== -1}
           >
             {isSaving ? (
               <>

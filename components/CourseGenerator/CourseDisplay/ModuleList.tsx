@@ -17,27 +17,38 @@ import {
   setExpandedModules,
   setProcessedModule,
   toggleModuleExpansion,
-  setIsSaving
+  setIsSaving,
 } from "@/store/courseSlice"
 import { toast } from "@/hooks/use-toast"
+import { ChatButton } from "../CourseControls/ChatButton"
+import ChatbotUI from "./ChatBot"
 
 interface ModuleListProps {
   isLoading: boolean
   course: AiCourse
   handleRegenerate: () => void
   streamingModuleIndex?: number
+  dbCourse?: DBCourse
 }
 
-export function ModuleList({ isLoading, course, handleRegenerate, streamingModuleIndex = -1 }: ModuleListProps) {
+export function ModuleList({
+  isLoading,
+  course,
+  handleRegenerate,
+  streamingModuleIndex = -1,
+}: ModuleListProps) {
   const dispatch = useAppDispatch()
-  const currentModuleIndex = useAppSelector(state => state.course.currentModuleIndex)
-  const currentLessonIndex = useAppSelector(state => state.course.currentLessonIndex)
-  const expandedModules = useAppSelector(state => state.course.expandedModules)
-  const isSaving = useAppSelector(state => state.course.isSaving)
-  
+  const currentModuleIndex = useAppSelector((state) => state.course.currentModuleIndex)
+  const currentLessonIndex = useAppSelector((state) => state.course.currentLessonIndex)
+  const expandedModules = useAppSelector((state) => state.course.expandedModules)
+  const isSaving = useAppSelector((state) => state.course.isSaving)
+  const processedLessons = useAppSelector((state) => state.course.processedLessons)
+
   const [waitingForLesson, setWaitingForLesson] = useState<boolean>(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
+  const [toggleBot, setToggleBot] = useState(false)
 
   useEffect(() => {
     if (course.modules.length > 0 && (isLoading || streamingModuleIndex !== -1)) {
@@ -54,9 +65,9 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
 
   const handleModuleSelection = (index: number) => {
     if (isLoading || streamingModuleIndex !== -1) return
-    
+
     if (processingModuleIndex !== null) return
-    
+
     dispatch(setCurrentModule(index))
     dispatch(setCurrentLesson(0))
     setWaitingForLesson(false)
@@ -65,7 +76,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
 
   const handleLessonSelection = (moduleIndex: number, lessonIndex: number) => {
     if (isLoading || streamingModuleIndex !== -1) return
-    
+
     dispatch(setCurrentModule(moduleIndex))
     dispatch(setCurrentLesson(lessonIndex))
     setWaitingForLesson(true)
@@ -84,14 +95,14 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
 
   const collapseAll = () => {
     if (isLoading || streamingModuleIndex !== -1) return
-    
+
     dispatch(setExpandedModules([]))
     dispatch(setCurrentModule(null))
   }
 
   const handleModuleExpand = (index: number, isExpanded: boolean) => {
     if (isLoading || streamingModuleIndex !== -1) return
-    
+
     if (isExpanded !== expandedModules.includes(index)) {
       dispatch(toggleModuleExpansion(index))
     }
@@ -102,11 +113,10 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
       setWaitingForLesson(false)
     }
   }
-
   const handleSaveCourse = async () => {
     try {
-      dispatch(setIsSaving(true))
-      
+      dispatch(setIsSaving(true));
+
       const dbCourse: DBCourse = {
         title: course.title,
         difficulty: course.difficulty,
@@ -114,25 +124,38 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
         modules: course.modules.map((module, moduleIndex) => ({
           title: module.title,
           position: moduleIndex,
-          lessons: module.lessons.map((lesson, lessonIndex) => ({
-            title: lesson,
-            position: lessonIndex
-          }))
-        }))
-      }
+          lessons: module.lessons.map((lessonTitle, lessonIndex) => {
+            const content = processedLessons[moduleIndex] &&
+              processedLessons[moduleIndex][lessonIndex]
+              ? processedLessons[moduleIndex][lessonIndex]
+              : "";
 
-      await courseService.createCourse(dbCourse)
+            return {
+              title: lessonTitle,
+              position: lessonIndex,
+              content: content
+            };
+          }),
+        })),
+      };
+
+      await courseService.createCourse(dbCourse);
+
       toast({
         title: "Success",
-        description: "Course saved successfully!"
-      })
+        description: "Course saved successfully!",
+      });
     } catch (error) {
-      console.error('Error saving course:', error)
-      alert('Error saving course')
+      console.error("Error saving course:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save course: " + (error instanceof Error ? error.message : "Unknown error"),
+        variant: "destructive",
+      });
     } finally {
-      dispatch(setIsSaving(false))
+      dispatch(setIsSaving(false));
     }
-  }
+  };
 
   return (
     <div className="flex h-full">
@@ -172,9 +195,11 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
               {course.modules.map((module, index) => {
                 // During generation, all modules should be disabled
                 // During processing of a specific module, only other modules should be disabled
-                const isModuleDisabled = isLoading || streamingModuleIndex !== -1 || 
-                                        (processingModuleIndex !== null && processingModuleIndex !== index);
-                
+                const isModuleDisabled =
+                  isLoading ||
+                  streamingModuleIndex !== -1 ||
+                  (processingModuleIndex !== null && processingModuleIndex !== index)
+
                 return (
                   <ModuleItem
                     key={module.title}
@@ -190,7 +215,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
                     waitingForLesson={currentModuleIndex === index ? waitingForLesson : false}
                     disabled={isModuleDisabled}
                   />
-                );
+                )
               })}
             </div>
           </ScrollArea>
@@ -200,6 +225,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
 
       <div className="w-full p-6">
         <div className="flex mb-4">
+          <ChatButton toggleBot={toggleBot} setToggleBot={setToggleBot} />
           <RegenerateButton onRegenerate={handleRegenerate} />
           <Button
             onClick={handleSaveCourse}
@@ -220,15 +246,7 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
           </Button>
         </div>
 
-        {!allModulesGenerated ? (
-          <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-4">
-            <div className="bg-primary/10 p-6 rounded-full">
-              <Sparkles className="animate-spin h-12 w-12 text-primary" />
-            </div>
-            <h2 className="text-2xl font-bold">Generating Course Content</h2>
-            <p className="text-muted-foreground max-w-md">Please wait while all modules are being generated...</p>
-          </div>
-        ) : currentModuleIndex === null ? (
+        {currentModuleIndex === null ? (
           <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-4">
             <div className="bg-primary/10 p-6 rounded-full">
               <BookOpen className="h-12 w-12 text-primary" />
@@ -243,9 +261,16 @@ export function ModuleList({ isLoading, course, handleRegenerate, streamingModul
             initialLessonIndex={currentLessonIndex}
             waitingForLesson={waitingForLesson}
             onLessonReached={handleLessonReached}
+            slug={course.slug}
           />
         )}
       </div>
+      {toggleBot && (
+        <div className="sticky h-fit p-4">
+          <ChatbotUI />
+        </div>
+      )}
+
     </div>
   )
 }

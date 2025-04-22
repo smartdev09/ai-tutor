@@ -1,0 +1,18 @@
+import { BotIcon } from "lucide-react";
+
+interface ChatButtonProps {
+    toggleBot: boolean;
+    setToggleBot: (toggle: boolean) => void;
+}
+
+export function ChatButton({ toggleBot, setToggleBot }: ChatButtonProps) {
+    return (
+        <button
+            onClick={() => setToggleBot(!toggleBot)}
+            className="top-4 right-16 fixed inline-flex items-center justify-center px-2.5 py-2.5 overflow-hidden font-semibold text-white transition-all duration-300 bg-primary rounded-full shadow-lg hover:from-blue-600 hover:via-purple-600 hover:to-blue-700 hover:shadow-xl active:scale-95"
+        >
+            <span title="Regenerate Course" className="z-10"><BotIcon /></span>
+            <div className="absolute inset-0 transition duration-300 rounded-xl" />
+        </button>
+    );
+}

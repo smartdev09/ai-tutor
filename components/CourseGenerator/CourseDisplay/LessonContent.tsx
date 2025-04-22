@@ -1,13 +1,19 @@
 "use client"
 
+import type React from "react"
+
 import type { Module } from "@/types"
 import { useCompletion } from "@ai-sdk/react"
 import { useState, useEffect, useRef } from "react"
 import { parseContentFromMarkdown } from "@/lib/utils"
-import { BookOpen, Loader } from "lucide-react"
+import { BookOpen, Loader, Edit, Save, X } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import { addProcessedLesson } from "@/store/courseSlice"
+import { addProcessedLesson, setEditingLessonContent, setIsEditing, updateLessonContent, setEditingModuleTitle, clearEditingTitles, setGeneratedCourse } from "@/store/courseSlice"
+import { courseService } from "@/lib/services/course"
+import { toast } from "@/hooks/use-toast"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
 
 interface LessonContentProps {
   module: Module
@@ -15,6 +21,7 @@ interface LessonContentProps {
   initialLessonIndex?: number
   waitingForLesson?: boolean
   onLessonReached?: (lessonIndex: number) => void
+  slug?: string
 }
 
 export function LessonContent({
@@ -22,25 +29,90 @@ export function LessonContent({
   onModuleProcessed,
   initialLessonIndex = 0,
   waitingForLesson = false,
-  onLessonReached
+  onLessonReached,
+  slug,
 }: LessonContentProps) {
   const dispatch = useAppDispatch()
-  const currentModuleIndex = useAppSelector(state => state.course.currentModuleIndex)
-  const reduxProcessedLessons = useAppSelector(state => state.course.processedLessons)
+  const currentModuleIndex = useAppSelector((state) => state.course.currentModuleIndex)
+  const reduxProcessedLessons = useAppSelector((state) => state.course.processedLessons)
+  const isEditing = useAppSelector((state) => state.course.isEditing)
+  const editingLessonContent = useAppSelector((state) => state.course.editingLessonContent)
+  const generatedCourse = useAppSelector((state) => state.course.generatedCourse);
 
   const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(initialLessonIndex)
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const [processedLessons, setProcessedLessons] = useState<Record<number, string>>({})
   const [generatingLessonIndex, setGeneratingLessonIndex] = useState<number>(0)
   const [userSelectedLesson, setUserSelectedLesson] = useState<boolean>(false)
+  const [isSaving, setIsSaving] = useState<boolean>(false)
+
   const contentRef = useRef<HTMLDivElement>(null)
   const moduleRef = useRef<string>("")
   const processedModulesRef = useRef<{ [key: string]: boolean }>({})
   const [currentModuleTitle, setCurrentModuleTitle] = useState<string>("")
 
+  const editingModuleTitle = useAppSelector((state) => state.course.editingModuleTitle);
+  const editingModuleId = useAppSelector((state) => state.course.editingModuleId);
+
+
+  const handleModuleTitleEdit = () => {
+    dispatch(setEditingModuleTitle({ title: module.title, moduleId: currentModuleId || "" }));
+  };
+
+  const handleModuleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setEditingModuleTitle({ title: e.target.value, moduleId: editingModuleId || "" }));
+  };
+
+  const handleSaveModuleTitle = async () => {
+    if (!editingModuleId) return;
+
+    try {
+      setIsSaving(true);
+      await courseService.updateModule(editingModuleId, editingModuleTitle);
+
+      // Update local state using the component level selector
+      if (currentModuleIndex !== null && generatedCourse?.modules) {
+        const updatedModules = [...generatedCourse.modules];
+        updatedModules[currentModuleIndex].title = editingModuleTitle;
+        dispatch(setGeneratedCourse({ ...generatedCourse, modules: updatedModules }));
+      }
+
+      dispatch(clearEditingTitles());
+      toast({
+        title: "Success",
+        description: "Module title updated successfully",
+      });
+    } catch (error) {
+      console.error("Error saving module title:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save module title",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    dispatch(clearEditingTitles());
+  };
+
   const { completion, complete, isLoading, error } = useCompletion({
     api: "/api/generate-lesson",
   })
+
+  const [currentModuleId, setCurrentModuleId] = useState<string>()
+
+  useEffect(() => {
+    const fetchModuleId = async () => {
+      if (!slug || currentModuleIndex === null) return;
+      const courseId = await courseService.getCourse(slug)
+      const moduleId = await courseService.getModuleIdByPosition(courseId.id, currentModuleIndex)
+      setCurrentModuleId(moduleId)
+    }
+    fetchModuleId()
+  },)
 
   useEffect(() => {
     if (currentModuleIndex !== null && reduxProcessedLessons[currentModuleIndex]) {
@@ -53,30 +125,28 @@ export function LessonContent({
 
   const currentContent = processedLessons[currentLessonIndex] || ""
   const parsedContent = parseContentFromMarkdown(
-    generatingLessonIndex === currentLessonIndex && isProcessing
-      ? (completion || "")
-      : currentContent
+    generatingLessonIndex === currentLessonIndex && isProcessing ? completion || "" : currentContent,
   )
 
   useEffect(() => {
     if (initialLessonIndex !== currentLessonIndex) {
-      setCurrentLessonIndex(initialLessonIndex);
-      setUserSelectedLesson(true);
+      setCurrentLessonIndex(initialLessonIndex)
+      setUserSelectedLesson(true)
     }
-  }, [initialLessonIndex, currentLessonIndex]);
+  }, [initialLessonIndex, currentLessonIndex])
 
   useEffect(() => {
     if (isProcessing && !userSelectedLesson) {
-      setCurrentLessonIndex(generatingLessonIndex);
+      setCurrentLessonIndex(generatingLessonIndex)
     }
-  }, [generatingLessonIndex, isProcessing, userSelectedLesson]);
+  }, [generatingLessonIndex, isProcessing, userSelectedLesson])
 
   useEffect(() => {
     if (moduleRef.current !== module?.title) {
       const previousModule = moduleRef.current
       moduleRef.current = module.title
       setCurrentModuleTitle(module.title)
-      
+
       if (previousModule !== "") {
         setProcessedLessons({})
         setUserSelectedLesson(false)
@@ -117,8 +187,8 @@ export function LessonContent({
           complete("", {
             body: {
               moduleTitle: module?.title,
-              lessonTitle: module?.lessons[nextLessonToGenerate] || ""
-            }
+              lessonTitle: module?.lessons[nextLessonToGenerate] || "",
+            },
           })
         } else {
           setIsProcessing(false)
@@ -126,7 +196,18 @@ export function LessonContent({
         }
       }
     }
-  }, [module?.title, module?.lessons, currentModuleIndex, reduxProcessedLessons, complete, onModuleProcessed, waitingForLesson, onLessonReached, currentLessonIndex, userSelectedLesson])
+  }, [
+    module?.title,
+    module?.lessons,
+    currentModuleIndex,
+    reduxProcessedLessons,
+    complete,
+    onModuleProcessed,
+    waitingForLesson,
+    onLessonReached,
+    currentLessonIndex,
+    userSelectedLesson,
+  ])
 
   useEffect(() => {
     if (!isLoading && completion && isProcessing) {
@@ -138,11 +219,13 @@ export function LessonContent({
       }))
 
       if (currentModuleIndex !== null) {
-        dispatch(addProcessedLesson({
-          moduleIndex: currentModuleIndex,
-          lessonIndex: currentGeneratingIndex,
-          content: completion
-        }))
+        dispatch(
+          addProcessedLesson({
+            moduleIndex: currentModuleIndex,
+            lessonIndex: currentGeneratingIndex,
+            content: completion,
+          }),
+        )
       }
 
       if (onLessonReached && currentGeneratingIndex === currentLessonIndex) {
@@ -164,7 +247,7 @@ export function LessonContent({
         if (hasNextLessonInRedux) {
           setProcessedLessons((prev) => ({
             ...prev,
-            [nextIndex]: reduxProcessedLessons[currentModuleIndex][nextIndex]
+            [nextIndex]: reduxProcessedLessons[currentModuleIndex][nextIndex],
           }))
 
           let futureIndex = nextIndex + 1
@@ -176,7 +259,7 @@ export function LessonContent({
           ) {
             setProcessedLessons((prev) => ({
               ...prev,
-              [futureIndex]: reduxProcessedLessons[currentModuleIndex][futureIndex]
+              [futureIndex]: reduxProcessedLessons[currentModuleIndex][futureIndex],
             }))
             futureIndex++
           }
@@ -189,8 +272,8 @@ export function LessonContent({
             complete("", {
               body: {
                 moduleTitle: module?.title,
-                lessonTitle: module?.lessons[futureIndex] || ""
-              }
+                lessonTitle: module?.lessons[futureIndex] || "",
+              },
             })
           } else {
             setIsProcessing(false)
@@ -200,8 +283,8 @@ export function LessonContent({
           complete("", {
             body: {
               moduleTitle: module?.title,
-              lessonTitle: module?.lessons[nextIndex] || ""
-            }
+              lessonTitle: module?.lessons[nextIndex] || "",
+            },
           })
         }
       } else {
@@ -223,11 +306,11 @@ export function LessonContent({
     currentModuleIndex,
     dispatch,
     reduxProcessedLessons,
-    userSelectedLesson
+    userSelectedLesson,
   ])
 
   const progressPercentage = module?.lessons?.length
-    ? ((Object.keys(processedLessons).length) / module.lessons.length) * 100
+    ? (Object.keys(processedLessons).length / module.lessons.length) * 100
     : 0
 
   const currentLessonTitle = module?.lessons[currentLessonIndex] || ""
@@ -236,7 +319,67 @@ export function LessonContent({
   const isCurrentLessonBeingGenerated = isProcessing && generatingLessonIndex === currentLessonIndex
   const showLoader = (userSelectedLesson || waitingForLesson) && !isLessonGenerated && !isCurrentLessonBeingGenerated
 
-  console.log(showLoader)
+  const handleEditToggle = () => {
+    if (isEditing) {
+      dispatch(setIsEditing(false))
+    } else {
+      dispatch(setEditingLessonContent(currentContent))
+      dispatch(setIsEditing(true))
+    }
+  }
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    dispatch(setEditingLessonContent(e.target.value))
+  }
+
+  const handleSaveContent = async () => {
+    if (currentModuleIndex === null) return
+
+    try {
+      setIsSaving(true)
+
+      dispatch(
+        updateLessonContent({
+          moduleIndex: currentModuleIndex,
+          lessonIndex: currentLessonIndex,
+          content: editingLessonContent,
+        }),
+      )
+
+      setProcessedLessons((prev) => ({
+        ...prev,
+        [currentLessonIndex]: editingLessonContent,
+      }))
+
+      if (currentModuleId) {
+
+        await courseService.updateLessonByModuleAndPosition(currentModuleId, currentLessonIndex, editingLessonContent)
+
+        toast({
+          title: "Success",
+          description: "Lesson content updated successfully",
+        })
+      } else {
+        console.warn("Module ID not available, changes only saved locally")
+        toast({
+          title: "Warning",
+          description: "Changes saved locally but not to database (module ID not available)",
+          variant: "default",
+        })
+      }
+
+      dispatch(setIsEditing(false))
+    } catch (error) {
+      console.error("Error saving lesson content:", error)
+      toast({
+        title: "Error",
+        description: "Failed to save lesson content: " + (error instanceof Error ? error.message : "Unknown error"),
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <div className="space-y-4 w-full mx-auto">
@@ -244,7 +387,59 @@ export function LessonContent({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <BookOpen className="h-6 w-6 text-white" />
-            <h2 className="text-2xl text-white font-bold">{module?.title}</h2>
+            {editingModuleId === currentModuleId ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={editingModuleTitle}
+                  onChange={handleModuleTitleChange}
+                  className="text-2xl text-white font-bold bg-transparent border-b border-white/50 focus:border-white focus:outline-none"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                    onClick={handleSaveModuleTitle}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader className="h-4 w-4 mr-1 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-1" />
+                        Save
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <h2 className="text-2xl text-white font-bold">
+                {module?.title}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="ml-2 text-white/70 hover:text-white hover:bg-white/20"
+                  onClick={handleModuleTitleEdit}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </h2>
+            )}
           </div>
 
           {isProcessing && (
@@ -276,6 +471,54 @@ export function LessonContent({
               </span>
             )}
           </p>
+
+          {isLessonGenerated && !isProcessing && (
+            <div>
+              {isEditing ? (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                    onClick={handleEditToggle}
+                    disabled={isSaving}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                    onClick={handleSaveContent}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader className="h-4 w-4 mr-1 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-1" />
+                        Save
+                      </>
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                  onClick={handleEditToggle}
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -310,6 +553,15 @@ export function LessonContent({
                 Your selected lesson is being prepared. Please wait while we generate content for lessons in sequence.
               </p>
             </div>
+          </div>
+        ) : isEditing ? (
+          <div className="prose prose-lg max-w-none relative min-h-[200px]">
+            <Textarea
+              value={editingLessonContent}
+              onChange={handleContentChange}
+              className="min-h-[70vh] font-mono text-sm p-4"
+              placeholder="Edit your lesson content here..."
+            />
           </div>
         ) : (
           <div className="prose prose-lg max-w-none relative min-h-[200px] lesson-content">

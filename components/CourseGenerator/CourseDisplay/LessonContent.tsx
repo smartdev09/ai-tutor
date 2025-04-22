@@ -36,6 +36,7 @@ export function LessonContent({
   const contentRef = useRef<HTMLDivElement>(null)
   const moduleRef = useRef<string>("")
   const processedModulesRef = useRef<{ [key: string]: boolean }>({})
+  const [currentModuleTitle, setCurrentModuleTitle] = useState<string>("")
 
   const { completion, complete, isLoading, error } = useCompletion({
     api: "/api/generate-lesson",
@@ -43,9 +44,12 @@ export function LessonContent({
 
   useEffect(() => {
     if (currentModuleIndex !== null && reduxProcessedLessons[currentModuleIndex]) {
-      setProcessedLessons(reduxProcessedLessons[currentModuleIndex])
+      const moduleLessons = reduxProcessedLessons[currentModuleIndex]
+      if (module?.title === currentModuleTitle) {
+        setProcessedLessons(moduleLessons || {})
+      }
     }
-  }, [currentModuleIndex, reduxProcessedLessons])
+  }, [currentModuleIndex, currentModuleTitle, module?.title, reduxProcessedLessons])
 
   const currentContent = processedLessons[currentLessonIndex] || ""
   const parsedContent = parseContentFromMarkdown(
@@ -69,8 +73,14 @@ export function LessonContent({
 
   useEffect(() => {
     if (moduleRef.current !== module?.title) {
-      moduleRef.current = module?.title || ""
-      setUserSelectedLesson(false)
+      const previousModule = moduleRef.current
+      moduleRef.current = module.title
+      setCurrentModuleTitle(module.title)
+      
+      if (previousModule !== "") {
+        setProcessedLessons({})
+        setUserSelectedLesson(false)
+      }
 
       const moduleKey = module?.title || ""
       const moduleLessons = currentModuleIndex !== null ? reduxProcessedLessons[currentModuleIndex] : {}
@@ -224,7 +234,9 @@ export function LessonContent({
   const currentLessonNumber = currentLessonIndex + 1
   const isLessonGenerated = !!processedLessons[currentLessonIndex]
   const isCurrentLessonBeingGenerated = isProcessing && generatingLessonIndex === currentLessonIndex
-  const showLoader = userSelectedLesson && !isLessonGenerated && !isCurrentLessonBeingGenerated
+  const showLoader = (userSelectedLesson || waitingForLesson) && !isLessonGenerated && !isCurrentLessonBeingGenerated
+
+  console.log(showLoader)
 
   return (
     <div className="space-y-4 w-full mx-auto">

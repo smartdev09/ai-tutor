@@ -6,6 +6,9 @@ interface CourseState {
   processedModules: Record<number, boolean>
   currentModuleIndex: number | null
   currentLessonIndex: number
+  currentLessonContent: string | null
+  currentLessonTitle: string;
+  currentLessonId: number | null;
   expandedModules: number[]
   processedLessons: Record<number, Record<number, string>>
   streamingModuleIndex: number
@@ -22,6 +25,9 @@ const initialState: CourseState = {
   processedModules: {},
   currentModuleIndex: null,
   currentLessonIndex: 0,
+  currentLessonContent: null,
+  currentLessonTitle: '',
+  currentLessonId: null,
   expandedModules: [],
   processedLessons: {},
   streamingModuleIndex: -1,
@@ -92,6 +98,16 @@ const courseSlice = createSlice({
     setEditingLessonContent(state, action: PayloadAction<string>) {
       state.editingLessonContent = action.payload
     },
+    setCurrentLessonContent(state, action: PayloadAction<string>) {
+      state.currentLessonContent = action.payload
+    },
+    setCurrentLessonTitle(state, action: PayloadAction<string>) {
+      console.log("setCurrentLessonTitle", action.payload)
+      state.currentLessonTitle = action.payload
+    },
+    setCurrentLessonId(state, action: PayloadAction<string>) {
+      state.currentLessonContent = action.payload
+    },
     updateLessonContent(state, action: PayloadAction<{ moduleIndex: number; lessonIndex: number; content: string }>) {
       const { moduleIndex, lessonIndex, content } = action.payload
 
@@ -119,6 +135,8 @@ export const {
   setProcessedModule,
   setCurrentModule,
   setCurrentLesson,
+  setCurrentLessonContent,
+  setCurrentLessonTitle,
   setExpandedModules,
   toggleModuleExpansion,
   addProcessedLesson,

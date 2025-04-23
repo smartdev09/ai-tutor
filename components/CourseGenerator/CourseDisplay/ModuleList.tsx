@@ -246,31 +246,39 @@ export function ModuleList({
           </Button>
         </div>
 
-        {currentModuleIndex === null ? (
-          <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-4">
-            <div className="bg-primary/10 p-6 rounded-full">
-              <BookOpen className="h-12 w-12 text-primary" />
-            </div>
-            <h2 className="text-2xl font-bold">Select a Module</h2>
-            <p className="text-muted-foreground max-w-md">Please select a module from the sidebar to start learning.</p>
+        <div className="flex">
+          {/* Main content area */}
+          <div className={`${toggleBot ? 'w-2/3 pr-4' : 'w-full'}`}>
+            {currentModuleIndex === null ? (
+              <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-4">
+                <div className="bg-primary/10 p-6 rounded-full">
+                  <BookOpen className="h-12 w-12 text-primary" />
+                </div>
+                <h2 className="text-2xl font-bold">Select a Module</h2>
+                <p className="text-muted-foreground max-w-md">Please select a module from the sidebar to start learning.</p>
+              </div>
+            ) : (
+              <LessonContent
+                module={course.modules[currentModuleIndex]}
+                onModuleProcessed={handleModuleProcessed}
+                initialLessonIndex={currentLessonIndex}
+                waitingForLesson={waitingForLesson}
+                onLessonReached={handleLessonReached}
+                slug={course.slug}
+              />
+            )}
           </div>
-        ) : (
-          <LessonContent
-            module={course.modules[currentModuleIndex]}
-            onModuleProcessed={handleModuleProcessed}
-            initialLessonIndex={currentLessonIndex}
-            waitingForLesson={waitingForLesson}
-            onLessonReached={handleLessonReached}
-            slug={course.slug}
-          />
-        )}
-      </div>
-      {toggleBot && (
-        <div className="sticky h-fit p-4">
-          <ChatbotUI />
-        </div>
-      )}
 
+          {/* ChatBot area */}
+          {toggleBot && (
+            <div className="w-1/3 h-full p-4 sticky top-0">
+            <div className="h-full">
+              <ChatbotUI />
+            </div>
+          </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

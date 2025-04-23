@@ -9,7 +9,16 @@ import { parseContentFromMarkdown } from "@/lib/utils"
 import { BookOpen, Loader, Edit, Save, X } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import { addProcessedLesson, setEditingLessonContent, setIsEditing, updateLessonContent, setEditingModuleTitle, clearEditingTitles, setGeneratedCourse } from "@/store/courseSlice"
+import { addProcessedLesson,
+  setEditingLessonContent,
+  setIsEditing,
+  updateLessonContent,
+  setEditingModuleTitle,
+  clearEditingTitles,
+  setGeneratedCourse,
+  setCurrentLessonContent,
+  setCurrentLessonTitle
+} from "@/store/courseSlice"
 import { courseService } from "@/lib/services/course"
 import { toast } from "@/hooks/use-toast"
 import { Textarea } from "@/components/ui/textarea"
@@ -124,6 +133,7 @@ export function LessonContent({
   }, [currentModuleIndex, currentModuleTitle, module?.title, reduxProcessedLessons])
 
   const currentContent = processedLessons[currentLessonIndex] || ""
+  dispatch(setCurrentLessonContent(currentContent))
   const parsedContent = parseContentFromMarkdown(
     generatingLessonIndex === currentLessonIndex && isProcessing ? completion || "" : currentContent,
   )
@@ -314,6 +324,7 @@ export function LessonContent({
     : 0
 
   const currentLessonTitle = module?.lessons[currentLessonIndex] || ""
+  dispatch(setCurrentLessonTitle(currentLessonTitle))
   const currentLessonNumber = currentLessonIndex + 1
   const isLessonGenerated = !!processedLessons[currentLessonIndex]
   const isCurrentLessonBeingGenerated = isProcessing && generatingLessonIndex === currentLessonIndex

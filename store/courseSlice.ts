@@ -102,7 +102,6 @@ const courseSlice = createSlice({
       state.currentLessonContent = action.payload
     },
     setCurrentLessonTitle(state, action: PayloadAction<string>) {
-      console.log("setCurrentLessonTitle", action.payload)
       state.currentLessonTitle = action.payload
     },
     setCurrentLessonId(state, action: PayloadAction<string>) {

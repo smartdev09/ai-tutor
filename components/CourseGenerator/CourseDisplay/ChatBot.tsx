@@ -6,7 +6,6 @@ import ReactMarkdown from 'react-markdown';
 const ChatbotUI = () => {
   const currentLessonContent = useAppSelector((state) => state.course.currentLessonContent);
   const currentLessonTitle = useAppSelector((state) => state.course.currentLessonTitle);
-  console.log('currentLessonTitle', currentLessonTitle);
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const messageEndRef = useRef(null);
   

@@ -415,6 +415,7 @@ export function LessonContent({
     if (userPrompt && module?.lessons?.[currentLessonIndex]) {
       setIsProcessing(true)
       setGeneratingLessonIndex(currentLessonIndex)
+      setTestMyKnowledgeToggle(false)
   
       complete("", {
         body: {

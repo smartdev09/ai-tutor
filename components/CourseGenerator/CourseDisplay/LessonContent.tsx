@@ -25,6 +25,7 @@ import { toast } from "@/hooks/use-toast"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import TestMyKnowledge from "./TestMyKnowledge"
+import ContextModalButton from "./EditPrompt"
 
 interface LessonContentProps {
   module: Module
@@ -403,11 +404,34 @@ export function LessonContent({
     }
   }
 
+  // Edit prompt related implementation
+
+  const [userPrompt, setUserPrompt] = useState<string>("")
+  const handleOnSubmit = (input: string) => {
+    setUserPrompt(input);
+  };
+
+  useEffect(() => {
+    if (userPrompt && module?.lessons?.[currentLessonIndex]) {
+      setIsProcessing(true)
+      setGeneratingLessonIndex(currentLessonIndex)
+  
+      complete("", {
+        body: {
+          moduleTitle: module?.title,
+          lessonTitle: module?.lessons[currentLessonIndex] || "",
+          userPrompt: userPrompt,
+        },
+      })
+    }
+  }, [userPrompt])
+
   return (
     <div className="space-y-4 w-full mx-auto">
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 rounded-xl shadow-lg">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
+            <ContextModalButton onSubmit={handleOnSubmit}/>
             <BookOpen className="h-6 w-6 text-white" />
             {editingModuleId === currentModuleId ? (
               <div className="flex items-center gap-2">

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/store/hooks';
 import React, { useEffect, useState } from 'react';
 import { useCompletion } from "@ai-sdk/react";
-import { parseContentFromMarkdown } from '@/lib/utils';
 
 const TestMyKnowledge = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -25,62 +24,127 @@ const TestMyKnowledge = () => {
   const [stableQuestionCount, setStableQuestionCount] = useState(0);
   const [parsedQuestions, setParsedQuestions] = useState<any[]>([]);
 
-  // Process the streaming response with stability improvements
-  const processCompletionText = (text: string) => {
-    // First, clean up the text to remove the token indices
-    const cleanText = text.replace(/\d+:"([^"]*)"/g, '$1')
-                          .replace(/\d+:([^ ]+)/g, '$1');
+  const cleanText = (text: string): string => {
+    let cleaned = text.replace(/\bf:{"messageId".*?}/g, '');
+    cleaned = cleaned.replace(/\b\d+:"([^"]*)"/g, '$1');
+    cleaned = cleaned.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n');
+    cleaned = cleaned.replace(/"delta":{"text":"(.*?)"},"usage":/g, '$1');
     
-    return parseMCQQuestions(cleanText);
+    return cleaned;
   };
-
-  // Parse Multiple Choice Questions from streaming completion
+  
   const parseMCQQuestions = (completionText: string) => {
-    parseContentFromMarkdown(completionText);
-    try {
-      const parsedQuestions = [];
-      
-      // Extract question blocks using regex
-      const questionPattern = /\*\*([\d.]+)\.\s+([^*]+)\*\*\s+((?:[a-d]\)[^\n]*\n)+)\s*\*\*Correct answer:\*\*\s*([a-d])\)/g;
-      let match;
-      
-      while ((match = questionPattern.exec(completionText)) !== null) {
-        const questionText = match[2].trim();
-        const optionsText = match[3];
-        const correctAnswerLetter = match[4].trim();
+    const parsedQuestions: Array<{
+      question: string;
+      options: string[];
+      correctAnswer: number;
+      explanation?: string;
+    }> = [];
+    
+    const questionPattern = /(?:Question\s+\d+:|(?:\*\*Question\s+\d+:)|(?:\*\*)?Q\d+:?)\s*([^\n]+)([\s\S]*?)(?=(?:Question\s+\d+:|(?:\*\*Question\s+\d+:)|(?:\*\*)?Q\d+:?)|$)/gi;
+    
+    let match;
+    while ((match = questionPattern.exec(completionText)) !== null) {
+      try {
+        const questionText = match[1].replace(/\*\*/g, '').trim();
+        const optionsBlock = match[2].trim();
         
-        // Parse options
+        const optionsPattern = /([A-D][).:])\s*(.*?)(?=(?:[A-D][).:])|Explanation:|$)/gis;
         const options: string[] = [];
-        const optionPattern = /([a-d])\)\s*([^\n]+)/g;
+        let correctIndex = -1;
+        
         let optionMatch;
-        while ((optionMatch = optionPattern.exec(optionsText)) !== null) {
-          options.push(optionMatch[2].trim());
+        let optionIndex = 0;
+        
+        while ((optionMatch = optionsPattern.exec(optionsBlock)) !== null) {
+          let optionText = optionMatch[2].replace(/\*\*/g, '').trim();
+          
+          const isCorrect = /\[CORRECT\]/.test(optionText);
+          if (isCorrect) {
+            correctIndex = optionIndex;
+            optionText = optionText.replace(/\[CORRECT\]/i, '').trim();
+          }
+          
+          options.push(optionText);
+          optionIndex++;
         }
         
-        // Convert correct answer letter to index
-        let correctAnswerIndex = -1;
-        if (correctAnswerLetter === 'a') correctAnswerIndex = 0;
-        else if (correctAnswerLetter === 'b') correctAnswerIndex = 1;
-        else if (correctAnswerLetter === 'c') correctAnswerIndex = 2;
-        else if (correctAnswerLetter === 'd') correctAnswerIndex = 3;
+        if (correctIndex === -1) {
+          const explanationMatch = optionsBlock.match(/Explanation:.*?([A-D])\s*\)/i);
+          if (explanationMatch) {
+            const correctLetter = explanationMatch[1].toUpperCase();
+            correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
+          } else {
+            correctIndex = 0;
+          }
+        }
         
-        if (questionText && options.length > 0) {
+        if (questionText && options.length === 4 && correctIndex >= 0) {
           parsedQuestions.push({
             question: questionText,
-            options,
-            correctAnswer: correctAnswerIndex
+            options: options,
+            correctAnswer: correctIndex
           });
         }
+      } catch (err) {
+        console.error('Error parsing question:', err);
       }
-      
-      return parsedQuestions;
-    } catch (err) {
-      console.error('Error parsing MCQ questions:', err);
-      return [];
     }
+    
+    if (parsedQuestions.length === 0) {
+      const fallbackQuestionPattern = /(\d+\.\s*|(?:\*\*)?(?:MCQ|Q(?:uestion)?)\s*\d+[:.]\s*)([^\n]+)([\s\S]*?)(?=(?:\d+\.\s*|(?:\*\*)?(?:MCQ|Q(?:uestion)?)\s*\d+[:.]\s*)|$)/gi;
+      
+      while ((match = fallbackQuestionPattern.exec(completionText)) !== null) {
+        try {
+          const questionText = match[2].replace(/\*\*/g, '').trim();
+          const optionsBlock = match[3].trim();
+          
+          const options: string[] = [];
+          let correctIndex = 0;
+          
+          const lines = optionsBlock.split('\n');
+
+          const correct = lines[4].replace("CORRECT: ", "");
+
+          const explanation = lines[5];
+
+          for (let i = 0; i < 4; i++) {
+            options.push(lines[i]);
+            if (lines[i] === correct) {
+              correctIndex = i;
+            }
+          }
+          
+          if (questionText && options.length >= 2) {
+            while (options.length < 4) {
+              options.push(`Option ${options.length + 1}`);
+            }
+            
+            const finalOptions = options.slice(0, 4);
+            
+            correctIndex = Math.min(correctIndex, 3);
+            
+            parsedQuestions.push({
+              question: questionText,
+              options: finalOptions,
+              correctAnswer: correctIndex,
+              explanation: explanation
+            });
+          }
+        } catch (err) {
+          console.error('Error in fallback parsing:', err);
+        }
+      }
+    }
+    
+    return parsedQuestions;
+  };
+  
+  const processCompletionText = (text: string) => {
+    const cleanedText = cleanText(text);
+    return parseMCQQuestions(cleanedText);
   };
 
-  // Handle AI completion for quiz generation
   const {
     completion,
     complete,
@@ -93,6 +157,8 @@ const TestMyKnowledge = () => {
     onFinish: (prompt, completion) => {
       try {
         const parsedQuestions = processCompletionText(completion);
+
+      console.log('Quiz generation completed:', completion, parsedQuestions);
         if (parsedQuestions.length > 0) {
           setQuestions(parsedQuestions);
           setAnswers(Array(parsedQuestions.length).fill(null));
@@ -111,17 +177,14 @@ const TestMyKnowledge = () => {
     }
   });
 
-  // Process streaming completion as it arrives with stability improvements
   useEffect(() => {
     if (completion) {
       try {
         const newParsedQuestions = processCompletionText(completion);
         setParsedQuestions(newParsedQuestions);
         
-        // Only update the stableQuestionCount if the new count is higher
         if (newParsedQuestions.length > stableQuestionCount) {
           setStableQuestionCount(newParsedQuestions.length);
-          // Only grow the answers array, never shrink it
           if (answers.length < newParsedQuestions.length) {
             setAnswers(prev => [
               ...prev, 
@@ -130,13 +193,9 @@ const TestMyKnowledge = () => {
           }
         }
         
-        // Only update questions when parsing is complete or has stabilized
         if (newParsedQuestions.length > 0) {
-          // Create a stable array with the current parsed questions
           const stableQuestions = [...newParsedQuestions];
           
-          // Fill any missing slots with placeholder questions to prevent UI jumps
-          // This ensures we never reduce the question count during streaming
           while (stableQuestions.length < stableQuestionCount) {
             const lastQuestion = stableQuestions[stableQuestions.length - 1] || {
               question: "Loading question...",
@@ -155,7 +214,6 @@ const TestMyKnowledge = () => {
     }
   }, [completion, stableQuestionCount, answers.length]);
 
-  // Generate questions on component mount
   useEffect(() => {
     if (!hasGenerated) {
       setHasGenerated(true);
@@ -164,17 +222,14 @@ const TestMyKnowledge = () => {
     }
   }, [hasGenerated, complete]);
 
-  // Check if all questions are answered
   useEffect(() => {
     if (answers.length > 0 && questions.length > 0) {
-      // Only check answers for the actual parsed questions, not placeholders
       const actualQuestionCount = parsedQuestions.length;
       const allAnswered = answers.slice(0, actualQuestionCount).every(answer => answer !== null);
       setAllQuestionsAnswered(allAnswered);
     }
   }, [answers, questions.length, parsedQuestions.length]);
 
-  // Handle option selection for MCQ questions with immediate feedback
   const handleOptionSelect = (optionIndex: number) => {
     if (quizComplete) return;
     
@@ -183,12 +238,10 @@ const TestMyKnowledge = () => {
     setAnswers(newAnswers);
   };
 
-  // Navigation
   const goToNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else if (currentQuestionIndex === questions.length - 1 && allQuestionsAnswered) {
-      // Submit quiz
       calculateScore();
     }
   };
@@ -199,7 +252,6 @@ const TestMyKnowledge = () => {
     }
   };
 
-  // Calculate score for MCQ quiz
   const calculateScore = () => {
     if (questions.length === 0) return;
     
@@ -217,7 +269,6 @@ const TestMyKnowledge = () => {
     setCurrentQuestionIndex(0);
   };
 
-  // Restart quiz
   const restartQuiz = () => {
     setCurrentQuestionIndex(0);
     setAnswers(Array(questions.length).fill(null));
@@ -226,7 +277,6 @@ const TestMyKnowledge = () => {
     setReviewMode(false);
   };
 
-  // Show loading state with a stable message
   if (isLoading || questions.length === 0) {
     return (
       <div className="p-6 bg-white rounded-lg shadow flex flex-col items-center justify-center min-h-60">
@@ -236,7 +286,6 @@ const TestMyKnowledge = () => {
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <div className="p-6 bg-white rounded-lg shadow">
@@ -257,7 +306,6 @@ const TestMyKnowledge = () => {
     );
   }
 
-  // Show quiz summary after completion
   if (quizComplete && score !== null && !reviewMode) {
     return (
       <div className="p-6 bg-white rounded-lg shadow">
@@ -292,11 +340,9 @@ const TestMyKnowledge = () => {
     );
   }
 
-  // Show current question (either in quiz mode or review mode)
   const currentQuestion = questions[currentQuestionIndex];
   const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
   
-  // Check if this question is fully loaded (not a placeholder)
   const isPlaceholder = currentQuestionIndex >= parsedQuestions.length;
 
   return (
@@ -329,7 +375,6 @@ const TestMyKnowledge = () => {
 
         <div className="space-y-4">
           {currentQuestion?.options.map((option, index) => {
-            // Determine if this answer is correct or incorrect
             const isCorrect = currentQuestion?.correctAnswer === index;
             const isSelected = answers[currentQuestionIndex] === index;
             const showResultInline = quizComplete || isSelected;

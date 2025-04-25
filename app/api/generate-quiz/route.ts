@@ -8,19 +8,32 @@ export async function POST(req: Request) {
 
     const systemPrompt = `
         You are a helpful assistant. Based on the lesson content below, generate a 
-        MCQs quiz having 11-15 multiple choice questions (MCQs).
+        structured quiz with exactly 15, not lesser or more than 15 multiple choice questions (MCQs).
 
         Lesson Content:
         """${content}"""
 
-        Guidelines:
-        - Only use the information from the lesson content.
-        - For MCQs, each question should have 4 options and clearly mark the correct one.
-        - For subjective questions, ensure each one encourages critical thinking based on the lesson.
-        - Also give solutions for the questions.
-        - Format the questions and answers clearly.
+        Instructions:
+        1. Format each question exactly like this example:
+           Question 1: What is a compiler?
+           A) A program that translates code into machine code
+           B) A text editor for writing code
+           C) An integrated development environment
+           D) A debugging tool
+           CORRECT: A) A program that translates code into machine code
+           Explanation: A compiler translates high-level code into machine code that computers can execute directly.
+
+        2. Always use the format above with:
+           - Question number followed by the question text
+           - Four options labeled A), B), C), D)
+           - Mark the correct answer with [CORRECT] at the end
+           - Include a brief explanation after the options
+           - Use line breaks between questions
+           
+        3. Only create questions based on information explicitly mentioned in the lesson.
     `;
-    const userPrompt = `Create a well structured MCQs based quiz/assignment from this lesson ${content}".`;
+    
+    const userPrompt = `Generate a structured quiz with multiple choice questions based on this lesson content.`;
 
     const result = streamText({
         model,

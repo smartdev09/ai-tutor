@@ -7,7 +7,7 @@ const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
 export async function POST(req: Request) {
   try {
     // Get request body
-    let {  moduleTitle, lessonTitle } = await req.json();
+    let {  moduleTitle, lessonTitle, userPrompt = null } = await req.json();
     lessonTitle = 'what is machine learnig'
     moduleTitle = 'Intro to machine learning'
 
@@ -25,6 +25,8 @@ export async function POST(req: Request) {
     
     You need to create detailed lesson content for the lesson "${lessonTitle}" 
     which is part of the module "${moduleTitle}".
+    
+    ${userPrompt ? `Most importantly, ${userPrompt}.` : "" }
     
     The content should be comprehensive, educational, and well-structured in Markdown format.
     Include:

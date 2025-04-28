@@ -17,6 +17,8 @@ interface ModuleItemProps {
   onExpandChange?: (isExpanded: boolean) => void
   onLessonSelect?: (moduleIndex: number, lessonIndex: number) => void
   selectedLessonIndex?: number
+  waitingForLesson?: boolean
+  disabled?: boolean
 }
 
 export function ModuleItem({
@@ -29,18 +31,18 @@ export function ModuleItem({
   onExpandChange,
   onLessonSelect,
   selectedLessonIndex,
+  waitingForLesson = false,
+  disabled = false,
 }: ModuleItemProps) {
   const [isOpen, setIsOpen] = useState(false)
   const prevIsSelected = useRef(isSelected)
   
-  // Sync with parent's expanded state when controlled externally
   useEffect(() => {
     if (isExpanded !== undefined) {
       setIsOpen(isExpanded);
     }
   }, [isExpanded]);
   
-  // Automatically expand module when newly selected
   useEffect(() => {
     if (isSelected && !prevIsSelected.current) {
       setIsOpen(true);
@@ -51,7 +53,6 @@ export function ModuleItem({
     prevIsSelected.current = isSelected;
   }, [isSelected, onExpandChange]);
 
-  // Notify parent of expansion state changes
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (onExpandChange) {
@@ -70,6 +71,7 @@ export function ModuleItem({
       className={cn(
         "mb-2 overflow-hidden transition-all duration-300",
         isSelected && "bg-primary/5 rounded-lg",
+        disabled && !isSelected && "opacity-50 pointer-events-none"
       )}
     >
       <Collapsible open={isOpen} onOpenChange={handleOpenChange} className="w-full">
@@ -79,8 +81,10 @@ export function ModuleItem({
             isSelected 
               ? "bg-primary/10 text-primary" 
               : "hover:bg-primary/5 hover:text-primary",
+            disabled && !isSelected && "cursor-not-allowed hover:bg-transparent"
           )}
-          onClick={handleModuleClick}
+          onClick={disabled && !isSelected ? undefined : handleModuleClick}
+          disabled={disabled && !isSelected}
         >
           <div className="flex items-center gap-3">
             <div
@@ -126,6 +130,7 @@ export function ModuleItem({
                 lessonNumber={index + 1}
                 isActive={isSelected && selectedLessonIndex === index}
                 isStreaming={isStreaming && index === module.lessons.length - 1}
+                isWaiting={isSelected && selectedLessonIndex === index && waitingForLesson}
                 onClick={() => onLessonSelect && onLessonSelect(moduleNumber - 1, index)}
               />
             ))}

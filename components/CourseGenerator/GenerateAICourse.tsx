@@ -91,6 +91,8 @@ export function GenerateAICourse() {
       for (const line of lines) {
         if (line.startsWith('# ')) {
           currentCourse.title = line.substring(2).trim();
+          currentCourse.slug = currentCourse.title.toLowerCase().replace(/\s+/g, '-');
+          currentCourse.difficulty = difficulty;
         } else if (line.startsWith('## ')) {
           if (currentModule) {
             currentCourse.modules.push(currentModule);

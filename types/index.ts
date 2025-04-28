@@ -57,3 +57,27 @@ export type Title = {
 };
 
 export type ResultItem = Title | Topic | Label;
+
+// DB Types
+
+export type DBCourse = {
+  id?: string;
+  title: string;
+  difficulty: string;
+  slug?: string;
+  modules: DBModule[];
+};
+
+export type DBModule = {
+  id?: string;
+  title: string;
+  position: number;
+  lessons: DBLesson[];
+};
+
+export type DBLesson = {
+  id?: string;
+  title: string;
+  content?: string;
+  position: number;
+};

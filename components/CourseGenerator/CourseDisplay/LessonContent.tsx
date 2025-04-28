@@ -6,10 +6,11 @@ import type { Module } from "@/types"
 import { useCompletion } from "@ai-sdk/react"
 import { useState, useEffect, useRef } from "react"
 import { parseContentFromMarkdown } from "@/lib/utils"
-import { BookOpen, Loader, Edit, Save, X } from "lucide-react"
+import { BookOpen, Loader, Edit, Save, X, FlaskConical } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import { addProcessedLesson,
+import {
+  addProcessedLesson,
   setEditingLessonContent,
   setIsEditing,
   updateLessonContent,
@@ -23,6 +24,8 @@ import { courseService } from "@/lib/services/course"
 import { toast } from "@/hooks/use-toast"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import TestMyKnowledge from "./TestMyKnowledge"
+import ContextModalButton from "./EditPrompt"
 
 interface LessonContentProps {
   module: Module
@@ -54,6 +57,7 @@ export function LessonContent({
   const [generatingLessonIndex, setGeneratingLessonIndex] = useState<number>(0)
   const [userSelectedLesson, setUserSelectedLesson] = useState<boolean>(false)
   const [isSaving, setIsSaving] = useState<boolean>(false)
+  const [testMyKnowledgeToggle, setTestMyKnowledgeToggle] = useState<boolean>(false)
 
   const contentRef = useRef<HTMLDivElement>(null)
   const moduleRef = useRef<string>("")
@@ -339,6 +343,14 @@ export function LessonContent({
     }
   }
 
+  useEffect(() => {
+    setTestMyKnowledgeToggle(false)
+  }, [currentLessonIndex])
+
+  const handleTestMyKnowledgeToggle = () => {
+    setTestMyKnowledgeToggle(!testMyKnowledgeToggle)
+  }
+
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     dispatch(setEditingLessonContent(e.target.value))
   }
@@ -392,11 +404,35 @@ export function LessonContent({
     }
   }
 
+  // Edit prompt related implementation
+
+  const [userPrompt, setUserPrompt] = useState<string>("")
+  const handleOnSubmit = (input: string) => {
+    setUserPrompt(input);
+  };
+
+  useEffect(() => {
+    if (userPrompt && module?.lessons?.[currentLessonIndex]) {
+      setIsProcessing(true)
+      setGeneratingLessonIndex(currentLessonIndex)
+      setTestMyKnowledgeToggle(false)
+  
+      complete("", {
+        body: {
+          moduleTitle: module?.title,
+          lessonTitle: module?.lessons[currentLessonIndex] || "",
+          userPrompt: userPrompt,
+        },
+      })
+    }
+  }, [userPrompt])
+
   return (
     <div className="space-y-4 w-full mx-auto">
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 rounded-xl shadow-lg">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
+            <ContextModalButton onSubmit={handleOnSubmit}/>
             <BookOpen className="h-6 w-6 text-white" />
             {editingModuleId === currentModuleId ? (
               <div className="flex items-center gap-2">
@@ -577,6 +613,21 @@ export function LessonContent({
         ) : (
           <div className="prose prose-lg max-w-none relative min-h-[200px] lesson-content">
             <div className="content-container" dangerouslySetInnerHTML={{ __html: parsedContent }} />
+
+            {!isCurrentLessonBeingGenerated && (
+              testMyKnowledgeToggle ? (
+                <div className="mt-12">
+                  <TestMyKnowledge />
+                </div>
+              ) : (
+                <Button
+                  variant="default"
+                  onClick={handleTestMyKnowledgeToggle}
+                >
+                  <FlaskConical />Test My Knowledge
+                </Button>
+              )
+            )}
 
             {isCurrentLessonBeingGenerated && (
               <span className="inline-block h-5 w-2 bg-purple-500 animate-pulse ml-0.5 align-bottom"></span>

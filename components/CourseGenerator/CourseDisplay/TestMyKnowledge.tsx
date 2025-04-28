@@ -12,6 +12,7 @@ const TestMyKnowledge = () => {
     question: string;
     options: string[];
     correctAnswer: number;
+    explanation?: string;
   }>>([]);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -158,7 +159,6 @@ const TestMyKnowledge = () => {
       try {
         const parsedQuestions = processCompletionText(completion);
 
-      console.log('Quiz generation completed:', completion, parsedQuestions);
         if (parsedQuestions.length > 0) {
           setQuestions(parsedQuestions);
           setAnswers(Array(parsedQuestions.length).fill(null));
@@ -432,8 +432,12 @@ const TestMyKnowledge = () => {
             'Please answer all questions to submit'
           }
           {quizComplete && (
-            answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? 
-            'Correct answer!' : 'Incorrect answer'
+            <>
+              <p className={answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? 'text-green-500' : 'text-red-500'}>
+                {answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? 'Correct answer!' : 'Incorrect answer'}
+              </p>
+              <p className='text-gray-500'>{questions[currentQuestionIndex].explanation}</p>
+            </>
           )}
         </div>
         <div className="flex space-x-2">

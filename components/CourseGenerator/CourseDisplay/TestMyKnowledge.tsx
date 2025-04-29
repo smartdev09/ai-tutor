@@ -521,7 +521,7 @@ const TestMyKnowledge = () => {
           <div className="relative bg-gray-100 text-gray-800 rounded-2xl shadow-md my-2 w-1/3 flex flex-col max-h-[350px] overflow-scroll">
             <div className="bg-purple-500 text-white px-4 py-3 flex items-center gap-2">
               <Bot size={20} />
-              <span className="font-medium">Chat Assistant</span>
+              <span className="font-medium">Quiz Assistant</span>
               <div className="ml-auto flex items-center">
                 <span className="text-xs animate-[spin_8s_linear_infinite] px-2 py-1 rounded-full">
                   <Loader />
@@ -532,15 +532,15 @@ const TestMyKnowledge = () => {
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
               {lastPrompt && (
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center">
-                      <User size={14} className="text-purple-600" />
+                  <div className="flex items-center gap-2 mb-2 bg-white rounded-xl p-1 w-fit">
+                    <div className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center">
+                      <User size={18} className="text-purple-600" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Your Query</span>
+                    <span className="text-sm font-medium text-purple-700">Your Query</span>
                   </div>
 
                   <div
-                    className={`ml-8 px-4 py-3 rounded-lg bg-purple-500 text-white shadow-md`}
+                    className={`ml-8 px-4 py-3 rounded-lg bg-purple-400 text-white shadow-md`}
                   >
                     {lastPrompt}
                   </div>
@@ -548,11 +548,11 @@ const TestMyKnowledge = () => {
               )}
 
               <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center">
-                    <Bot size={14} className="text-purple-600" />
+                <div className="flex items-center gap-2 mb-2 bg-white rounded-xl p-1 w-fit">
+                  <div className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center">
+                    <Bot size={18} className="text-purple-600" />
                   </div>
-                  <span className="text-sm font-medium text-gray-700">Response</span>
+                  <span className="text-sm font-medium text-purple-700">Response</span>
                 </div>
 
                 {isTyping ? (

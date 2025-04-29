@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/store/hooks';
 import React, { useEffect, useState } from 'react';
 import { useCompletion } from "@ai-sdk/react";
+import { BotMessageSquare, X, Send, Bot, Loader, User } from 'lucide-react';
 
 const TestMyKnowledge = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentLessonContent = useAppSelector((state) => state.course.currentLessonContent);
+  const currentLessonTitle = useAppSelector((state) => state.course.currentLessonTitle);
   const [questions, setQuestions] = useState<Array<{
     question: string;
     options: string[];
@@ -24,16 +26,22 @@ const TestMyKnowledge = () => {
   const [reviewMode, setReviewMode] = useState(false);
   const [stableQuestionCount, setStableQuestionCount] = useState(0);
   const [parsedQuestions, setParsedQuestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    setShowSuggestions(false);
+  }
+    , [currentQuestionIndex]);
 
   const cleanText = (text: string): string => {
     let cleaned = text.replace(/\bf:{"messageId".*?}/g, '');
     cleaned = cleaned.replace(/\b\d+:"([^"]*)"/g, '$1');
     cleaned = cleaned.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n');
     cleaned = cleaned.replace(/"delta":{"text":"(.*?)"},"usage":/g, '$1');
-    
+
     return cleaned;
   };
-  
+
   const parseMCQQuestions = (completionText: string) => {
     const parsedQuestions: Array<{
       question: string;
@@ -41,35 +49,35 @@ const TestMyKnowledge = () => {
       correctAnswer: number;
       explanation?: string;
     }> = [];
-    
+
     const questionPattern = /(?:Question\s+\d+:|(?:\*\*Question\s+\d+:)|(?:\*\*)?Q\d+:?)\s*([^\n]+)([\s\S]*?)(?=(?:Question\s+\d+:|(?:\*\*Question\s+\d+:)|(?:\*\*)?Q\d+:?)|$)/gi;
-    
+
     let match;
     while ((match = questionPattern.exec(completionText)) !== null) {
       try {
         const questionText = match[1].replace(/\*\*/g, '').trim();
         const optionsBlock = match[2].trim();
-        
+
         const optionsPattern = /([A-D][).:])\s*(.*?)(?=(?:[A-D][).:])|Explanation:|$)/gis;
         const options: string[] = [];
         let correctIndex = -1;
-        
+
         let optionMatch;
         let optionIndex = 0;
-        
+
         while ((optionMatch = optionsPattern.exec(optionsBlock)) !== null) {
           let optionText = optionMatch[2].replace(/\*\*/g, '').trim();
-          
+
           const isCorrect = /\[CORRECT\]/.test(optionText);
           if (isCorrect) {
             correctIndex = optionIndex;
             optionText = optionText.replace(/\[CORRECT\]/i, '').trim();
           }
-          
+
           options.push(optionText);
           optionIndex++;
         }
-        
+
         if (correctIndex === -1) {
           const explanationMatch = optionsBlock.match(/Explanation:.*?([A-D])\s*\)/i);
           if (explanationMatch) {
@@ -79,7 +87,7 @@ const TestMyKnowledge = () => {
             correctIndex = 0;
           }
         }
-        
+
         if (questionText && options.length === 4 && correctIndex >= 0) {
           parsedQuestions.push({
             question: questionText,
@@ -91,18 +99,18 @@ const TestMyKnowledge = () => {
         console.error('Error parsing question:', err);
       }
     }
-    
+
     if (parsedQuestions.length === 0) {
       const fallbackQuestionPattern = /(\d+\.\s*|(?:\*\*)?(?:MCQ|Q(?:uestion)?)\s*\d+[:.]\s*)([^\n]+)([\s\S]*?)(?=(?:\d+\.\s*|(?:\*\*)?(?:MCQ|Q(?:uestion)?)\s*\d+[:.]\s*)|$)/gi;
-      
+
       while ((match = fallbackQuestionPattern.exec(completionText)) !== null) {
         try {
           const questionText = match[2].replace(/\*\*/g, '').trim();
           const optionsBlock = match[3].trim();
-          
+
           const options: string[] = [];
           let correctIndex = 0;
-          
+
           const lines = optionsBlock.split('\n');
 
           const correct = lines[4].replace("CORRECT: ", "");
@@ -115,16 +123,16 @@ const TestMyKnowledge = () => {
               correctIndex = i;
             }
           }
-          
+
           if (questionText && options.length >= 2) {
             while (options.length < 4) {
               options.push(`Option ${options.length + 1}`);
             }
-            
+
             const finalOptions = options.slice(0, 4);
-            
+
             correctIndex = Math.min(correctIndex, 3);
-            
+
             parsedQuestions.push({
               question: questionText,
               options: finalOptions,
@@ -137,10 +145,10 @@ const TestMyKnowledge = () => {
         }
       }
     }
-    
+
     return parsedQuestions;
   };
-  
+
   const processCompletionText = (text: string) => {
     const cleanedText = cleanText(text);
     return parseMCQQuestions(cleanedText);
@@ -166,7 +174,7 @@ const TestMyKnowledge = () => {
         } else {
           setError('Failed to parse quiz questions');
         }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         setError('Failed to generate quiz');
       }
@@ -182,20 +190,20 @@ const TestMyKnowledge = () => {
       try {
         const newParsedQuestions = processCompletionText(completion);
         setParsedQuestions(newParsedQuestions);
-        
+
         if (newParsedQuestions.length > stableQuestionCount) {
           setStableQuestionCount(newParsedQuestions.length);
           if (answers.length < newParsedQuestions.length) {
             setAnswers(prev => [
-              ...prev, 
+              ...prev,
               ...Array(newParsedQuestions.length - prev.length).fill(null)
             ]);
           }
         }
-        
+
         if (newParsedQuestions.length > 0) {
           const stableQuestions = [...newParsedQuestions];
-          
+
           while (stableQuestions.length < stableQuestionCount) {
             const lastQuestion = stableQuestions[stableQuestions.length - 1] || {
               question: "Loading question...",
@@ -204,7 +212,7 @@ const TestMyKnowledge = () => {
             };
             stableQuestions.push({ ...lastQuestion });
           }
-          
+
           setQuestions(stableQuestions);
           setIsLoading(false);
         }
@@ -232,7 +240,8 @@ const TestMyKnowledge = () => {
 
   const handleOptionSelect = (optionIndex: number) => {
     if (quizComplete) return;
-    
+    // setShowSuggestions(true)
+
     const newAnswers = [...answers];
     newAnswers[currentQuestionIndex] = optionIndex;
     setAnswers(newAnswers);
@@ -254,14 +263,14 @@ const TestMyKnowledge = () => {
 
   const calculateScore = () => {
     if (questions.length === 0) return;
-    
+
     let correctCount = 0;
     answers.forEach((answer, index) => {
       if (typeof answer === 'number' && index < questions.length && answer === questions[index].correctAnswer) {
         correctCount++;
       }
     });
-    
+
     const percentageScore = (correctCount / parsedQuestions.length) * 100;
     setScore(percentageScore);
     setQuizComplete(true);
@@ -275,6 +284,80 @@ const TestMyKnowledge = () => {
     setQuizComplete(false);
     setScore(null);
     setReviewMode(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter' && !e.shiftKey && userPrompt.trim()) {
+      e.preventDefault();
+      handleAssistanceQuerry();
+    }
+  };
+
+  // Assistant states
+  const [assistantResponse, setAssistantResponse] = useState<{ chat_id: string, query_status: boolean, response: string } | null>(null);
+  const [userPrompt, setUserPrompt] = useState<string>('');
+  const [lastPrompt, setLastPrompt] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+
+  const handleAssistance = async () => {
+    try {
+      setUserPrompt("");
+      setAssistantResponse(null);
+      setShowSuggestions(true);
+      setIsTyping(true);
+
+      const assignment = questions[currentQuestionIndex].question;
+      setLastPrompt(assignment);
+      const query = `Can you explain, ${currentQuestion.question} in the context of ${currentLessonTitle}, tell in one line only, to the point and short.`;
+
+      const response = await fetch('https://lesson-assistant.onrender.com/start-conversation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ assignment, query })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAssistantResponse(data);
+      setIsTyping(false);
+
+    } catch (error) {
+      console.error('Error fetching assistance:', error);
+    }
+  };
+
+  const handleAssistanceQuerry = async () => {
+    try {
+      const chat_id = assistantResponse?.chat_id;
+      const query = userPrompt + ", tell in one line only, to the point and short.";
+      setLastPrompt(userPrompt);
+      setUserPrompt('');
+      setIsTyping(true);
+
+      const response = await fetch('https://lesson-assistant.onrender.com/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ chat_id, query })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAssistantResponse(data);
+      setIsTyping(false);
+
+    } catch (error) {
+      console.error('Error fetching assistance:', error);
+    }
   };
 
   if (isLoading || questions.length === 0) {
@@ -292,7 +375,7 @@ const TestMyKnowledge = () => {
         <div className="text-red-500 text-center">
           <p className="font-medium">Failed to generate quiz</p>
           <p className="mt-2">{error}</p>
-          <Button 
+          <Button
             className="mt-4 bg-purple-500 text-white px-4 py-2 rounded-lg"
             onClick={() => {
               setError(null);
@@ -310,18 +393,18 @@ const TestMyKnowledge = () => {
     return (
       <div className="p-6 bg-white rounded-lg shadow">
         <h2 className="text-2xl font-bold text-center mb-6">Quiz Results</h2>
-        
+
         <div className="text-center mb-8">
           <div className="text-6xl font-bold text-purple-600 mb-2">{Math.round(score)}%</div>
           <p className="text-gray-700">
-            You got {answers.filter((answer, index) => 
+            You got {answers.filter((answer, index) =>
               typeof answer === 'number' && index < parsedQuestions.length && answer === parsedQuestions[index].correctAnswer
             ).length} out of {parsedQuestions.length} questions correct
           </p>
         </div>
-        
+
         <div className="flex justify-center">
-          <Button 
+          <Button
             className="px-6 py-2 bg-purple-500 text-white rounded-lg mr-4"
             onClick={() => {
               setReviewMode(true);
@@ -330,7 +413,7 @@ const TestMyKnowledge = () => {
           >
             Review Questions
           </Button>
-          <Button 
+          <Button
             onClick={restartQuiz}
           >
             Retake Quiz
@@ -342,7 +425,7 @@ const TestMyKnowledge = () => {
 
   const currentQuestion = questions[currentQuestionIndex];
   const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
-  
+
   const isPlaceholder = currentQuestionIndex >= parsedQuestions.length;
 
   return (
@@ -356,79 +439,161 @@ const TestMyKnowledge = () => {
             Score: {Math.round(score || 0)}%
           </div>
         )}
+        {!quizComplete && (
+          <div className="flex items-center gap-3">
+            <span
+              onClick={showSuggestions ? () => setShowSuggestions(false) : handleAssistance}
+              className="flex items-center justify-center p-3 overflow-hidden font-semibold text-white transition-all duration-300 bg-primary rounded-full shadow-lg hover:bg-purple-700 hover:shadow-xl active:scale-95"
+            >
+              {showSuggestions ? <X /> : <BotMessageSquare />}
+            </span>
+          </div>
+        )}
       </div>
-      
+
       <div className="pb-4 border-b border-gray-200">
         <div className="flex items-center mb-2">
           <span className="text-gray-700 font-medium">Question {currentQuestionIndex + 1} of {parsedQuestions.length}</span>
           <div className="ml-2 flex-grow h-2 bg-gray-200 rounded-full">
-            <div 
-              className="h-full bg-purple-500 rounded-full" 
+            <div
+              className="h-full bg-purple-500 rounded-full"
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
         </div>
       </div>
 
-      <div className="py-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-8">{currentQuestion?.question}</h2>
+      <div className='flex flex-row justify-between gap-8'>
+        <div className="py-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-8">{currentQuestion?.question}</h2>
 
-        <div className="space-y-4">
-          {currentQuestion?.options.map((option, index) => {
-            const isCorrect = currentQuestion?.correctAnswer === index;
-            const isSelected = answers[currentQuestionIndex] === index;
-            const showResultInline = quizComplete || isSelected;
-            
-            return (
-              <div 
-                key={index}
-                className={`flex items-center p-2 rounded transition-all duration-200 ${
-                  showResultInline ? (
-                    isCorrect ? 'bg-green-50' : 
-                    isSelected ? 'bg-red-50' : ''
+          <div className="space-y-4">
+            {currentQuestion?.options.map((option, index) => {
+              const isCorrect = currentQuestion?.correctAnswer === index;
+              const isSelected = answers[currentQuestionIndex] === index;
+              const showResultInline = quizComplete || isSelected;
+
+              return (
+                <div
+                  key={index}
+                  className={`flex items-center p-2 rounded transition-all duration-200 ${showResultInline ? (
+                    isCorrect ? 'bg-green-50' :
+                      isSelected ? 'bg-red-50' : ''
                   ) : (isSelected ? 'bg-purple-50' : '')
-                } ${isPlaceholder ? 'opacity-50' : ''}`}
-                role="button"
-                onClick={() => !isPlaceholder && !quizComplete && handleOptionSelect(index)}
-              >
-                <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
-                  isSelected 
+                    } ${isPlaceholder ? 'opacity-50' : ''}`}
+                  role="button"
+                  onClick={() => !isPlaceholder && !quizComplete && handleOptionSelect(index)}
+                >
+                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${isSelected
                     ? (showResultInline && !isCorrect ? 'border-red-500' : 'border-purple-500')
                     : 'border-gray-400'
-                }`}>
-                  {showResultInline ? (
-                    isCorrect ? (
-                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                    ) : isSelected ? (
-                      <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                      </svg>
-                    ) : null
-                  ) : (
-                    isSelected && <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                    }`}>
+                    {showResultInline ? (
+                      isCorrect ? (
+                        <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      ) : isSelected ? (
+                        <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      ) : null
+                    ) : (
+                      isSelected && <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                    )}
+                  </div>
+                  <span className={`text-gray-800 ${(showResultInline && isCorrect) ? 'font-medium' : ''
+                    }`}>{option}</span>
+
+                  {/* Immediate feedback message */}
+                  {isSelected && showResultInline && !quizComplete && (
+                    <span className={`ml-auto text-end text-sm font-medium ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
+                      {isCorrect ? 'Correct!' : 'Incorrect'}
+                    </span>
                   )}
                 </div>
-                <span className={`text-gray-800 ${
-                  (showResultInline && isCorrect) ? 'font-medium' : ''
-                }`}>{option}</span>
-                
-                {/* Immediate feedback message */}
-                {isSelected && showResultInline && !quizComplete && (
-                  <span className={`ml-auto text-sm font-medium ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-                    {isCorrect ? 'Correct!' : 'Incorrect'}
-                  </span>
+              );
+            })}
+          </div>
+        </div>
+
+        {showSuggestions && (
+          <div className="relative bg-gray-100 text-gray-800 rounded-2xl shadow-md my-2 w-1/3 flex flex-col max-h-[350px] overflow-scroll">
+            <div className="bg-purple-500 text-white px-4 py-3 flex items-center gap-2">
+              <Bot size={20} />
+              <span className="font-medium">Chat Assistant</span>
+              <div className="ml-auto flex items-center">
+                <span className="text-xs animate-[spin_8s_linear_infinite] px-2 py-1 rounded-full">
+                  <Loader />
+                </span>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+              {lastPrompt && (
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center">
+                      <User size={14} className="text-purple-600" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">Your Query</span>
+                  </div>
+
+                  <div
+                    className={`ml-8 px-4 py-3 rounded-lg bg-purple-500 text-white shadow-md`}
+                  >
+                    {lastPrompt}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center">
+                    <Bot size={14} className="text-purple-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Response</span>
+                </div>
+
+                {isTyping ? (
+                  <div className="ml-8 px-4 py-3 rounded-lg bg-white shadow-md border-l-4 border-purple-500">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`ml-8 px-4 py-3 rounded-lg bg-white shadow-md border-l-4 border-purple-500`}
+                  >
+                    {assistantResponse?.response}
+                  </div>
                 )}
               </div>
-            );
-          })}
-        </div>
+            </div>
+
+            <div className="sticky bottom-0 px-4 py-2 bg-gray-100 border-t border-gray-300 flex items-center gap-2">
+              <input
+                type="text"
+                value={userPrompt}
+                onKeyDown={handleKeyDown}
+                onChange={(e) => setUserPrompt(e.target.value)}
+                placeholder="Type your answer..."
+                className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <Button onClick={handleAssistanceQuerry} disabled={!userPrompt.trim()} className="p-2.5 bg-primary rounded-full text-white hover:bg-purple-700">
+                <Send />
+              </Button>
+            </div>
+          </div>
+        )}
+
       </div>
 
       <div className="pt-4 border-t border-gray-200 flex justify-between">
         <div className="text-purple-600 font-medium">
-          {!quizComplete && !allQuestionsAnswered && currentQuestionIndex === parsedQuestions.length - 1 && 
+          {!quizComplete && !allQuestionsAnswered && currentQuestionIndex === parsedQuestions.length - 1 &&
             'Please answer all questions to submit'
           }
           {quizComplete && (
@@ -441,7 +606,7 @@ const TestMyKnowledge = () => {
           )}
         </div>
         <div className="flex space-x-2">
-          <Button 
+          <Button
             className={`px-4 py-2 flex items-center border border-gray-300 rounded-lg ${currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={goToPreviousQuestion}
             disabled={currentQuestionIndex === 0}
@@ -451,10 +616,10 @@ const TestMyKnowledge = () => {
             </svg>
             Previous
           </Button>
-          
+
           {quizComplete ? (
             currentQuestionIndex === parsedQuestions.length - 1 ? (
-              <Button 
+              <Button
                 className="px-4 py-2 bg-purple-500 text-white rounded-lg"
                 onClick={() => {
                   setReviewMode(false);
@@ -463,7 +628,7 @@ const TestMyKnowledge = () => {
                 Show Summary
               </Button>
             ) : (
-              <Button 
+              <Button
                 className="px-4 py-2 bg-purple-500 text-white rounded-lg flex items-center"
                 onClick={goToNextQuestion}
               >
@@ -474,12 +639,11 @@ const TestMyKnowledge = () => {
               </Button>
             )
           ) : (
-            <Button 
-              className={`px-4 py-2 flex items-center ${
-                currentQuestionIndex === parsedQuestions.length - 1 
-                  ? (allQuestionsAnswered ? 'bg-green-500' : 'bg-gray-400') 
-                  : 'bg-purple-500'
-              } text-white rounded-lg`}
+            <Button
+              className={`px-4 py-2 flex items-center ${currentQuestionIndex === parsedQuestions.length - 1
+                ? (allQuestionsAnswered ? 'bg-green-500' : 'bg-gray-400')
+                : 'bg-purple-500'
+                } text-white rounded-lg`}
               onClick={goToNextQuestion}
               disabled={currentQuestionIndex === parsedQuestions.length - 1 && !allQuestionsAnswered}
             >
@@ -491,17 +655,17 @@ const TestMyKnowledge = () => {
           )}
         </div>
       </div>
-      
+
       <div className="mt-4 flex flex-wrap gap-2">
         {answers.slice(0, parsedQuestions.length).map((answer, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-              ${answer !== null 
-                ? (quizComplete && parsedQuestions[index] && answer === parsedQuestions[index].correctAnswer 
-                  ? 'bg-green-500 text-white' 
-                  : quizComplete 
-                    ? 'bg-red-500 text-white' 
+              ${answer !== null
+                ? (quizComplete && parsedQuestions[index] && answer === parsedQuestions[index].correctAnswer
+                  ? 'bg-green-500 text-white'
+                  : quizComplete
+                    ? 'bg-red-500 text-white'
                     : 'bg-purple-500 text-white')
                 : 'bg-gray-200 text-gray-600'}
               ${currentQuestionIndex === index ? 'ring-2 ring-purple-300' : ''}

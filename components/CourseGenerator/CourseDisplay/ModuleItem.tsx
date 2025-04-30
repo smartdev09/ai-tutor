@@ -6,6 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
+import { useTranslations } from "next-intl"
 
 interface ModuleItemProps {
   module: Module
@@ -36,13 +37,14 @@ export function ModuleItem({
 }: ModuleItemProps) {
   const [isOpen, setIsOpen] = useState(false)
   const prevIsSelected = useRef(isSelected)
-  
+  const t = useTranslations()
+
   useEffect(() => {
     if (isExpanded !== undefined) {
       setIsOpen(isExpanded);
     }
   }, [isExpanded]);
-  
+
   useEffect(() => {
     if (isSelected && !prevIsSelected.current) {
       setIsOpen(true);
@@ -78,8 +80,8 @@ export function ModuleItem({
         <CollapsibleTrigger
           className={cn(
             "flex items-center justify-between w-full p-3 rounded-lg transition-colors",
-            isSelected 
-              ? "bg-primary/10 text-primary" 
+            isSelected
+              ? "bg-primary/10 text-primary"
               : "hover:bg-primary/5 hover:text-primary",
             disabled && !isSelected && "cursor-not-allowed hover:bg-transparent"
           )}
@@ -100,7 +102,7 @@ export function ModuleItem({
                 {module.title}
               </span>
               <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                <span>{module.lessons.length} lessons</span>
+                <span>{module.lessons.length} {t('ai-course-content.lessons')}</span>
               </div>
             </div>
           </div>

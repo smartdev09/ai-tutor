@@ -5,8 +5,10 @@ import { useAppSelector } from '@/store/hooks';
 import React, { useEffect, useState } from 'react';
 import { useCompletion } from "@ai-sdk/react";
 import { BotMessageSquare, X, Send, Bot, Loader, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const TestMyKnowledge = () => {
+  const t = useTranslations()
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentLessonContent = useAppSelector((state) => state.course.currentLessonContent);
   const currentLessonTitle = useAppSelector((state) => state.course.currentLessonTitle);
@@ -364,7 +366,7 @@ const TestMyKnowledge = () => {
     return (
       <div className="p-6 bg-white rounded-lg shadow flex flex-col items-center justify-center min-h-60">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mb-4"></div>
-        <p className="text-gray-700 font-medium">Generating your multiple choice quiz questions...</p>
+        <p className="text-gray-700 font-medium">{t('TestMyKnowledge.generatingQuiz')}</p>
       </div>
     );
   }
@@ -392,14 +394,14 @@ const TestMyKnowledge = () => {
   if (quizComplete && score !== null && !reviewMode) {
     return (
       <div className="p-6 bg-white rounded-lg shadow">
-        <h2 className="text-2xl font-bold text-center mb-6">Quiz Results</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">{t('TestMyKnowledge.quizResults')}</h2>
 
         <div className="text-center mb-8">
           <div className="text-6xl font-bold text-purple-600 mb-2">{Math.round(score)}%</div>
           <p className="text-gray-700">
-            You got {answers.filter((answer, index) =>
+            {t('TestMyKnowledge.youGot')} {answers.filter((answer, index) =>
               typeof answer === 'number' && index < parsedQuestions.length && answer === parsedQuestions[index].correctAnswer
-            ).length} out of {parsedQuestions.length} questions correct
+            ).length} {t('TestMyKnowledge.outOf')} {parsedQuestions.length} {t('TestMyKnowledge.questionsCorrect')}
           </p>
         </div>
 
@@ -411,12 +413,12 @@ const TestMyKnowledge = () => {
               setCurrentQuestionIndex(0);
             }}
           >
-            Review Questions
+            {t('TestMyKnowledge.reviewQuestions')}
           </Button>
           <Button
             onClick={restartQuiz}
           >
-            Retake Quiz
+            {t('TestMyKnowledge.retakeQuiz')}
           </Button>
         </div>
       </div>
@@ -432,11 +434,11 @@ const TestMyKnowledge = () => {
     <div className="p-6 bg-white rounded-lg shadow">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          {quizComplete ? "Quiz Results" : "Multiple Choice Quiz"}
+          {quizComplete ? t('TestMyKnowledge.quizResults') : t('TestMyKnowledge.multipleChoiceQuiz')}
         </h2>
         {quizComplete && (
           <div className="text-purple-600 font-medium">
-            Score: {Math.round(score || 0)}%
+            {t('TestMyKnowledge.score')} {Math.round(score || 0)}%
           </div>
         )}
         {!quizComplete && (
@@ -453,7 +455,7 @@ const TestMyKnowledge = () => {
 
       <div className="pb-4 border-b border-gray-200">
         <div className="flex items-center mb-2">
-          <span className="text-gray-700 font-medium">Question {currentQuestionIndex + 1} of {parsedQuestions.length}</span>
+          <span className="text-gray-700 font-medium">{t('TestMyKnowledge.question')} {currentQuestionIndex + 1} of {parsedQuestions.length}</span>
           <div className="ml-2 flex-grow h-2 bg-gray-200 rounded-full">
             <div
               className="h-full bg-purple-500 rounded-full"
@@ -521,7 +523,7 @@ const TestMyKnowledge = () => {
           <div className="relative bg-gray-100 text-gray-800 rounded-2xl shadow-md my-2 w-1/3 flex flex-col max-h-[350px] overflow-scroll">
             <div className="bg-purple-500 text-white px-4 py-3 flex items-center gap-2">
               <Bot size={20} />
-              <span className="font-medium">Quiz Assistant</span>
+              <span className="font-medium">{t('TestMyKnowledge.quizAssistant')}</span>
               <div className="ml-auto flex items-center">
                 <span className="text-xs animate-[spin_8s_linear_infinite] px-2 py-1 rounded-full">
                   <Loader />
@@ -536,7 +538,7 @@ const TestMyKnowledge = () => {
                     <div className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center">
                       <User size={18} className="text-purple-600" />
                     </div>
-                    <span className="text-sm font-medium text-purple-700">Your Query</span>
+                    <span className="text-sm font-medium text-purple-700">{t('TestMyKnowledge.yourQuery')}</span>
                   </div>
 
                   <div
@@ -552,7 +554,7 @@ const TestMyKnowledge = () => {
                   <div className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center">
                     <Bot size={18} className="text-purple-600" />
                   </div>
-                  <span className="text-sm font-medium text-purple-700">Response</span>
+                  <span className="text-sm font-medium text-purple-700">{t('TestMyKnowledge.response')}</span>
                 </div>
 
                 {isTyping ? (
@@ -579,7 +581,7 @@ const TestMyKnowledge = () => {
                 value={userPrompt}
                 onKeyDown={handleKeyDown}
                 onChange={(e) => setUserPrompt(e.target.value)}
-                placeholder="Type your answer..."
+                placeholder={t('chatbot.placeholder')}
                 className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <Button onClick={handleAssistanceQuerry} disabled={!userPrompt.trim()} className="p-2.5 bg-primary rounded-full text-white hover:bg-purple-700">
@@ -614,7 +616,7 @@ const TestMyKnowledge = () => {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Previous
+            {t('TestMyKnowledge.previous')}
           </Button>
 
           {quizComplete ? (
@@ -625,14 +627,14 @@ const TestMyKnowledge = () => {
                   setReviewMode(false);
                 }}
               >
-                Show Summary
+                {t('TestMyKnowledge.showSummary')}
               </Button>
             ) : (
               <Button
                 className="px-4 py-2 bg-purple-500 text-white rounded-lg flex items-center"
                 onClick={goToNextQuestion}
               >
-                Next
+                {t('TestMyKnowledge.next')}
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -647,7 +649,7 @@ const TestMyKnowledge = () => {
               onClick={goToNextQuestion}
               disabled={currentQuestionIndex === parsedQuestions.length - 1 && !allQuestionsAnswered}
             >
-              {currentQuestionIndex === parsedQuestions.length - 1 ? 'Submit' : 'Next'}
+              {currentQuestionIndex === parsedQuestions.length - 1 ? t('TestMyKnowledge.submit') : t('TestMyKnowledge.next')}
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>

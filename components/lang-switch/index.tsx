@@ -3,11 +3,10 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence, hover } from "framer-motion"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { usePathname } from "next/navigation"
 import { useLocale } from "next-intl"
 import { FaLanguage } from "react-icons/fa"
-import { Button } from "../ui/button"
 
 const useClickOutside = (handler: () => void) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -39,6 +38,7 @@ const LanguageSwitcher: React.FC = () => {
   const router = useRouter()
   const pathname = usePathname()
   const ref = useClickOutside(() => setIsOpen(false))
+  const searchParams = useSearchParams();
 
   const languages: Language[] = [
     { code: "en", name: "English" },
@@ -47,28 +47,31 @@ const LanguageSwitcher: React.FC = () => {
   ]
 
   const changeLanguage = (locale: string) => {
-    const localePattern = new RegExp(`^/(${languages.map(l => l.code).join("|")})(/|$)`)
+    const localePattern = new RegExp(`^/(${languages.map(l => l.code).join("|")})(/|$)`);
+    let pathWithoutLocale = pathname.replace(localePattern, "/");
+    pathWithoutLocale = pathWithoutLocale.replace(/\/+/g, "/");
     
-    let pathWithoutLocale = pathname.replace(localePattern, "/")
+    const isAISearch = pathWithoutLocale.startsWith('/ai/search');
+    const queryString = isAISearch ? `?${searchParams.toString()}` : '';
+
+    const newPath = `${locale}${pathWithoutLocale === "/" ? "" : pathWithoutLocale}${queryString}`;
     
-    pathWithoutLocale = pathWithoutLocale.replace(/\/+/g, "/")
-    
-    const newPath = locale + (pathWithoutLocale === "/" ? "" : pathWithoutLocale)
-    
-    setIsOpen(false)
-    
-    router.push(`/${newPath}`)
-  }
+    setIsOpen(false);
+    router.push(`/${newPath}`);
+  };
 
   return (
     <div ref={ref} className="fixed top-4 right-40 z-50">
-      <Button
+      <button
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Language switcher"
-        className="rounded-2xl p-3"
+        className="z-40 inline-flex items-center justify-center px-3 py-3 overflow-hidden font-semibold text-white transition-all duration-300 bg-primary rounded-full shadow-lg hover:bg-purple-700 hover:shadow-xl active:scale-95"
       >
-        <FaLanguage className="w-6 h-6" />
-      </Button>
+        <span title="Change language" className="z-10">
+          <FaLanguage className="w-5 h-5" />
+        </span>
+        <div className="absolute inset-0 transition duration-300 rounded-full" />
+      </button>
       <AnimatePresence>
         {isOpen && (
           <motion.div

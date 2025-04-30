@@ -26,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import TestMyKnowledge from "./TestMyKnowledge"
 import ContextModalButton from "./EditPrompt"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 
 interface LessonContentProps {
   module: Module
@@ -47,6 +47,7 @@ export function LessonContent({
 }: LessonContentProps) {
   const t = useTranslations()
   const dispatch = useAppDispatch()
+  const lang = useLocale();
   const currentModuleIndex = useAppSelector((state) => state.course.currentModuleIndex)
   const reduxProcessedLessons = useAppSelector((state) => state.course.processedLessons)
   const isEditing = useAppSelector((state) => state.course.isEditing)
@@ -204,6 +205,7 @@ export function LessonContent({
             body: {
               moduleTitle: module?.title,
               lessonTitle: module?.lessons[nextLessonToGenerate] || "",
+              lang: lang,
             },
           })
         } else {
@@ -289,6 +291,7 @@ export function LessonContent({
               body: {
                 moduleTitle: module?.title,
                 lessonTitle: module?.lessons[futureIndex] || "",
+                lang: lang,
               },
             })
           } else {
@@ -300,6 +303,7 @@ export function LessonContent({
             body: {
               moduleTitle: module?.title,
               lessonTitle: module?.lessons[nextIndex] || "",
+              lang: lang,
             },
           })
         }
@@ -323,6 +327,7 @@ export function LessonContent({
     dispatch,
     reduxProcessedLessons,
     userSelectedLesson,
+    lang,
   ])
 
   const progressPercentage = module?.lessons?.length
@@ -418,12 +423,13 @@ export function LessonContent({
       setIsProcessing(true)
       setGeneratingLessonIndex(currentLessonIndex)
       setTestMyKnowledgeToggle(false)
-  
+
       complete("", {
         body: {
           moduleTitle: module?.title,
           lessonTitle: module?.lessons[currentLessonIndex] || "",
           userPrompt: userPrompt,
+          lang: lang,
         },
       })
     }
@@ -434,7 +440,7 @@ export function LessonContent({
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 rounded-xl shadow-lg">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <ContextModalButton onSubmit={handleOnSubmit}/>
+            <ContextModalButton onSubmit={handleOnSubmit} />
             <BookOpen className="h-6 w-6 text-white" />
             {editingModuleId === currentModuleId ? (
               <div className="flex items-center gap-2">
@@ -599,7 +605,7 @@ export function LessonContent({
             <div className="space-y-3">
               <h3 className="text-xl font-bold text-gray-800">{t('lesson-content.loadingTitle')}</h3>
               <p className="text-muted-foreground max-w-md">
-              {t('lesson-content.loadingDescription')}
+                {t('lesson-content.loadingDescription')}
               </p>
             </div>
           </div>

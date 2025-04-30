@@ -5,7 +5,7 @@ import { useAppSelector } from '@/store/hooks';
 import React, { useEffect, useState } from 'react';
 import { useCompletion } from "@ai-sdk/react";
 import { BotMessageSquare, X, Send, Bot, Loader, User } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 const TestMyKnowledge = () => {
   const t = useTranslations()
@@ -29,6 +29,7 @@ const TestMyKnowledge = () => {
   const [stableQuestionCount, setStableQuestionCount] = useState(0);
   const [parsedQuestions, setParsedQuestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const lang = useLocale();
 
   useEffect(() => {
     setShowSuggestions(false);
@@ -163,7 +164,8 @@ const TestMyKnowledge = () => {
     api: '/api/generate-quiz',
     body: {
       content: currentLessonContent,
-      type: 'mcq'
+      type: 'mcq',
+      lang
     },
     onFinish: (prompt, completion) => {
       try {

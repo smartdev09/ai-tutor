@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { ModuleList } from './CourseDisplay/ModuleList';
 import { ErrorState } from './CourseStates/ErrorState';
 import { AiCourse } from '@/types';
+import { useLocale } from 'next-intl';
 interface Module {
   title: string;
   lessons: string[];
@@ -16,6 +17,7 @@ export function GenerateAICourse() {
   const [course, setCourse] = useState<AiCourse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
+  const lang = useLocale();
 
   // Get parameters from URL
   const term = searchParams.get('term') || '';
@@ -36,7 +38,8 @@ export function GenerateAICourse() {
       difficulty,
       instructions,
       goal,
-      about
+      about,
+      lang
     },
     onFinish: (prompt, completion) => {
       try {
@@ -82,7 +85,7 @@ export function GenerateAICourse() {
   };
 
   // Parse markdown into course structure
-    const parseCourseFromMarkdown = (markdown: string): AiCourse | null => {
+  const parseCourseFromMarkdown = (markdown: string): AiCourse | null => {
     try {
       const lines = markdown.split('\n');
       const currentCourse: AiCourse = { title: '', modules: [], difficulty: '', done: [] };
@@ -129,7 +132,7 @@ export function GenerateAICourse() {
 
   return (
     <div className="w-full">
-      <ModuleList isLoading={isLoading} course={course} handleRegenerate={handleRegenerate}/>
+      <ModuleList isLoading={isLoading} course={course} handleRegenerate={handleRegenerate} />
     </div>
   );
 }

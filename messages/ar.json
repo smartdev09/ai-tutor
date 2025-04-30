@@ -72,22 +72,22 @@
         "click_module_expand": "انقر على عنوان الوحدة لتوسيعه، ثم اختر درسًا لعرض المحتوى."
     },
     "lesson-content": {
-      "moduleTitle": "عنوان الوحدة",
-      "cancelButton": "إلغاء",
-      "savingButton": "جاري الحفظ...",
-      "saveButton": "حفظ",
-      "generatingIndicator": "جاري إنشاء المحتوى...",
-      "progressLabel": "التقدم",
-      "progressPercentage": "100%",
-      "lessonCounter": "1/5",
-      "currentLessonTitle": "عنوان الدرس الحالي",
-      "waitingIndicator": "انتظار المحتوى...",
-      "editButton": "تعديل",
-      "errorMessage": "خطأ في تحميل محتوى الدرس. يرجى المحاولة مرة أخرى.",
-      "loadingTitle": "جاري تحضير الدرس",
-      "loadingDescription": "يتم تحضير الدرس الذي اخترته. يرجى الانتظار بينما نقوم بإنشاء المحتوى للدروس بالتتابع.",
-      "contentPlaceholder": "حرر محتوى الدرس هنا...",
-      "testKnowledgeButton": "اختبر معرفتي"
+        "moduleTitle": "عنوان الوحدة",
+        "cancelButton": "إلغاء",
+        "savingButton": "جاري الحفظ...",
+        "saveButton": "حفظ",
+        "generatingIndicator": "جاري إنشاء المحتوى...",
+        "progressLabel": "التقدم",
+        "progressPercentage": "100%",
+        "lessonCounter": "1/5",
+        "currentLessonTitle": "عنوان الدرس الحالي",
+        "waitingIndicator": "انتظار المحتوى...",
+        "editButton": "تعديل",
+        "errorMessage": "خطأ في تحميل محتوى الدرس. يرجى المحاولة مرة أخرى.",
+        "loadingTitle": "جاري تحضير الدرس",
+        "loadingDescription": "يتم تحضير الدرس الذي اخترته. يرجى الانتظار بينما نقوم بإنشاء المحتوى للدروس بالتتابع.",
+        "contentPlaceholder": "حرر محتوى الدرس هنا...",
+        "testKnowledgeButton": "اختبر معرفتي"
     },
     "edit-prompt": {
         "addContextButtonTitle": "إضافة سياق",
@@ -98,13 +98,13 @@
         "cancelButton": "إلغاء",
         "modifyPromptButton": "تعديل النص"
     },
-    "chatbot":{
+    "chatbot": {
         "placeholder": "اكتب رسالة...",
         "send": "إرسال",
         "you": "أنت",
         "assistant": "المساعد"
     },
-    "TestMyKnowledge":{
+    "TestMyKnowledge": {
         "quizResults": "نتائج الاختبار",
         "multipleChoiceQuiz": "اختبار اختيار من متعدد",
         "retakeQuiz": "أعد الاختبار",
@@ -122,6 +122,9 @@
         "showSummary": "عرض الملخص",
         "previous": "السابق",
         "next": "التالي",
-        "submit": "إرسال"
+        "submit": "إرسال",
+        "answer_all_to_submit": "يرجى الإجابة على جميع الأسئلة للإرسال",
+        "correct_answer": "إجابة صحيحة!",
+        "incorrect_answer": "إجابة خاطئة"
     }
 }

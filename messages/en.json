@@ -122,6 +122,9 @@
         "showSummary": "Show Summary",
         "previous": "Previous",
         "next": "Next",
-        "submit": "Submit"
+        "submit": "Submit",
+        "answer_all_to_submit": "Please answer all questions to submit",
+        "correct_answer": "Correct answer!",
+        "incorrect_answer": "Incorrect answer"
     }
 }

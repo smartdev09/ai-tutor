@@ -98,13 +98,13 @@
         "cancelButton": "Abbrechen",
         "modifyPromptButton": "Prompt bearbeiten"
     },
-    "chatbot":{
+    "chatbot": {
         "placeholder": "Nachricht eingeben...",
         "send": "Senden",
         "you": "Du",
         "assistant": "Assistent"
     },
-    "TestMyKnowledge":{
+    "TestMyKnowledge": {
         "quizResults": "Testergebnisse",
         "multipleChoiceQuiz": "Multiple-Choice-Test",
         "retakeQuiz": "Quiz wiederholen",
@@ -122,6 +122,9 @@
         "showSummary": "Zusammenfassung anzeigen",
         "previous": "Zurück",
         "next": "Weiter",
-        "submit": "Absenden"
+        "submit": "Absenden",
+        "answer_all_to_submit": "Bitte beantworte alle Fragen, um abzusenden",
+        "correct_answer": "Richtige Antwort!",
+        "incorrect_answer": "Falsche Antwort"
     }
 }

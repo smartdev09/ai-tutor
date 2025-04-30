@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useCompletion } from "@ai-sdk/react";
 import { BotMessageSquare, X, Send, Bot, Loader, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { cleanTextAR, cleanTextDE, parseMCQQuestionsAR, parseMCQQuestionsDE } from '@/lib/utils/quiz-parser';
 
 const TestMyKnowledge = () => {
   const t = useTranslations()
@@ -153,8 +154,13 @@ const TestMyKnowledge = () => {
   };
 
   const processCompletionText = (text: string) => {
-    const cleanedText = cleanText(text);
-    return parseMCQQuestions(cleanedText);
+    const cleanedText = lang === 'ar' ? cleanTextAR(text) : 
+                       lang === 'de' ? cleanTextDE(text) : 
+                       cleanText(text);
+    
+    return lang === 'ar' ? parseMCQQuestionsAR(cleanedText) :
+           lang === 'de' ? parseMCQQuestionsDE(cleanedText) :
+           parseMCQQuestions(cleanedText);
   };
 
   const {
@@ -512,7 +518,7 @@ const TestMyKnowledge = () => {
                   {/* Immediate feedback message */}
                   {isSelected && showResultInline && !quizComplete && (
                     <span className={`ml-auto text-end text-sm font-medium ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-                      {isCorrect ? 'Correct!' : 'Incorrect'}
+                      {isCorrect ? t('TestMyKnowledge.correct_answer') : t('TestMyKnowledge.incorrect_answer')}
                     </span>
                   )}
                 </div>
@@ -598,12 +604,12 @@ const TestMyKnowledge = () => {
       <div className="pt-4 border-t border-gray-200 flex justify-between">
         <div className="text-purple-600 font-medium">
           {!quizComplete && !allQuestionsAnswered && currentQuestionIndex === parsedQuestions.length - 1 &&
-            'Please answer all questions to submit'
+            t('TestMyKnowledge.answer_all_to_submit')
           }
           {quizComplete && (
             <>
               <p className={answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? 'text-green-500' : 'text-red-500'}>
-                {answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? 'Correct answer!' : 'Incorrect answer'}
+                {answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? t('TestMyKnowledge.correct_answer') : t('TestMyKnowledge.incorrect_answer')}
               </p>
               <p className='text-gray-500'>{questions[currentQuestionIndex].explanation}</p>
             </>

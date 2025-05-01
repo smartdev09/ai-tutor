@@ -43,9 +43,9 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      {/* <head>
-        <link rel="icon" href="/chatbot.png" />
-      </head> */}
+      <head>
+        <link rel="icon" href="/chatbot.jpg" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable}`}
         suppressHydrationWarning

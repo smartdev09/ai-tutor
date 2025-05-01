@@ -52,6 +52,13 @@ export function ModuleList({
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
   const [toggleBot, setToggleBot] = useState(false)
 
+  useEffect(()=>{
+    if(!isLoading){
+      collapseAll()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[isLoading])
+
   useEffect(() => {
     if (course.modules.length > 0 && (isLoading || streamingModuleIndex !== -1)) {
       const moduleIndices = course.modules.map((_, index) => index)

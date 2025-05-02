@@ -235,7 +235,7 @@ export function ModuleList({
       <div className="w-full p-6">
         <div className="flex mb-4">
           <ChatButton toggleBot={toggleBot} setToggleBot={setToggleBot} />
-          <RegenerateButton onRegenerate={handleRegenerate} />
+          {/* <RegenerateButton onRegenerate={handleRegenerate} /> */}
           <Button
             onClick={handleSaveCourse}
             className="ml-2"

@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AiCourse } from '@/types';
-import { getCourseBySlug } from '@/lib/utils/storage';
 import { AICourseContent } from './AICourseContent';
+import { courseService } from '@/lib/services/course';
 
 interface GetAICourseProps {
   courseSlug: string;
@@ -25,15 +25,18 @@ export function GetAICourse({ courseSlug }: GetAICourseProps) {
     setIsLoading(true);
     
     // Fetch the course from storage
-    const fetchedCourse = getCourseBySlug(courseSlug);
-    
-    if (fetchedCourse) {
-      setCourse(fetchedCourse);
-      setIsLoading(false);
-    } else {
-      setError('Course not found');
-      setIsLoading(false);
-    }
+    const fetchCourse = async () => {
+      const fetchedCourse = await courseService.getCourse(courseSlug);
+      if (fetchedCourse) {
+        setCourse(fetchedCourse);
+        setIsLoading(false);
+      } else {
+        setError('Course not found');
+        setIsLoading(false);
+      }
+    };
+
+    fetchCourse();
   }, [courseSlug, router]);
 
   // If course is still loading or not found

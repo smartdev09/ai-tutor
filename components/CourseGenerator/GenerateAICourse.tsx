@@ -5,7 +5,7 @@ import { useCompletion } from '@ai-sdk/react';
 import { useSearchParams } from 'next/navigation';
 import { ModuleList } from './CourseDisplay/ModuleList';
 import { ErrorState } from './CourseStates/ErrorState';
-import { AiCourse } from '@/types';
+import { AiCourse, Faqs } from '@/types';
 import { useLocale } from 'next-intl';
 interface Module {
   title: string;
@@ -90,12 +90,35 @@ export function GenerateAICourse() {
       const lines = markdown.split('\n');
       const currentCourse: AiCourse = { title: '', modules: [], difficulty: '', done: [] };
       let currentModule: Module | null = null;
+      let processingFAQs = false;
+      let currentFaq: Faqs | null = null;
 
       for (const line of lines) {
-        if (line.startsWith('# ')) {
+        if (processingFAQs) {
+          const faqMatch = line.match(/^\d+\.\s+\*\*(.*?)\*\*\s*$/);
+          if (faqMatch) {
+            if (currentFaq) {
+              currentCourse.faqs!.push(currentFaq);
+            }
+            currentFaq = {
+              question: faqMatch[1].trim(),
+              answer: ''
+            };
+          } else {
+            if (currentFaq) {
+              currentFaq.answer += (currentFaq.answer ? '\n' : '') + line.trim();
+            }
+          }
+        } else if (line.startsWith('**FAQs**')) {
+          processingFAQs = true;
+          currentCourse.faqs = [];
+          currentFaq = null;
+        } else if (line.startsWith('# ')) {
           currentCourse.title = line.substring(2).trim();
           currentCourse.slug = currentCourse.title.toLowerCase().replace(/\s+/g, '-');
           currentCourse.difficulty = difficulty;
+        } else if (line.startsWith('**Meta Description:**')) {
+          currentCourse.metaDescription = line.substring(21).trim();
         } else if (line.startsWith('## ')) {
           if (currentModule) {
             currentCourse.modules.push(currentModule);
@@ -106,13 +129,18 @@ export function GenerateAICourse() {
           };
         } else if (line.startsWith('- ')) {
           if (currentModule) {
-            currentModule.lessons.push(line.substring(2).trim());
+            const cleanedLesson = line.substring(2).replace(/\*/g, '').trim();
+            currentModule.lessons.push(cleanedLesson);
           }
         }
       }
 
       if (currentModule) {
         currentCourse.modules.push(currentModule);
+      }
+
+      if (processingFAQs && currentFaq) {
+        currentCourse.faqs!.push(currentFaq);
       }
 
       return currentCourse;

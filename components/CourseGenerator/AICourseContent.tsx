@@ -22,7 +22,7 @@ interface AICourseContentProps {
 
 export function AICourseContent({
   course,
-  isStreaming = true,
+  isStreaming,
   error,
   onRegenerateOutline,
 }: AICourseContentProps) {
@@ -35,6 +35,7 @@ export function AICourseContent({
   const [isRegenerateOpen, setIsRegenerateOpen] = useState(false);
   const t = useTranslations()
 
+  console.log(course)
 
   // Streaming state with partial content
   if (isStreaming) {
@@ -49,14 +50,18 @@ export function AICourseContent({
         </div>
 
         <div className="space-y-4">
-          {course.modules.length > 0 ? (
+          {course?.modules?.length > 0 ? (
             course.modules.map((module, index) => (
               <div key={index} className="border-b border-gray-200 pb-4 last:border-b-0">
-                <h2 className="text-lg font-semibold mb-2">{module.title}</h2>
-                {module.lessons.length > 0 ? (
+                <h2 className="text-lg font-semibold mb-2">
+                  {typeof module.title === 'string' ? module.title : 'Module Title'}
+                </h2>
+                {module?.lessons?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
                     {module.lessons.map((lesson, i) => (
-                      <li key={i} className="text-gray-700">{lesson}</li>
+                      <li key={i} className="text-gray-700">
+                        {typeof lesson === 'string' ? lesson : 'Lesson Title'}
+                      </li>
                     ))}
                   </ul>
                 ) : (
@@ -67,7 +72,7 @@ export function AICourseContent({
           ) : (
             <div className="text-sm text-blue-600 animate-pulse">{t('ai-course-content.generating_lessons')}</div>
           )}
-          {course.modules.length > 0 && (
+          {course?.modules?.length > 0 && (
             <div className="text-sm text-blue-600 animate-pulse mt-2">
               {t('ai-course-content.generating_more')}
             </div>
@@ -98,24 +103,31 @@ export function AICourseContent({
   const handleSelectLesson = async (moduleIndex: number, lessonIndex: number) => {
     setSelectedModuleIndex(moduleIndex);
     setSelectedLessonIndex(lessonIndex);
-
-    // Clear previous content
-    setLessonContent('');
+    const currentModule = course.modules[moduleIndex];
     setLessonError('');
 
-    const currentModule = course.modules[moduleIndex];
-    const currentLesson = currentModule.lessons[lessonIndex];
+    // Clear previous content
+    if (currentModule.lessons[lessonIndex].content) {
+      setLessonContent(currentModule.lessons[lessonIndex].content);
+    } else {
+      const currentLesson = currentModule.lessons[lessonIndex];
 
-    // Generate content for this lesson
-    setIsLoadingLesson(true);
-    await generateLessonContent({
-      courseId: course.id || '',
-      moduleTitle: currentModule.title,
-      lessonTitle: currentLesson,
-      onContentChange: setLessonContent,
-      onLoadingChange: setIsLoadingLesson,
-      onError: setLessonError,
-    });
+      // Handle the lesson if it's an object instead of a string
+      const lessonTitle = typeof currentLesson === 'string'
+        ? currentLesson
+        : currentLesson?.title || 'Untitled Lesson';
+
+      // Generate content for this lesson
+      setIsLoadingLesson(true);
+      await generateLessonContent({
+        courseId: course.id || '',
+        moduleTitle: typeof currentModule.title === 'string' ? currentModule.title : 'Untitled Module',
+        lessonTitle,
+        onContentChange: setLessonContent,
+        onLoadingChange: setIsLoadingLesson,
+        onError: setLessonError,
+      });
+    }
   };
 
   const handleToggleCompletion = (moduleIndex: number, lessonIndex: number) => {
@@ -125,15 +137,15 @@ export function AICourseContent({
     const lessonId = `${moduleIndex}-${lessonIndex}`;
 
     // Check if this lesson is already marked as completed
-    const isCompleted = course.done.includes(lessonId);
+    const isCompleted = course?.done?.includes(lessonId);
 
     // Update course progress
     updateCourseProgress(course.id, lessonId, !isCompleted);
 
     // Update local state
     const updatedDone = isCompleted
-      ? course.done.filter(id => id !== lessonId)
-      : [...course.done, lessonId];
+      ? course?.done?.filter(id => id !== lessonId)
+      : [...(course.done || []), lessonId];
 
     course.done = updatedDone;
   };
@@ -145,8 +157,8 @@ export function AICourseContent({
   };
 
   // Calculate progress
-  const totalLessons = course.modules.reduce((total, module) => total + module.lessons.length, 0);
-  const completedLessons = course.done.length;
+  const totalLessons = course?.modules?.reduce((total, module) => total + (module.lessons?.length || 0), 0) || 0;
+  const completedLessons = course?.done?.length || 0;
   const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   return (
@@ -224,7 +236,7 @@ export function AICourseContent({
             )}
 
             <div className="space-y-4">
-              {course.modules.map((currentModule, moduleIndex) => (
+              {course?.modules?.map((currentModule, moduleIndex) => (
                 <div key={moduleIndex} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
                   <h3
                     className="font-medium cursor-pointer mb-2 hover:text-blue-600"
@@ -232,20 +244,24 @@ export function AICourseContent({
                       selectedModuleIndex === moduleIndex ? null : moduleIndex
                     )}
                   >
-                    {currentModule.title}
+                    {typeof currentModule.title === 'string' ? currentModule.title : 'Module Title'}
                     <span className="text-xs text-gray-500 ml-1">
-                      ({currentModule.lessons.length})
+                      ({currentModule.lessons?.length || 0})
                     </span>
                   </h3>
 
                   {selectedModuleIndex === moduleIndex && (
                     <ul className="pl-4 space-y-1">
-                      {currentModule.lessons.map((currentLesson, lessonIndex) => {
+                      {currentModule.lessons?.map((currentLesson, lessonIndex) => {
                         const lessonId = `${moduleIndex}-${lessonIndex}`;
-                        const isCompleted = course.done.includes(lessonId);
+                        const isCompleted = course?.done?.includes(lessonId);
                         const isActive =
                           selectedModuleIndex === moduleIndex &&
                           selectedLessonIndex === lessonIndex;
+
+                        const lessonTitle = typeof currentLesson === 'string'
+                          ? currentLesson
+                          : currentLesson?.title || 'Untitled Lesson';
 
                         return (
                           <li key={lessonIndex} className="flex items-start">
@@ -258,10 +274,10 @@ export function AICourseContent({
                             <button
                               onClick={() => handleSelectLesson(moduleIndex, lessonIndex)}
                               className={`text-sm text-left ${isActive ? 'text-blue-600 font-medium' :
-                                  isCompleted ? 'text-gray-500 line-through' : 'text-gray-800'
+                                isCompleted ? 'text-gray-500 line-through' : 'text-gray-800'
                                 }`}
                             >
-                              {currentLesson}
+                              {lessonTitle}
                             </button>
                           </li>
                         );
@@ -279,10 +295,16 @@ export function AICourseContent({
           {selectedModuleIndex !== null && selectedLessonIndex !== null ? (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold mb-2">
-                {course.modules[selectedModuleIndex].lessons[selectedLessonIndex]}
+                {(() => {
+                  const lesson = course.modules[selectedModuleIndex].lessons[selectedLessonIndex];
+                  return typeof lesson === 'string' ? lesson : lesson?.title || 'Untitled Lesson';
+                })()}
               </h2>
               <p className="text-sm text-gray-600 mb-6">
-              {t('ai-course-content.module')} {course.modules[selectedModuleIndex].title}
+                {t('ai-course-content.module')} {(() => {
+                  const module = course.modules[selectedModuleIndex];
+                  return typeof module.title === 'string' ? module.title : 'Untitled Module';
+                })()}
               </p>
 
               {isLoadingLesson ? (
@@ -328,7 +350,7 @@ export function AICourseContent({
               </svg>
               <h3 className="text-xl font-medium mb-2">{t('ai-course-content.select_lesson_to_begin')}</h3>
               <p className="text-gray-600 mb-4">
-              {t('ai-course-content.click_module_expand')}
+                {t('ai-course-content.click_module_expand')}
               </p>
             </div>
           )}

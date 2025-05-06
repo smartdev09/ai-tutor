@@ -6,13 +6,20 @@ export type Module = {
   lessons: Lesson[];
 };
 
+export type Faqs = {
+  question: string;
+  answer: string;
+};
+
 export type AiCourse = {
   id?: string;
+  metaDescription?: string;
   title: string;
   modules: Module[];
   difficulty: string;
   done: string[];
   slug?: string;
+  faqs?: Faqs[];
 };
 
 export type CourseFineTuneData = {
@@ -62,10 +69,13 @@ export type ResultItem = Title | Topic | Label;
 
 export type DBCourse = {
   id?: string;
+  metaDescription?: string;
   title: string;
-  difficulty: string;
-  slug?: string;
   modules: DBModule[];
+  difficulty: string;
+  done?: string[];
+  slug?: string;
+  faqs?: Faqs[];
 };
 
 export type DBModule = {

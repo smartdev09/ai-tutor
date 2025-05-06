@@ -1,4 +1,6 @@
 import { GetAICourse } from '@/components/CourseGenerator/GetAICourse';
+import { courseService } from '@/lib/services/course';
+import { AiCourse } from '@/types';
 
 interface AICourseDynamicPageProps {
   params: {
@@ -6,17 +8,25 @@ interface AICourseDynamicPageProps {
   };
 }
 
-export function generateMetadata({ params }: AICourseDynamicPageProps) {
+export async function generateMetadata(
+  { params }: { params: Promise<AICourseDynamicPageProps['params']> }
+) {
+  const resolvedParams = await params;
+  const slug = decodeURIComponent(resolvedParams.courseSlug);
+  const fetchedCourse: AiCourse = await courseService.getCourse(slug);
   return {
-    title: `AI Course - ${params.courseSlug}`,
-    description: 'Learn with an AI-generated personalized course',
+    title: `${fetchedCourse.title}`,
+    description: `${fetchedCourse.metaDescription}`,
   };
 }
 
-export default function AICourseDynamicPage({ params }: AICourseDynamicPageProps) {
+
+export default async function AICourseDynamicPage({ params }: AICourseDynamicPageProps) {
+  const resolvedParams = await params;
+  const slug = decodeURIComponent(resolvedParams.courseSlug);
   return (
     <main className="min-h-screen bg-gray-50">
-      <GetAICourse courseSlug={params.courseSlug} />
+      <GetAICourse courseSlug={decodeURIComponent(slug)} />
     </main>
   );
 }

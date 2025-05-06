@@ -9,60 +9,57 @@ export const courseService = {
         .select("id")
         .eq("slug", course.slug)
         .maybeSingle();
-  
+
       if (existingCourseError && existingCourseError.code !== 'PGRST116') {
         console.error("Error checking for existing course:", existingCourseError);
         throw existingCourseError;
       }
-  
+
       let courseData;
-  
+      const coursePayload = {
+        title: course.title,
+        difficulty: course.difficulty,
+        slug: course.slug,
+        metaDescription: course.metaDescription,
+        done: course.done,
+        faqs: course.faqs
+      };
+
       if (existingCourse) {
+        // Update existing course
         const { data: updatedCourse, error: updateError } = await supabase
           .from("courses")
-          .update({
-            title: course.title,
-            difficulty: course.difficulty,
-          })
+          .update(coursePayload)
           .eq("id", existingCourse.id)
           .select()
           .single();
-  
-        if (updateError) {
-          console.error("Error updating course:", updateError);
-          throw updateError;
-        }
-  
+
+        if (updateError) throw updateError;
         courseData = updatedCourse;
 
-        const { error: deleteModulesError } = await supabase
-          .from("modules")
-          .delete()
-          .eq("course_id", existingCourse.id);
-  
-        if (deleteModulesError) {
-          console.error("Error deleting existing modules:", deleteModulesError);
-          throw deleteModulesError;
+        // Delete existing modules and FAQs
+        const [{ error: deleteModulesError }, { error: deleteFaqsError }] = await Promise.all([
+          supabase.from("modules").delete().eq("course_id", existingCourse.id),
+          supabase.from("faqs").delete().eq("course_id", existingCourse.id),
+        ]);
+
+        if (deleteModulesError || deleteFaqsError) {
+          console.error("Error deleting existing data:", deleteModulesError || deleteFaqsError);
+          throw deleteModulesError || deleteFaqsError;
         }
       } else {
+        // Create new course
         const { data: newCourse, error: insertError } = await supabase
           .from("courses")
-          .insert({
-            title: course.title,
-            difficulty: course.difficulty,
-            slug: course.slug,
-          })
+          .insert(coursePayload)
           .select()
           .single();
-  
-        if (insertError) {
-          console.error("Error creating course:", insertError);
-          throw insertError;
-        }
-  
+
+        if (insertError) throw insertError;
         courseData = newCourse;
       }
-  
+
+      // Insert modules and lessons
       for (const courseModule of course.modules) {
         const { data: moduleData, error: moduleError } = await supabase
           .from("modules")
@@ -73,30 +70,38 @@ export const courseService = {
           })
           .select()
           .single();
-  
-        if (moduleError) {
-          console.error("Error creating module:", moduleError);
-          throw moduleError;
-        }
-  
-        for (const lesson of courseModule.lessons) {
-          const { error: lessonError } = await supabase
-            .from("lessons")
-            .insert({
-              module_id: moduleData.id,
-              title: lesson.title,
-              content: lesson.content || "",
-              position: lesson.position,
-            })
-            .select();
-  
-          if (lessonError) {
-            console.error("Error creating lesson:", lessonError);
-            throw lessonError;
-          }
+
+        if (moduleError) throw moduleError;
+
+        // Insert lessons
+        const lessonInserts = courseModule.lessons.map(lesson =>
+          supabase.from("lessons").insert({
+            module_id: moduleData.id,
+            title: lesson.title,
+            content: lesson.content || "",
+            position: lesson.position,
+          })
+        );
+
+        const lessonResults = await Promise.all(lessonInserts);
+        for (const result of lessonResults) {
+          if (result.error) throw result.error;
         }
       }
-  
+
+      // Insert FAQs
+      if (course.faqs?.length) {
+        const { error: faqError } = await supabase
+          .from("faqs")
+          .insert(course.faqs.map(faq => ({
+            course_id: courseData.id,
+            question: faq.question,
+            answer: faq.answer,
+          })));
+
+        if (faqError) throw faqError;
+      }
+
       return courseData;
     } catch (error) {
       console.error("Error in createCourse:", error);
@@ -119,7 +124,7 @@ export const courseService = {
           )
         `)
         .eq("slug", slug)
-        .single()
+        .maybeSingle()
 
       if (error) {
         console.error("Error fetching course:", error)
@@ -182,39 +187,39 @@ export const courseService = {
 
   async updateModule(moduleId: string, title: string) {
     console.log("Updating module title:", { moduleId, title });
-  
+
     try {
       const { data: existingModule, error: checkError } = await supabase
         .from("modules")
         .select("*")
         .eq("id", moduleId)
         .single();
-  
+
       if (checkError) {
         console.error("Error checking module existence:", checkError);
         throw checkError;
       }
-  
+
       if (!existingModule) {
         throw new Error(`Module with ID ${moduleId} not found`);
       }
-  
+
       const updateFields = {
         title: title
       };
-  
+
       const { data, error: updateError } = await supabase
         .from("modules")
         .update(updateFields)
         .eq("id", moduleId)
         .select()
         .single();
-  
+
       if (updateError) {
         console.error("Error updating module:", updateError);
         throw updateError;
       }
-  
+
       console.log("Module title updated successfully:", data);
       return data;
     } catch (error) {

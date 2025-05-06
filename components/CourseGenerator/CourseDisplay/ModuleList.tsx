@@ -129,6 +129,7 @@ export function ModuleList({
       const dbCourse: DBCourse = {
         title: course.title,
         difficulty: course.difficulty,
+        metaDescription: course.metaDescription,
         slug: course.slug,
         modules: course.modules.map((module, moduleIndex) => ({
           title: module.title,
@@ -145,6 +146,11 @@ export function ModuleList({
               content: content
             };
           }),
+        })),
+        done: course.done,
+        faqs: course.faqs?.map((faq) => ({
+          question: faq.question,
+          answer: faq.answer,
         })),
       };
 

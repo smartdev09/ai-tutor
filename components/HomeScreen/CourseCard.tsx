@@ -17,7 +17,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ slug, level, title, modules, pr
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" onClick={handleSlug}>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 cursor-pointer" onClick={handleSlug}>
       <div className="flex justify-between items-center mb-2">
         <span className="text-green-500 text-xs font-medium">{level}</span>
         {progress !== undefined && (

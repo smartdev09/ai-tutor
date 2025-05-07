@@ -138,6 +138,24 @@ export const courseService = {
     }
   },
 
+  async getAllSlugs() {
+    try {
+      const { data: courses, error } = await supabase
+        .from("courses")
+        .select("slug")
+  
+      if (error) {
+        console.error("Error fetching courses:", error)
+        throw error
+      }
+  
+      return courses
+    } catch (error) {
+      console.error("Error in getAllCourses:", error)
+      throw error
+    }
+  },
+
   async getAllCourses() {
     try {
       const { data: courses, error } = await supabase

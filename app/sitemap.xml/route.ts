@@ -24,7 +24,7 @@ export async function GET() {
     // 2) Fetch dynamic course slugs
     const slugs = await fetchAllCourseSlugs()
     const courseUrls = slugs.map(
-        (slug) => `<url><loc>${BASE_URL}/landing/${slug}</loc></url>`
+        (slug) => `<url><loc>${BASE_URL}/ai/${slug}</loc></url>`
     )
 
     // 3) Combine & wrap in <urlset>

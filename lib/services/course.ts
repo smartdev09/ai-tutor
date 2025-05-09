@@ -109,6 +109,19 @@ export const courseService = {
     }
   },
 
+  async getCoursesCount(): Promise<number> {
+    const { count, error } = await supabase
+      .from('courses')
+      .select('*', { count: 'exact', head: true });
+
+    if (error) {
+      console.error('Error getting courses count:', error.message);
+      throw error;
+    }
+
+    return count ?? 0;
+  },
+
   async getCourse(slug: string) {
 
     try {
@@ -143,12 +156,12 @@ export const courseService = {
       const { data: courses, error } = await supabase
         .from("courses")
         .select("slug")
-  
+
       if (error) {
         console.error("Error fetching courses:", error)
         throw error
       }
-  
+
       return courses
     } catch (error) {
       console.error("Error in getAllCourses:", error)
@@ -156,7 +169,7 @@ export const courseService = {
     }
   },
 
-  async getAllCourses() {
+  async getAllCourses(owners: string | string[]) {
     try {
       const { data: courses, error } = await supabase
         .from("courses")
@@ -169,6 +182,7 @@ export const courseService = {
             )
           )
         `)
+        .contains("owners", Array.isArray(owners) ? owners : [owners])
 
       if (error) {
         console.error("Error fetching courses:", error)
@@ -181,6 +195,41 @@ export const courseService = {
       throw error
     }
   },
+
+  async addCourseOwners(courseId: string, newOwners: string[]) {
+    try {
+      const { data: currentData, error: fetchError } = await supabase
+        .from("courses")
+        .select("owners")
+        .eq("id", courseId)
+        .single()
+  
+      if (fetchError) {
+        console.error("Error fetching current owners:", fetchError)
+        throw fetchError
+      }
+  
+      const existingOwners: string[] = currentData?.owners || []
+  
+      const mergedOwners = Array.from(new Set([...existingOwners, ...newOwners]))
+  
+      const { data: updatedData, error: updateError } = await supabase
+        .from("courses")
+        .update({ owners: mergedOwners })
+        .eq("id", courseId)
+        .select()
+  
+      if (updateError) {
+        console.error("Error updating course owners:", updateError)
+        throw updateError
+      }
+  
+      return updatedData
+    } catch (error) {
+      console.error("Error in addCourseOwners:", error)
+      throw error
+    }
+  },  
 
   async getModuleIdByPosition(courseId: string, position: number) {
     try {

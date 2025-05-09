@@ -10,6 +10,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeHighlight from 'rehype-highlight';
 import { useTranslations } from 'next-intl';
+import ForkBanner from '../ui/fork';
 
 interface AICourseContentProps {
   courseSlug: string;
@@ -292,6 +293,7 @@ export function AICourseContent({
 
         {/* Lesson Content */}
         <div className="md:w-2/3 lg:w-3/4">
+          {!course.owners?.includes("USER") && <ForkBanner courseId={course.id ?? ''} />}
           {selectedModuleIndex !== null && selectedLessonIndex !== null ? (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold mb-2">

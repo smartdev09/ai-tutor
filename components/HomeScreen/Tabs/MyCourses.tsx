@@ -12,7 +12,7 @@ const YourCourses: React.FC = () => {
   useEffect(() => {
     async function fetchCourses() {
       setLoading(true)
-      const data = await courseService.getAllCourses();
+      const data = await courseService.getAllCourses("USER");
       setLoading(false)
       setCourses(data);
     }

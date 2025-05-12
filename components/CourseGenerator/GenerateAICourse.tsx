@@ -68,6 +68,7 @@ export function GenerateAICourse() {
         console.error('Error parsing streaming content');
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completion]);
 
   // Start course generation when component mounts

@@ -7,7 +7,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sidebar, SidebarHeader, SidebarProvider, SidebarRail } from "@/components/ui/sidebar"
 import { useState, useEffect } from "react"
 import { LessonContent } from "./LessonContent"
-import { RegenerateButton } from "../CourseControls/RegenerateButton"
 import { Button } from "@/components/ui/button"
 import { courseService } from "@/lib/services/course"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
@@ -35,7 +34,6 @@ interface ModuleListProps {
 export function ModuleList({
   isLoading,
   course,
-  handleRegenerate,
   streamingModuleIndex = -1,
 }: ModuleListProps) {
   const dispatch = useAppDispatch()

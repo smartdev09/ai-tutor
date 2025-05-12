@@ -113,6 +113,7 @@ const TestMyKnowledge = () => {
         console.error('Error parsing streaming quiz content:', err);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completion, stableQuestionCount, answers.length]);
 
   useEffect(() => {

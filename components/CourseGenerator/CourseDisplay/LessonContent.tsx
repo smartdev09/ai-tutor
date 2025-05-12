@@ -214,6 +214,7 @@ export function LessonContent({
         }
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     module?.title,
     module?.lessons,
@@ -433,6 +434,7 @@ export function LessonContent({
         },
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPrompt])
 
   return (

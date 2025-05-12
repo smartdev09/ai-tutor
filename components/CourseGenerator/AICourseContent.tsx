@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl"
 import ForkBanner from "../ui/fork"
 import { useCompletion } from "@ai-sdk/react"
 import { parseContentFromMarkdown } from "@/lib/utils"
+import FurtherReading from "./CourseSlug/FurtherReading"
 
 interface AICourseContentProps {
   courseSlug: string
@@ -196,7 +197,7 @@ export function AICourseContent({ course, isStreaming, error, onRegenerateOutlin
   const parsedContent = parseContentFromMarkdown(lessonContent)
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div className="w-full mx-auto p-4">
       <div className="flex flex-col md:flex-row gap-6">
         {/* Course Sidebar */}
         <div className="md:w-1/3 lg:w-1/4">
@@ -302,13 +303,12 @@ export function AICourseContent({ course, isStreaming, error, onRegenerateOutlin
                             />
                             <button
                               onClick={() => handleSelectLesson(moduleIndex, lessonIndex)}
-                              className={`text-sm text-left ${
-                                isActive
+                              className={`text-sm text-left ${isActive
                                   ? "text-blue-600 font-medium"
                                   : isCompleted
                                     ? "text-gray-500 line-through"
                                     : "text-gray-800"
-                              }`}
+                                }`}
                             >
                               {lessonTitle}
                             </button>
@@ -397,6 +397,7 @@ export function AICourseContent({ course, isStreaming, error, onRegenerateOutlin
               <p className="text-gray-600 mb-4">{t("ai-course-content.click_module_expand")}</p>
             </div>
           )}
+          <FurtherReading slug={course.slug ?? ""} />
         </div>
       </div>
     </div>

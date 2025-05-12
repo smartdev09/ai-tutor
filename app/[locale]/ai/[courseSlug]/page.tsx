@@ -17,6 +17,7 @@ export async function generateMetadata(
   return {
     title: `${fetchedCourse.title}`,
     description: `${fetchedCourse.metaDescription}`,
+    
   };
 }
 

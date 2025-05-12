@@ -1,5 +1,8 @@
 
-export type Lesson = string;
+export type Lesson = {
+  title: string;
+  content: string;
+};
 
 export type Module = {
   title: string;
@@ -12,6 +15,7 @@ export type Faqs = {
 };
 
 export type AiCourse = {
+  owners: never[];
   id?: string;
   metaDescription?: string;
   title: string;

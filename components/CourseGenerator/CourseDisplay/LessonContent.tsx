@@ -336,7 +336,7 @@ export function LessonContent({
     : 0
 
   const currentLessonTitle = module?.lessons[currentLessonIndex] || ""
-  dispatch(setCurrentLessonTitle(currentLessonTitle))
+  dispatch(setCurrentLessonTitle(currentLessonTitle.title))
   const currentLessonNumber = currentLessonIndex + 1
   const isLessonGenerated = !!processedLessons[currentLessonIndex]
   const isCurrentLessonBeingGenerated = isProcessing && generatingLessonIndex === currentLessonIndex
@@ -520,7 +520,7 @@ export function LessonContent({
             <span className="bg-white/20 px-2 py-1 rounded-full text-xs font-medium">
               {currentLessonNumber}/{module?.lessons?.length}
             </span>
-            <span className="text-sm font-medium">{currentLessonTitle}</span>
+            <span className="text-sm font-medium">{currentLessonTitle.title}</span>
             {waitingForLesson && !isLessonGenerated && !isCurrentLessonBeingGenerated && (
               <span className="inline-flex items-center bg-white/20 px-2 py-1 rounded-full text-xs">
                 <Loader className="h-3 w-3 mr-1 animate-spin" />

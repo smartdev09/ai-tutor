@@ -139,7 +139,7 @@ export function ModuleList({
               : "";
 
             return {
-              title: lessonTitle,
+              title: String(lessonTitle),
               position: lessonIndex,
               content: content
             };

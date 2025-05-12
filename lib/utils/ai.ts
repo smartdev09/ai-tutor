@@ -27,7 +27,10 @@ export function generateAiCourseStructure(
       // Modules collapsed by default
     } else if (line.startsWith('- ') && currentModule) {
       // Lesson within current module
-      currentModule.lessons.push(line.replace('- ', ''));
+      currentModule.lessons.push({
+        title: line.replace('- ', ''),
+        content: ''
+      });
     }
   }
 
@@ -37,9 +40,10 @@ export function generateAiCourseStructure(
   }
 
   return {
-    title,
-    modules,
-  };
+  title,
+  modules,
+  owners: [],
+};
 }
 
 export function generateAiCourseLessonQuestions(

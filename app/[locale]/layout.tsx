@@ -1,3 +1,5 @@
+//#ts-ignore
+
 import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -25,11 +27,11 @@ export default async function RootLayout({
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }>) {
   let messages;
   
-  const { locale } = params;
+  const { locale } = await params;
   
   try {
     messages = (await import(`../../messages/${locale}.json`)).default;

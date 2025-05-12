@@ -5,12 +5,12 @@ import { useCompletion } from '@ai-sdk/react';
 import { useSearchParams } from 'next/navigation';
 import { ModuleList } from './CourseDisplay/ModuleList';
 import { ErrorState } from './CourseStates/ErrorState';
-import { AiCourse, Faqs } from '@/types';
+import { AiCourse, Faqs, Module } from '@/types';
 import { useLocale } from 'next-intl';
-interface Module {
-  title: string;
-  lessons: string[];
-}
+// interface Module {
+//   title: string;
+//   lessons: string[];
+// }
 
 export function GenerateAICourse() {
   const searchParams = useSearchParams();
@@ -89,7 +89,7 @@ export function GenerateAICourse() {
   const parseCourseFromMarkdown = (markdown: string): AiCourse | null => {
     try {
       const lines = markdown.split('\n');
-      const currentCourse: AiCourse = { title: '', modules: [], difficulty: '', done: [] };
+      const currentCourse: AiCourse = { title: '', modules: [], difficulty: '', done: [], owners: [] };
       let currentModule: Module | null = null;
       let processingFAQs = false;
       let currentFaq: Faqs | null = null;
@@ -131,7 +131,10 @@ export function GenerateAICourse() {
         } else if (line.startsWith('- ')) {
           if (currentModule) {
             const cleanedLesson = line.substring(2).replace(/\*/g, '').trim();
-            currentModule.lessons.push(cleanedLesson);
+            currentModule.lessons.push({
+              title: cleanedLesson,
+              content: ""
+            });
           }
         }
       }

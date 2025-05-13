@@ -4,14 +4,39 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ArrowRightIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { storeFineTuneData } from '@/lib/utils/storage';
+import { useRouter } from 'next/navigation';
 
 const HomeScreen: React.FC = () => {
   const t = useTranslations();
   const [topic, setTopic] = useState('');
   const [explainMore, setExplainMore] = useState(false);
-  const [aboutSelf, setAboutSelf] = useState('');
+  const [about, setAboutSelf] = useState('');
   const [goal, setGoal] = useState('');
   const [customInstructions, setCustomInstructions] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [difficulty, setDifficulty] = useState("beginner")
+  const router = useRouter()
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!topic) return
+
+    setIsSubmitting(true)
+
+    let sessionId = ""
+    if (about || goal || customInstructions) {
+      sessionId = storeFineTuneData({ about, goal, customInstructions })
+    }
+
+    const params = new URLSearchParams()
+    params.append("term", topic)
+    params.append("difficulty", difficulty)
+    if (sessionId) params.append("id", sessionId)
+
+    router.push(`/ai/search?${params.toString()}`)
+  }
 
   return (
     <div className="h-full flex-1 flex flex-col items-center justify-center p-4 md:p-6">
@@ -32,7 +57,10 @@ const HomeScreen: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-3 md:space-y-0">
           <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">
             <div className="relative">
-              <select className="appearance-none bg-white border border-purple-300 rounded-md px-2 md:px-4 py-1 pr-8 text-sm">
+              <select className="appearance-none bg-white border border-purple-300 rounded-md px-2 md:px-4 py-1 pr-8 text-sm"
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value)}
+              >
                 <option>{t('landing.beginner')}</option>
                 <option>{t('landing.intermediate')}</option>
                 <option>{t('landing.advanced')}</option>
@@ -56,8 +84,9 @@ const HomeScreen: React.FC = () => {
           </div>
 
           <Button
-            onClick={() => console.log('Generating course for:', topic)}
+            onClick={handleSubmit}
             className="w-full md:w-auto"
+            disabled={isSubmitting || !topic}
           >
             <ArrowRightIcon className="mr-2" size={16} />
             {t('landing.generate_course')}
@@ -70,13 +99,13 @@ const HomeScreen: React.FC = () => {
               <h3 className="text-xs md:text-sm font-medium mb-2">{t('landing.about_self_label')}</h3>
               <input
                 type="text"
-                value={aboutSelf}
+                value={about}
                 onChange={(e) => setAboutSelf(e.target.value)}
                 placeholder={t('landing.about_self_placeholder')}
                 className="w-full p-2 md:p-3 border border-purple-300 rounded-md text-sm"
               />
             </div>
-            
+
             <div>
               <h3 className="text-xs md:text-sm font-medium mb-2">{t('landing.goal_label')}</h3>
               <input
@@ -87,7 +116,7 @@ const HomeScreen: React.FC = () => {
                 className="w-full p-2 md:p-3 border border-purple-300 rounded-md text-sm"
               />
             </div>
-            
+
             <div>
               <h3 className="text-xs md:text-sm font-medium mb-2">{t('landing.custom_instructions_label')}</h3>
               <textarea

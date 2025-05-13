@@ -7,10 +7,6 @@ import { ModuleList } from './CourseDisplay/ModuleList';
 import { ErrorState } from './CourseStates/ErrorState';
 import { AiCourse, Faqs, Module } from '@/types';
 import { useLocale } from 'next-intl';
-// interface Module {
-//   title: string;
-//   lessons: string[];
-// }
 
 export function GenerateAICourse() {
   const searchParams = useSearchParams();

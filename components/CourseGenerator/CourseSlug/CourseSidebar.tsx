@@ -1,10 +1,10 @@
 "use client"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
-import type { AiCourse } from "@/types/index"
+import type { DBCourse } from "@/types/index"
 
 interface CourseSidebarProps {
-  course: AiCourse
+  course: DBCourse
   totalLessons: number
   progressPercentage: number
   selectedModuleIndex: number | null
@@ -37,7 +37,7 @@ export function CourseSidebar({
   const t = useTranslations()
 
   return (
-    <div className="md:w-1/4 lg:w-1/5">
+    <div className="md:w-1/4 lg:w-1/5 md:sticky md:top-0 md:self-start md:max-h-screen md:overflow-y-auto">
       <div className="bg-white rounded-lg shadow-md p-4 mb-4">
         <h1 className="text-xl font-bold mb-2">{course.title}</h1>
         <div className="flex items-center mb-4">

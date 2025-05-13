@@ -14,8 +14,14 @@ export type Faqs = {
   answer: string;
 };
 
+export enum Owner {
+  USER = 'USER',
+  COMMUNITY = 'COMMUNITY',
+  STAFF = 'STAFF',
+}
+
 export type AiCourse = {
-  owners: never[];
+  owners: Owner[];
   id?: string;
   metaDescription?: string;
   title: string;
@@ -72,6 +78,7 @@ export type ResultItem = Title | Topic | Label;
 // DB Types
 
 export type DBCourse = {
+  owners: Owner[];
   id?: string;
   metaDescription?: string;
   title: string;

@@ -1,6 +1,6 @@
 "use client"
 
-import type { AiCourse, DBCourse } from "@/types"
+import { Owner, type AiCourse, type DBCourse } from "@/types"
 import { ModuleItem } from "./ModuleItem"
 import { BookOpen, GraduationCap, Sparkles, Minimize2, Save, Loader } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -22,6 +22,7 @@ import { toast } from "@/hooks/use-toast"
 import { ChatButton } from "../CourseControls/ChatButton"
 import ChatbotUI from "./ChatBot"
 import { useTranslations } from "next-intl"
+import { useRouter } from "next/navigation"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -49,10 +50,35 @@ export function ModuleList({
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
   const [toggleBot, setToggleBot] = useState(false)
+  
+  const router = useRouter() 
 
   useEffect(()=>{
     if(!isLoading){
       collapseAll()
+      const dbCourse: DBCourse = {
+        title: course.title,
+        difficulty: course.difficulty,
+        metaDescription: course.metaDescription,
+        slug: course.slug ? decodeURIComponent(course.slug) : '',
+        modules: course.modules.map((module, moduleIndex) => ({
+          title: module.title,
+          position: moduleIndex,
+          lessons: module.lessons.map((lessonTitle, lessonIndex) => ({
+            title: lessonTitle.title,
+            position: lessonIndex,
+            content: lessonTitle.content
+          }))
+        })),
+        done: course.done,
+        faqs: course.faqs?.map((faq) => ({
+          question: faq.question,
+          answer: faq.answer,
+        })),
+        owners: [Owner.USER]
+      }
+      courseService.createCourse(dbCourse)
+      router.push(`/ai/${dbCourse.slug || decodeURIComponent(course.slug || "")}`)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[isLoading])
@@ -150,6 +176,7 @@ export function ModuleList({
           question: faq.question,
           answer: faq.answer,
         })),
+        owners: [Owner.USER]
       };
 
       await courseService.createCourse(dbCourse);

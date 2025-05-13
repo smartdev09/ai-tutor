@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AiCourse } from '@/types';
+import { DBCourse } from '@/types';
 import { AICourseContent } from './CourseSlug/AICourseContent';
 import { courseService } from '@/lib/services/course';
 
@@ -12,7 +12,7 @@ interface GetAICourseProps {
 
 export function GetAICourse({ courseSlug }: GetAICourseProps) {
   const router = useRouter();
-  const [course, setCourse] = useState<AiCourse | null>(null);
+  const [course, setCourse] = useState<DBCourse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 

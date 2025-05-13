@@ -22,7 +22,8 @@ export const courseService = {
         slug: course.slug,
         metaDescription: course.metaDescription,
         done: course.done,
-        faqs: course.faqs
+        faqs: course.faqs,
+        owners: course.owners
       };
 
       if (existingCourse) {
@@ -106,6 +107,45 @@ export const courseService = {
     } catch (error) {
       console.error("Error in createCourse:", error);
       throw error;
+    }
+  },
+
+  async updateContent(
+    courseId: string,
+    moduleIndex: number,
+    lessonIndex: number,
+    newContent: string
+  ): Promise<void> {
+    
+    try {
+      const { data: moduleData, error: moduleError } = await supabase
+        .from('modules')
+        .select('id')
+        .eq('course_id', courseId)
+        .eq('position', moduleIndex)
+        .single();
+        
+      if (moduleError) {
+        console.error('[updateContent] Error fetching module:', moduleError);
+        throw new Error(`Failed to find module: ${moduleError.message}`);
+      }
+      
+      const moduleId = moduleData.id;
+      
+      const { error } = await supabase
+        .from('lessons')
+        .update({ content: newContent })
+        .eq('module_id', moduleId)
+        .eq('position', lessonIndex);
+        
+      if (error) {
+        console.error('[updateContent] Supabase returned an error:', error);
+        throw new Error(`Failed to update lesson content: ${error.message}`);
+      }
+      
+    } catch (err) {
+      console.error('[updateContent] Caught exception:', err);
+      throw err;
     }
   },
 

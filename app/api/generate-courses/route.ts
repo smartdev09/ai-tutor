@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { courseService } from '@/lib/services/course';
+import { Owner } from '@/types';
 
 // Types for the request payload
 type CoursePayload = {
@@ -24,12 +25,14 @@ type CoursePayload = {
     question: string;
     answer: string;
   }[];
+  owners: Owner[];
 };
 
 export async function POST(request: NextRequest) {
   try {
     // Parse the request body
     const course: CoursePayload = await request.json();
+    course.owners = [Owner.USER]
     
     // Validate the required fields
     if (!course.title) {

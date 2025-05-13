@@ -1,16 +1,18 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { AiCourse } from "@/types/index"
+import type { DBCourse } from "@/types/index"
 import { useTranslations } from "next-intl"
 import { CourseSidebar } from "./CourseSidebar"
 import { CourseHeader } from "./CourseHeader"
 import { CourseContent } from "./CourseContent"
 import { useCompletion } from "@ai-sdk/react"
+import { courseService } from "@/lib/services/course"
+import FAQs from "./Faqs"
 
 interface AICourseContentProps {
   courseSlug: string
-  course: AiCourse
+  course: DBCourse
   isLoading: boolean
   isStreaming?: boolean
   error: string
@@ -55,12 +57,37 @@ export function AICourseContent({
     if (!hasMounted) return
 
     // Update content in real-time as it streams
-    if (completion) {
+    if (completion && selectedModuleIndex !== null && selectedLessonIndex !== null) {
       setLessonContent(completion)
+      if (!isCompletionLoading && completion) {
+        // Save the completed lesson content to the database
+        courseService.updateContent(course.id || "", selectedModuleIndex, selectedLessonIndex, completion)
+          .then(() => {
+            // Update local course data structure to include the content
+            if (course.modules && course.modules[selectedModuleIndex] && course.modules[selectedModuleIndex].lessons) {
+              const currentLesson = course.modules[selectedModuleIndex].lessons[selectedLessonIndex]
+              if (typeof currentLesson === "object") {
+                currentLesson.content = completion
+              } else {
+                // Handle case where lesson might be stored as a string
+                course.modules[selectedModuleIndex].lessons[selectedLessonIndex] = {
+                  title: currentLesson,
+                  content: completion,
+                  position: selectedLessonIndex
+                }
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Failed to save lesson content:', error)
+            setLessonError('Failed to save lesson content. Please try again.')
+          })
+      }
     }
 
     // When loading is complete, mark the lesson as no longer loading
     setIsLoadingLesson(isCompletionLoading)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completion, isCompletionLoading, hasMounted])
 
   // Effect to handle completion errors
@@ -266,6 +293,8 @@ export function AICourseContent({
               </svg>
               <h3 className="text-xl font-medium mb-2">{t("ai-course-content.select_lesson_to_begin")}</h3>
               <p className="text-gray-600 mb-4">{t("ai-course-content.click_module_expand")}</p>
+
+<FAQs faqs={course.faqs || []}/>
             </div>
           )}
         </div>

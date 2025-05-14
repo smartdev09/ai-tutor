@@ -5,8 +5,11 @@ import { useAppSelector } from '@/store/hooks';
 import React, { useEffect, useState } from 'react';
 import { useCompletion } from "@ai-sdk/react";
 import { BotMessageSquare, X, Send, Bot, Loader, User } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { cleanText, cleanTextAR, cleanTextDE, parseMCQQuestions, parseMCQQuestionsAR, parseMCQQuestionsDE } from '@/lib/utils/quiz-parser';
 
 const TestMyKnowledge = () => {
+  const t = useTranslations()
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentLessonContent = useAppSelector((state) => state.course.currentLessonContent);
   const currentLessonTitle = useAppSelector((state) => state.course.currentLessonTitle);
@@ -27,131 +30,20 @@ const TestMyKnowledge = () => {
   const [stableQuestionCount, setStableQuestionCount] = useState(0);
   const [parsedQuestions, setParsedQuestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const lang = useLocale();
 
   useEffect(() => {
     setShowSuggestions(false);
-  }
-    , [currentQuestionIndex]);
-
-  const cleanText = (text: string): string => {
-    let cleaned = text.replace(/\bf:{"messageId".*?}/g, '');
-    cleaned = cleaned.replace(/\b\d+:"([^"]*)"/g, '$1');
-    cleaned = cleaned.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n');
-    cleaned = cleaned.replace(/"delta":{"text":"(.*?)"},"usage":/g, '$1');
-
-    return cleaned;
-  };
-
-  const parseMCQQuestions = (completionText: string) => {
-    const parsedQuestions: Array<{
-      question: string;
-      options: string[];
-      correctAnswer: number;
-      explanation?: string;
-    }> = [];
-
-    const questionPattern = /(?:Question\s+\d+:|(?:\*\*Question\s+\d+:)|(?:\*\*)?Q\d+:?)\s*([^\n]+)([\s\S]*?)(?=(?:Question\s+\d+:|(?:\*\*Question\s+\d+:)|(?:\*\*)?Q\d+:?)|$)/gi;
-
-    let match;
-    while ((match = questionPattern.exec(completionText)) !== null) {
-      try {
-        const questionText = match[1].replace(/\*\*/g, '').trim();
-        const optionsBlock = match[2].trim();
-
-        const optionsPattern = /([A-D][).:])\s*(.*?)(?=(?:[A-D][).:])|Explanation:|$)/gis;
-        const options: string[] = [];
-        let correctIndex = -1;
-
-        let optionMatch;
-        let optionIndex = 0;
-
-        while ((optionMatch = optionsPattern.exec(optionsBlock)) !== null) {
-          let optionText = optionMatch[2].replace(/\*\*/g, '').trim();
-
-          const isCorrect = /\[CORRECT\]/.test(optionText);
-          if (isCorrect) {
-            correctIndex = optionIndex;
-            optionText = optionText.replace(/\[CORRECT\]/i, '').trim();
-          }
-
-          options.push(optionText);
-          optionIndex++;
-        }
-
-        if (correctIndex === -1) {
-          const explanationMatch = optionsBlock.match(/Explanation:.*?([A-D])\s*\)/i);
-          if (explanationMatch) {
-            const correctLetter = explanationMatch[1].toUpperCase();
-            correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-          } else {
-            correctIndex = 0;
-          }
-        }
-
-        if (questionText && options.length === 4 && correctIndex >= 0) {
-          parsedQuestions.push({
-            question: questionText,
-            options: options,
-            correctAnswer: correctIndex
-          });
-        }
-      } catch (err) {
-        console.error('Error parsing question:', err);
-      }
-    }
-
-    if (parsedQuestions.length === 0) {
-      const fallbackQuestionPattern = /(\d+\.\s*|(?:\*\*)?(?:MCQ|Q(?:uestion)?)\s*\d+[:.]\s*)([^\n]+)([\s\S]*?)(?=(?:\d+\.\s*|(?:\*\*)?(?:MCQ|Q(?:uestion)?)\s*\d+[:.]\s*)|$)/gi;
-
-      while ((match = fallbackQuestionPattern.exec(completionText)) !== null) {
-        try {
-          const questionText = match[2].replace(/\*\*/g, '').trim();
-          const optionsBlock = match[3].trim();
-
-          const options: string[] = [];
-          let correctIndex = 0;
-
-          const lines = optionsBlock.split('\n');
-
-          const correct = lines[4].replace("CORRECT: ", "");
-
-          const explanation = lines[5];
-
-          for (let i = 0; i < 4; i++) {
-            options.push(lines[i]);
-            if (lines[i] === correct) {
-              correctIndex = i;
-            }
-          }
-
-          if (questionText && options.length >= 2) {
-            while (options.length < 4) {
-              options.push(`Option ${options.length + 1}`);
-            }
-
-            const finalOptions = options.slice(0, 4);
-
-            correctIndex = Math.min(correctIndex, 3);
-
-            parsedQuestions.push({
-              question: questionText,
-              options: finalOptions,
-              correctAnswer: correctIndex,
-              explanation: explanation
-            });
-          }
-        } catch (err) {
-          console.error('Error in fallback parsing:', err);
-        }
-      }
-    }
-
-    return parsedQuestions;
-  };
+  }, [currentQuestionIndex]);
 
   const processCompletionText = (text: string) => {
-    const cleanedText = cleanText(text);
-    return parseMCQQuestions(cleanedText);
+    const cleanedText = lang === 'ar' ? cleanTextAR(text) :
+      lang === 'de' ? cleanTextDE(text) :
+        cleanText(text);
+
+    return lang === 'ar' ? parseMCQQuestionsAR(cleanedText) :
+      lang === 'de' ? parseMCQQuestionsDE(cleanedText) :
+        parseMCQQuestions(cleanedText);
   };
 
   const {
@@ -161,7 +53,8 @@ const TestMyKnowledge = () => {
     api: '/api/generate-quiz',
     body: {
       content: currentLessonContent,
-      type: 'mcq'
+      type: 'mcq',
+      lang
     },
     onFinish: (prompt, completion) => {
       try {
@@ -220,6 +113,7 @@ const TestMyKnowledge = () => {
         console.error('Error parsing streaming quiz content:', err);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completion, stableQuestionCount, answers.length]);
 
   useEffect(() => {
@@ -364,7 +258,7 @@ const TestMyKnowledge = () => {
     return (
       <div className="p-6 bg-white rounded-lg shadow flex flex-col items-center justify-center min-h-60">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mb-4"></div>
-        <p className="text-gray-700 font-medium">Generating your multiple choice quiz questions...</p>
+        <p className="text-gray-700 font-medium">{t('TestMyKnowledge.generatingQuiz')}</p>
       </div>
     );
   }
@@ -392,14 +286,14 @@ const TestMyKnowledge = () => {
   if (quizComplete && score !== null && !reviewMode) {
     return (
       <div className="p-6 bg-white rounded-lg shadow">
-        <h2 className="text-2xl font-bold text-center mb-6">Quiz Results</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">{t('TestMyKnowledge.quizResults')}</h2>
 
         <div className="text-center mb-8">
           <div className="text-6xl font-bold text-purple-600 mb-2">{Math.round(score)}%</div>
           <p className="text-gray-700">
-            You got {answers.filter((answer, index) =>
+            {t('TestMyKnowledge.youGot')} {answers.filter((answer, index) =>
               typeof answer === 'number' && index < parsedQuestions.length && answer === parsedQuestions[index].correctAnswer
-            ).length} out of {parsedQuestions.length} questions correct
+            ).length} {t('TestMyKnowledge.outOf')} {parsedQuestions.length} {t('TestMyKnowledge.questionsCorrect')}
           </p>
         </div>
 
@@ -411,12 +305,12 @@ const TestMyKnowledge = () => {
               setCurrentQuestionIndex(0);
             }}
           >
-            Review Questions
+            {t('TestMyKnowledge.reviewQuestions')}
           </Button>
           <Button
             onClick={restartQuiz}
           >
-            Retake Quiz
+            {t('TestMyKnowledge.retakeQuiz')}
           </Button>
         </div>
       </div>
@@ -432,11 +326,11 @@ const TestMyKnowledge = () => {
     <div className="p-6 bg-white rounded-lg shadow">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          {quizComplete ? "Quiz Results" : "Multiple Choice Quiz"}
+          {quizComplete ? t('TestMyKnowledge.quizResults') : t('TestMyKnowledge.multipleChoiceQuiz')}
         </h2>
         {quizComplete && (
           <div className="text-purple-600 font-medium">
-            Score: {Math.round(score || 0)}%
+            {t('TestMyKnowledge.score')} {Math.round(score || 0)}%
           </div>
         )}
         {!quizComplete && (
@@ -453,7 +347,7 @@ const TestMyKnowledge = () => {
 
       <div className="pb-4 border-b border-gray-200">
         <div className="flex items-center mb-2">
-          <span className="text-gray-700 font-medium">Question {currentQuestionIndex + 1} of {parsedQuestions.length}</span>
+          <span className="text-gray-700 font-medium">{t('TestMyKnowledge.question')} {currentQuestionIndex + 1} of {parsedQuestions.length}</span>
           <div className="ml-2 flex-grow h-2 bg-gray-200 rounded-full">
             <div
               className="h-full bg-purple-500 rounded-full"
@@ -508,7 +402,7 @@ const TestMyKnowledge = () => {
                   {/* Immediate feedback message */}
                   {isSelected && showResultInline && !quizComplete && (
                     <span className={`ml-auto text-end text-sm font-medium ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-                      {isCorrect ? 'Correct!' : 'Incorrect'}
+                      {isCorrect ? t('TestMyKnowledge.correct_answer') : t('TestMyKnowledge.incorrect_answer')}
                     </span>
                   )}
                 </div>
@@ -521,7 +415,7 @@ const TestMyKnowledge = () => {
           <div className="relative bg-gray-100 text-gray-800 rounded-2xl shadow-md my-2 w-1/3 flex flex-col max-h-[350px] overflow-scroll">
             <div className="bg-purple-500 text-white px-4 py-3 flex items-center gap-2">
               <Bot size={20} />
-              <span className="font-medium">Quiz Assistant</span>
+              <span className="font-medium">{t('TestMyKnowledge.quizAssistant')}</span>
               <div className="ml-auto flex items-center">
                 <span className="text-xs animate-[spin_8s_linear_infinite] px-2 py-1 rounded-full">
                   <Loader />
@@ -536,7 +430,7 @@ const TestMyKnowledge = () => {
                     <div className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center">
                       <User size={18} className="text-purple-600" />
                     </div>
-                    <span className="text-sm font-medium text-purple-700">Your Query</span>
+                    <span className="text-sm font-medium text-purple-700">{t('TestMyKnowledge.yourQuery')}</span>
                   </div>
 
                   <div
@@ -552,7 +446,7 @@ const TestMyKnowledge = () => {
                   <div className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center">
                     <Bot size={18} className="text-purple-600" />
                   </div>
-                  <span className="text-sm font-medium text-purple-700">Response</span>
+                  <span className="text-sm font-medium text-purple-700">{t('TestMyKnowledge.response')}</span>
                 </div>
 
                 {isTyping ? (
@@ -579,7 +473,7 @@ const TestMyKnowledge = () => {
                 value={userPrompt}
                 onKeyDown={handleKeyDown}
                 onChange={(e) => setUserPrompt(e.target.value)}
-                placeholder="Type your answer..."
+                placeholder={t('chatbot.placeholder')}
                 className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <Button onClick={handleAssistanceQuerry} disabled={!userPrompt.trim()} className="p-2.5 bg-primary rounded-full text-white hover:bg-purple-700">
@@ -594,12 +488,12 @@ const TestMyKnowledge = () => {
       <div className="pt-4 border-t border-gray-200 flex justify-between">
         <div className="text-purple-600 font-medium">
           {!quizComplete && !allQuestionsAnswered && currentQuestionIndex === parsedQuestions.length - 1 &&
-            'Please answer all questions to submit'
+            t('TestMyKnowledge.answer_all_to_submit')
           }
           {quizComplete && (
             <>
               <p className={answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? 'text-green-500' : 'text-red-500'}>
-                {answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? 'Correct answer!' : 'Incorrect answer'}
+                {answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? t('TestMyKnowledge.correct_answer') : t('TestMyKnowledge.incorrect_answer')}
               </p>
               <p className='text-gray-500'>{questions[currentQuestionIndex].explanation}</p>
             </>
@@ -614,7 +508,7 @@ const TestMyKnowledge = () => {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Previous
+            {t('TestMyKnowledge.previous')}
           </Button>
 
           {quizComplete ? (
@@ -625,14 +519,14 @@ const TestMyKnowledge = () => {
                   setReviewMode(false);
                 }}
               >
-                Show Summary
+                {t('TestMyKnowledge.showSummary')}
               </Button>
             ) : (
               <Button
                 className="px-4 py-2 bg-purple-500 text-white rounded-lg flex items-center"
                 onClick={goToNextQuestion}
               >
-                Next
+                {t('TestMyKnowledge.next')}
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -647,7 +541,7 @@ const TestMyKnowledge = () => {
               onClick={goToNextQuestion}
               disabled={currentQuestionIndex === parsedQuestions.length - 1 && !allQuestionsAnswered}
             >
-              {currentQuestionIndex === parsedQuestions.length - 1 ? 'Submit' : 'Next'}
+              {currentQuestionIndex === parsedQuestions.length - 1 ? t('TestMyKnowledge.submit') : t('TestMyKnowledge.next')}
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>

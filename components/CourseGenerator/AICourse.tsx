@@ -5,9 +5,13 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { storeFineTuneData } from "@/lib/utils/storage"
 import { Sparkles, BookOpen, Brain, ChevronDown, ChevronUp, Rocket } from "lucide-react"
+import { useTranslations } from "next-intl"
+import LanguageSwitcher from "../lang-switch"
 
 export function AICourse() {
   const router = useRouter()
+  const t = useTranslations()
+
   const [term, setTerm] = useState("")
   const [difficulty, setDifficulty] = useState("beginner")
   const [about, setAbout] = useState("")
@@ -19,36 +23,26 @@ export function AICourse() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!term) {
-      return
-    }
+    if (!term) return
 
     setIsSubmitting(true)
 
-    // Store fine-tuning data if available
     let sessionId = ""
     if (about || goal || customInstructions) {
-      sessionId = storeFineTuneData({
-        about,
-        goal,
-        customInstructions,
-      })
+      sessionId = storeFineTuneData({ about, goal, customInstructions })
     }
 
-    // Construct the URL with parameters
     const params = new URLSearchParams()
     params.append("term", term)
     params.append("difficulty", difficulty)
-    if (sessionId) {
-      params.append("id", sessionId)
-    }
+    if (sessionId) params.append("id", sessionId)
 
-    // Navigate to the search page with parameters
     router.push(`/ai/search?${params.toString()}`)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-indigo-50">
+      <LanguageSwitcher/>
       <div className="w-full max-w-4xl mx-auto p-6">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center mb-4">
@@ -56,27 +50,25 @@ export function AICourse() {
               <Sparkles className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold mb-2 text-purple-800">AI Course Generator</h1>
-          <p className="text-purple-600 text-lg">
-            Tell us what you want to learn, and our AI will create a customized course for you.
-          </p>
+          <h1 className="text-4xl font-bold mb-2 text-purple-800">{t('ai.title')}</h1>
+          <p className="text-purple-600 text-lg">{t('ai.subtitle')}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-purple-600 p-4 flex items-center">
             <BookOpen className="h-6 w-6 text-white mr-2" />
-            <h2 className="text-xl font-bold text-white">Create Your Learning Quest</h2>
+            <h2 className="text-xl font-bold text-white">{t('ai.section_title')}</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="bg-purple-100 p-4 rounded-xl">
               <label htmlFor="term" className="block text-sm font-bold text-purple-800 mb-2">
-                What would you like to learn today?
+                {t('ai.label_term')}
               </label>
               <input
                 type="text"
                 id="term"
-                placeholder="e.g., JavaScript, Machine Learning, Photography"
+                placeholder={t('ai.placeholder_term')}
                 value={term}
                 onChange={(e) => setTerm(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-purple-900"
@@ -86,7 +78,7 @@ export function AICourse() {
 
             <div className="bg-purple-100 p-4 rounded-xl">
               <label htmlFor="difficulty" className="block text-sm font-bold text-purple-800 mb-2">
-                Choose Your Difficulty Level
+                {t('ai.label_difficulty')}
               </label>
               <select
                 id="difficulty"
@@ -94,9 +86,9 @@ export function AICourse() {
                 onChange={(e) => setDifficulty(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-purple-900"
               >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
+                <option value="beginner">{t('ai.difficulty_beginner')}</option>
+                <option value="intermediate">{t('ai.difficulty_intermediate')}</option>
+                <option value="advanced">{t('ai.difficulty_advanced')}</option>
               </select>
             </div>
 
@@ -108,7 +100,7 @@ export function AICourse() {
               >
                 <div className="flex items-center">
                   <Brain className="w-5 h-5 mr-2" />
-                  Advanced Options
+                  {t('ai.button_advanced_options')}
                 </div>
                 {isAdvancedOptionsOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </button>
@@ -117,11 +109,11 @@ export function AICourse() {
                 <div className="mt-4 space-y-4 p-5 bg-indigo-50 rounded-xl border-2 border-indigo-100">
                   <div>
                     <label htmlFor="about" className="block text-sm font-bold text-indigo-800 mb-2">
-                      About Yourself (Optional)
+                      {t('ai.label_about')}
                     </label>
                     <textarea
                       id="about"
-                      placeholder="Tell us about your background, experience level, etc."
+                      placeholder={t('ai.placeholder_about')}
                       value={about}
                       onChange={(e) => setAbout(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -131,11 +123,11 @@ export function AICourse() {
 
                   <div>
                     <label htmlFor="goal" className="block text-sm font-bold text-indigo-800 mb-2">
-                      Your Learning Goals (Optional)
+                      {t('ai.label_goal')}
                     </label>
                     <textarea
                       id="goal"
-                      placeholder="What do you hope to achieve by learning this topic?"
+                      placeholder={t('ai.placeholder_goal')}
                       value={goal}
                       onChange={(e) => setGoal(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -145,11 +137,11 @@ export function AICourse() {
 
                   <div>
                     <label htmlFor="customInstructions" className="block text-sm font-bold text-indigo-800 mb-2">
-                      Special Instructions (Optional)
+                      {t('ai.label_custom_instructions')}
                     </label>
                     <textarea
                       id="customInstructions"
-                      placeholder="Any specific requirements or topics you want covered in the course?"
+                      placeholder={t('ai.placeholder_custom_instructions')}
                       value={customInstructions}
                       onChange={(e) => setCustomInstructions(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -170,7 +162,7 @@ export function AICourse() {
                   }`}
               >
                 <Rocket className="w-5 h-5" />
-                <span>{isSubmitting ? "Creating Your Course..." : "Generate Course"}</span>
+                <span>{isSubmitting ? t('ai.button_submitting') : t('ai.button_submit')}</span>
               </button>
             </div>
           </form>

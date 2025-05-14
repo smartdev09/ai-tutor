@@ -4,11 +4,20 @@ import { streamText } from "ai";
 const model = createGroq({ apiKey: process.env.GROQ_API_KEY! })("llama3-70b-8192");
 
 export async function POST(req: Request) {
-    const { content } = await req.json();
+    const { content, lang } = await req.json();
+
+    let language = 'English';
+    if (lang === 'de') {
+      language = 'German';
+    } else if (lang === 'ar') {
+      language = 'Arabic';
+    } else if (lang === 'en') {
+      language = 'English';
+    }
 
     const systemPrompt = `
         You are a helpful assistant. Based on the lesson content below, generate a 
-        structured quiz with exactly 15, not lesser or more than 15 multiple choice questions (MCQs).
+        structured quiz with exactly 15, not lesser or more than 15 multiple choice questions (MCQs), in ${language} language.
 
         Lesson Content:
         """${content}"""
@@ -33,7 +42,7 @@ export async function POST(req: Request) {
         3. Only create questions based on information explicitly mentioned in the lesson.
     `;
     
-    const userPrompt = `Generate a structured quiz with multiple choice questions based on this lesson content.`;
+    const userPrompt = `Generate a structured quiz with multiple choice questions based on this lesson content, in ${language} language.`;
 
     const result = streamText({
         model,

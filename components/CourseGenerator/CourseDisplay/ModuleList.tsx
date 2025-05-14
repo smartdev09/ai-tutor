@@ -1,13 +1,12 @@
 "use client"
 
-import type { AiCourse, DBCourse } from "@/types"
+import { Owner, type AiCourse, type DBCourse } from "@/types"
 import { ModuleItem } from "./ModuleItem"
 import { BookOpen, GraduationCap, Sparkles, Minimize2, Save, Loader } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sidebar, SidebarHeader, SidebarProvider, SidebarRail } from "@/components/ui/sidebar"
 import { useState, useEffect } from "react"
 import { LessonContent } from "./LessonContent"
-import { RegenerateButton } from "../CourseControls/RegenerateButton"
 import { Button } from "@/components/ui/button"
 import { courseService } from "@/lib/services/course"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
@@ -22,6 +21,8 @@ import {
 import { toast } from "@/hooks/use-toast"
 import { ChatButton } from "../CourseControls/ChatButton"
 import ChatbotUI from "./ChatBot"
+import { useTranslations } from "next-intl"
+import { useRouter } from "next/navigation"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -34,7 +35,6 @@ interface ModuleListProps {
 export function ModuleList({
   isLoading,
   course,
-  handleRegenerate,
   streamingModuleIndex = -1,
 }: ModuleListProps) {
   const dispatch = useAppDispatch()
@@ -43,12 +43,45 @@ export function ModuleList({
   const expandedModules = useAppSelector((state) => state.course.expandedModules)
   const isSaving = useAppSelector((state) => state.course.isSaving)
   const processedLessons = useAppSelector((state) => state.course.processedLessons)
+  const t = useTranslations()
 
   const [waitingForLesson, setWaitingForLesson] = useState<boolean>(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
   const [toggleBot, setToggleBot] = useState(false)
+  
+  const router = useRouter() 
+
+  useEffect(()=>{
+    if(!isLoading){
+      collapseAll()
+      const dbCourse: DBCourse = {
+        title: course.title,
+        difficulty: course.difficulty,
+        metaDescription: course.metaDescription,
+        slug: course.slug ? decodeURIComponent(course.slug) : '',
+        modules: course.modules.map((module, moduleIndex) => ({
+          title: module.title,
+          position: moduleIndex,
+          lessons: module.lessons.map((lessonTitle, lessonIndex) => ({
+            title: lessonTitle.title,
+            position: lessonIndex,
+            content: lessonTitle.content
+          }))
+        })),
+        done: course.done,
+        faqs: course.faqs?.map((faq) => ({
+          question: faq.question,
+          answer: faq.answer,
+        })),
+        owners: [Owner.USER]
+      }
+      courseService.createCourse(dbCourse)
+      router.push(`/ai/${dbCourse.slug || decodeURIComponent(course.slug || "")}`)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[isLoading])
 
   useEffect(() => {
     if (course.modules.length > 0 && (isLoading || streamingModuleIndex !== -1)) {
@@ -120,6 +153,7 @@ export function ModuleList({
       const dbCourse: DBCourse = {
         title: course.title,
         difficulty: course.difficulty,
+        metaDescription: course.metaDescription,
         slug: course.slug,
         modules: course.modules.map((module, moduleIndex) => ({
           title: module.title,
@@ -131,12 +165,18 @@ export function ModuleList({
               : "";
 
             return {
-              title: lessonTitle,
+              title: String(lessonTitle),
               position: lessonIndex,
               content: content
             };
           }),
         })),
+        done: course.done,
+        faqs: course.faqs?.map((faq) => ({
+          question: faq.question,
+          answer: faq.answer,
+        })),
+        owners: [Owner.USER]
       };
 
       await courseService.createCourse(dbCourse);
@@ -167,7 +207,7 @@ export function ModuleList({
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-600">
-                Course Modules
+                {t('module-list.course_modules')}
               </h2>
               {!isLoading && streamingModuleIndex === -1 && (
                 <button
@@ -226,7 +266,7 @@ export function ModuleList({
       <div className="w-full p-6">
         <div className="flex mb-4">
           <ChatButton toggleBot={toggleBot} setToggleBot={setToggleBot} />
-          <RegenerateButton onRegenerate={handleRegenerate} />
+          {/* <RegenerateButton onRegenerate={handleRegenerate} /> */}
           <Button
             onClick={handleSaveCourse}
             className="ml-2"
@@ -235,12 +275,12 @@ export function ModuleList({
             {isSaving ? (
               <>
                 <Loader className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {t('module-list.saving')}
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save Course
+                {t('module-list.save_course')}
               </>
             )}
           </Button>
@@ -254,8 +294,8 @@ export function ModuleList({
                 <div className="bg-primary/10 p-6 rounded-full">
                   <BookOpen className="h-12 w-12 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold">Select a Module</h2>
-                <p className="text-muted-foreground max-w-md">Please select a module from the sidebar to start learning.</p>
+                <h2 className="text-2xl font-bold">{t('module-list.select_module')}</h2>
+                <p className="text-muted-foreground max-w-md">{t('module-list.select_module_description')}</p>
               </div>
             ) : (
               <LessonContent
@@ -272,10 +312,10 @@ export function ModuleList({
           {/* ChatBot area */}
           {toggleBot && (
             <div className="w-1/3 h-full p-4 sticky top-0">
-            <div className="h-full">
-              <ChatbotUI />
+              <div className="h-full">
+                <ChatbotUI />
+              </div>
             </div>
-          </div>
           )}
         </div>
       </div>

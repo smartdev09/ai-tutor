@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import TestMyKnowledge from "./TestMyKnowledge"
 import ContextModalButton from "./EditPrompt"
+import { useLocale, useTranslations } from "next-intl"
 
 interface LessonContentProps {
   module: Module
@@ -44,7 +45,9 @@ export function LessonContent({
   onLessonReached,
   slug,
 }: LessonContentProps) {
+  const t = useTranslations()
   const dispatch = useAppDispatch()
+  const lang = useLocale();
   const currentModuleIndex = useAppSelector((state) => state.course.currentModuleIndex)
   const reduxProcessedLessons = useAppSelector((state) => state.course.processedLessons)
   const isEditing = useAppSelector((state) => state.course.isEditing)
@@ -202,6 +205,7 @@ export function LessonContent({
             body: {
               moduleTitle: module?.title,
               lessonTitle: module?.lessons[nextLessonToGenerate] || "",
+              lang: lang,
             },
           })
         } else {
@@ -210,6 +214,7 @@ export function LessonContent({
         }
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     module?.title,
     module?.lessons,
@@ -287,6 +292,7 @@ export function LessonContent({
               body: {
                 moduleTitle: module?.title,
                 lessonTitle: module?.lessons[futureIndex] || "",
+                lang: lang,
               },
             })
           } else {
@@ -298,6 +304,7 @@ export function LessonContent({
             body: {
               moduleTitle: module?.title,
               lessonTitle: module?.lessons[nextIndex] || "",
+              lang: lang,
             },
           })
         }
@@ -321,6 +328,7 @@ export function LessonContent({
     dispatch,
     reduxProcessedLessons,
     userSelectedLesson,
+    lang,
   ])
 
   const progressPercentage = module?.lessons?.length
@@ -328,7 +336,7 @@ export function LessonContent({
     : 0
 
   const currentLessonTitle = module?.lessons[currentLessonIndex] || ""
-  dispatch(setCurrentLessonTitle(currentLessonTitle))
+  dispatch(setCurrentLessonTitle(currentLessonTitle.title))
   const currentLessonNumber = currentLessonIndex + 1
   const isLessonGenerated = !!processedLessons[currentLessonIndex]
   const isCurrentLessonBeingGenerated = isProcessing && generatingLessonIndex === currentLessonIndex
@@ -416,15 +424,17 @@ export function LessonContent({
       setIsProcessing(true)
       setGeneratingLessonIndex(currentLessonIndex)
       setTestMyKnowledgeToggle(false)
-  
+
       complete("", {
         body: {
           moduleTitle: module?.title,
           lessonTitle: module?.lessons[currentLessonIndex] || "",
           userPrompt: userPrompt,
+          lang: lang,
         },
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPrompt])
 
   return (
@@ -432,7 +442,7 @@ export function LessonContent({
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 rounded-xl shadow-lg">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <ContextModalButton onSubmit={handleOnSubmit}/>
+            <ContextModalButton onSubmit={handleOnSubmit} />
             <BookOpen className="h-6 w-6 text-white" />
             {editingModuleId === currentModuleId ? (
               <div className="flex items-center gap-2">
@@ -451,7 +461,7 @@ export function LessonContent({
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    Cancel
+                    {t('lesson-content.saveButton')}
                   </Button>
                   <Button
                     size="sm"
@@ -463,12 +473,12 @@ export function LessonContent({
                     {isSaving ? (
                       <>
                         <Loader className="h-4 w-4 mr-1 animate-spin" />
-                        Saving...
+                        {t('lesson-content.savingButton')}
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-1" />
-                        Save
+                        {t('lesson-content.saveButton')}
                       </>
                     )}
                   </Button>
@@ -492,14 +502,14 @@ export function LessonContent({
           {isProcessing && (
             <div className="flex items-center gap-2 text-sm text-white bg-white/20 px-3 py-1.5 rounded-full">
               <div className="h-2 w-2 bg-white rounded-full animate-pulse"></div>
-              <span>Generating content...</span>
+              <span>{t('lesson-content.generatingIndicator')}</span>
             </div>
           )}
         </div>
 
         <div className="mb-4">
           <div className="flex justify-between text-white/90 text-sm mb-1">
-            <span>Progress</span>
+            <span>{t('lesson-content.progressLabel')}</span>
             <span>{Math.round(progressPercentage)}%</span>
           </div>
           <Progress value={progressPercentage} className="h-2 bg-white/30" />
@@ -510,11 +520,11 @@ export function LessonContent({
             <span className="bg-white/20 px-2 py-1 rounded-full text-xs font-medium">
               {currentLessonNumber}/{module?.lessons?.length}
             </span>
-            <span className="text-sm font-medium">{currentLessonTitle}</span>
+            <span className="text-sm font-medium">{currentLessonTitle.title}</span>
             {waitingForLesson && !isLessonGenerated && !isCurrentLessonBeingGenerated && (
               <span className="inline-flex items-center bg-white/20 px-2 py-1 rounded-full text-xs">
                 <Loader className="h-3 w-3 mr-1 animate-spin" />
-                Waiting for content...
+                {t('lesson-content.waitingIndicator')}
               </span>
             )}
           </p>
@@ -531,7 +541,7 @@ export function LessonContent({
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    Cancel
+                    {t('lesson-content.cancelButton')}
                   </Button>
                   <Button
                     size="sm"
@@ -543,12 +553,12 @@ export function LessonContent({
                     {isSaving ? (
                       <>
                         <Loader className="h-4 w-4 mr-1 animate-spin" />
-                        Saving...
+                        {t('lesson-content.savingButton')}
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-1" />
-                        Save
+                        {t('lesson-content.saveButton')}
                       </>
                     )}
                   </Button>
@@ -561,7 +571,7 @@ export function LessonContent({
                   onClick={handleEditToggle}
                 >
                   <Edit className="h-4 w-4 mr-1" />
-                  Edit
+                  {t('lesson-content.editButton')}
                 </Button>
               )}
             </div>
@@ -578,7 +588,7 @@ export function LessonContent({
               clipRule="evenodd"
             />
           </svg>
-          Error loading lesson content. Please try again.
+          {t('lesson-content.errorMessage')}
         </div>
       )}
 
@@ -595,9 +605,9 @@ export function LessonContent({
               <div className="absolute -top-2 -right-2 h-4 w-4 bg-purple-500 rounded-full animate-ping"></div>
             </div>
             <div className="space-y-3">
-              <h3 className="text-xl font-bold text-gray-800">Preparing your lesson</h3>
+              <h3 className="text-xl font-bold text-gray-800">{t('lesson-content.loadingTitle')}</h3>
               <p className="text-muted-foreground max-w-md">
-                Your selected lesson is being prepared. Please wait while we generate content for lessons in sequence.
+                {t('lesson-content.loadingDescription')}
               </p>
             </div>
           </div>
@@ -607,7 +617,7 @@ export function LessonContent({
               value={editingLessonContent}
               onChange={handleContentChange}
               className="min-h-[70vh] font-mono text-sm p-4"
-              placeholder="Edit your lesson content here..."
+              placeholder={`${t('lesson-content.contentPlaceholder')}`}
             />
           </div>
         ) : (
@@ -624,7 +634,8 @@ export function LessonContent({
                   variant="default"
                   onClick={handleTestMyKnowledgeToggle}
                 >
-                  <FlaskConical />Test My Knowledge
+                  <FlaskConical />
+                  {t('lesson-content.testKnowledgeButton')}
                 </Button>
               )
             )}

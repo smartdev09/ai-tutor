@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCompletion } from '@ai-sdk/react';
 import { useSearchParams } from 'next/navigation';
 import { ModuleList } from './CourseDisplay/ModuleList';
@@ -14,6 +14,10 @@ export function GenerateAICourse() {
   const [error, setError] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const lang = useLocale();
+  
+  // Track the highest module count we've seen to prevent fluctuations
+  const highestModuleCountRef = useRef(0);
+  const previousCompletionRef = useRef('');
 
   // Get parameters from URL
   const term = searchParams.get('term') || '';
@@ -56,12 +60,41 @@ export function GenerateAICourse() {
   useEffect(() => {
     if (completion) {
       try {
-        const parsedCourse = parseCourseFromMarkdown(completion);
-        if (parsedCourse && (parsedCourse.title || parsedCourse.modules?.length > 0)) {
-          setCourse(parsedCourse);
+        // Only process if we have new content
+        if (completion.length > previousCompletionRef.current.length) {
+          previousCompletionRef.current = completion;
+          const parsedCourse = parseCourseFromMarkdown(completion);
+          
+          if (parsedCourse && (parsedCourse.title || parsedCourse.modules?.length > 0)) {
+            // Ensure we never reduce the number of modules
+            if (parsedCourse.modules.length >= highestModuleCountRef.current) {
+              highestModuleCountRef.current = parsedCourse.modules.length;
+              setCourse(parsedCourse);
+            } else {
+              // If the new parsed course has fewer modules, preserve the previous modules count
+              if (course && course.modules.length > parsedCourse.modules.length) {
+                // Create a merged course that preserves existing modules
+                const mergedModules = [...course.modules];
+                
+                // Update only the modules that we have in the new parsed course
+                for (let i = 0; i < parsedCourse.modules.length; i++) {
+                  mergedModules[i] = parsedCourse.modules[i];
+                }
+                
+                const mergedCourse = {
+                  ...parsedCourse,
+                  modules: mergedModules
+                };
+                
+                setCourse(mergedCourse);
+              } else {
+                setCourse(parsedCourse);
+              }
+            }
+          }
         }
-      } catch {
-        console.error('Error parsing streaming content');
+      } catch (err) {
+        console.error('Error parsing streaming content', err);
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -78,6 +111,9 @@ export function GenerateAICourse() {
   // Handle regeneration with optional custom prompt
   const handleRegenerate = (prompt?: string) => {
     setError(null);
+    // Reset our tracking variables
+    highestModuleCountRef.current = 0;
+    previousCompletionRef.current = '';
     complete(prompt || '');
   };
 
@@ -144,8 +180,8 @@ export function GenerateAICourse() {
       }
 
       return currentCourse;
-    } catch {
-      console.error('Error parsing markdown');
+    } catch (err) {
+      console.error('Error parsing markdown', err);
       return null;
     }
   };
@@ -160,7 +196,12 @@ export function GenerateAICourse() {
 
   return (
     <div className="w-full">
-      <ModuleList isLoading={isLoading} course={course} handleRegenerate={handleRegenerate} />
+      <ModuleList 
+        isLoading={isLoading} 
+        course={course} 
+        handleRegenerate={handleRegenerate} 
+        streamingModuleIndex={isLoading ? course.modules.length - 1 : -1}
+      />
     </div>
   );
 }

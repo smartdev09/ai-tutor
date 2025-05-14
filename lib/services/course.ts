@@ -9,60 +9,58 @@ export const courseService = {
         .select("id")
         .eq("slug", course.slug)
         .maybeSingle();
-  
+
       if (existingCourseError && existingCourseError.code !== 'PGRST116') {
         console.error("Error checking for existing course:", existingCourseError);
         throw existingCourseError;
       }
-  
+
       let courseData;
-  
+      const coursePayload = {
+        title: course.title,
+        difficulty: course.difficulty,
+        slug: course.slug,
+        metaDescription: course.metaDescription,
+        done: course.done,
+        faqs: course.faqs,
+        owners: course.owners
+      };
+
       if (existingCourse) {
+        // Update existing course
         const { data: updatedCourse, error: updateError } = await supabase
           .from("courses")
-          .update({
-            title: course.title,
-            difficulty: course.difficulty,
-          })
+          .update(coursePayload)
           .eq("id", existingCourse.id)
           .select()
           .single();
-  
-        if (updateError) {
-          console.error("Error updating course:", updateError);
-          throw updateError;
-        }
-  
+
+        if (updateError) throw updateError;
         courseData = updatedCourse;
 
-        const { error: deleteModulesError } = await supabase
-          .from("modules")
-          .delete()
-          .eq("course_id", existingCourse.id);
-  
-        if (deleteModulesError) {
-          console.error("Error deleting existing modules:", deleteModulesError);
-          throw deleteModulesError;
+        // Delete existing modules and FAQs
+        const [{ error: deleteModulesError }, { error: deleteFaqsError }] = await Promise.all([
+          supabase.from("modules").delete().eq("course_id", existingCourse.id),
+          supabase.from("faqs").delete().eq("course_id", existingCourse.id),
+        ]);
+
+        if (deleteModulesError || deleteFaqsError) {
+          console.error("Error deleting existing data:", deleteModulesError || deleteFaqsError);
+          throw deleteModulesError || deleteFaqsError;
         }
       } else {
+        // Create new course
         const { data: newCourse, error: insertError } = await supabase
           .from("courses")
-          .insert({
-            title: course.title,
-            difficulty: course.difficulty,
-            slug: course.slug,
-          })
+          .insert(coursePayload)
           .select()
           .single();
-  
-        if (insertError) {
-          console.error("Error creating course:", insertError);
-          throw insertError;
-        }
-  
+
+        if (insertError) throw insertError;
         courseData = newCourse;
       }
-  
+
+      // Insert modules and lessons
       for (const courseModule of course.modules) {
         const { data: moduleData, error: moduleError } = await supabase
           .from("modules")
@@ -73,35 +71,95 @@ export const courseService = {
           })
           .select()
           .single();
-  
-        if (moduleError) {
-          console.error("Error creating module:", moduleError);
-          throw moduleError;
-        }
-  
-        for (const lesson of courseModule.lessons) {
-          const { error: lessonError } = await supabase
-            .from("lessons")
-            .insert({
-              module_id: moduleData.id,
-              title: lesson.title,
-              content: lesson.content || "",
-              position: lesson.position,
-            })
-            .select();
-  
-          if (lessonError) {
-            console.error("Error creating lesson:", lessonError);
-            throw lessonError;
-          }
+
+        if (moduleError) throw moduleError;
+
+        // Insert lessons
+        const lessonInserts = courseModule.lessons.map(lesson =>
+          supabase.from("lessons").insert({
+            module_id: moduleData.id,
+            title: lesson.title,
+            content: lesson.content || "",
+            position: lesson.position,
+          })
+        );
+
+        const lessonResults = await Promise.all(lessonInserts);
+        for (const result of lessonResults) {
+          if (result.error) throw result.error;
         }
       }
-  
+
+      // Insert FAQs
+      if (course.faqs?.length) {
+        const { error: faqError } = await supabase
+          .from("faqs")
+          .insert(course.faqs.map(faq => ({
+            course_id: courseData.id,
+            question: faq.question,
+            answer: faq.answer,
+          })));
+
+        if (faqError) throw faqError;
+      }
+
       return courseData;
     } catch (error) {
       console.error("Error in createCourse:", error);
       throw error;
     }
+  },
+
+  async updateContent(
+    courseId: string,
+    moduleIndex: number,
+    lessonIndex: number,
+    newContent: string
+  ): Promise<void> {
+    
+    try {
+      const { data: moduleData, error: moduleError } = await supabase
+        .from('modules')
+        .select('id')
+        .eq('course_id', courseId)
+        .eq('position', moduleIndex)
+        .single();
+        
+      if (moduleError) {
+        console.error('[updateContent] Error fetching module:', moduleError);
+        throw new Error(`Failed to find module: ${moduleError.message}`);
+      }
+      
+      const moduleId = moduleData.id;
+      
+      const { error } = await supabase
+        .from('lessons')
+        .update({ content: newContent })
+        .eq('module_id', moduleId)
+        .eq('position', lessonIndex);
+        
+      if (error) {
+        console.error('[updateContent] Supabase returned an error:', error);
+        throw new Error(`Failed to update lesson content: ${error.message}`);
+      }
+      
+    } catch (err) {
+      console.error('[updateContent] Caught exception:', err);
+      throw err;
+    }
+  },
+
+  async getCoursesCount(): Promise<number> {
+    const { count, error } = await supabase
+      .from('courses')
+      .select('*', { count: 'exact', head: true });
+
+    if (error) {
+      console.error('Error getting courses count:', error.message);
+      throw error;
+    }
+
+    return count ?? 0;
   },
 
   async getCourse(slug: string) {
@@ -119,7 +177,7 @@ export const courseService = {
           )
         `)
         .eq("slug", slug)
-        .single()
+        .maybeSingle()
 
       if (error) {
         console.error("Error fetching course:", error)
@@ -133,19 +191,11 @@ export const courseService = {
     }
   },
 
-  async getAllCourses() {
+  async getAllSlugs() {
     try {
       const { data: courses, error } = await supabase
         .from("courses")
-        .select(`
-          *,
-          modules:modules!course_id (
-            *,
-            lessons:lessons!module_id (
-              *
-            )
-          )
-        `)
+        .select("slug")
 
       if (error) {
         console.error("Error fetching courses:", error)
@@ -158,6 +208,68 @@ export const courseService = {
       throw error
     }
   },
+
+  async getAllCourses(owners: string | string[]) {
+    try {
+      const { data: courses, error } = await supabase
+        .from("courses")
+        .select(`
+          *,
+          modules:modules!course_id (
+            *,
+            lessons:lessons!module_id (
+              *
+            )
+          )
+        `)
+        .contains("owners", Array.isArray(owners) ? owners : [owners])
+
+      if (error) {
+        console.error("Error fetching courses:", error)
+        throw error
+      }
+
+      return courses
+    } catch (error) {
+      console.error("Error in getAllCourses:", error)
+      throw error
+    }
+  },
+
+  async addCourseOwners(courseId: string, newOwners: string[]) {
+    try {
+      const { data: currentData, error: fetchError } = await supabase
+        .from("courses")
+        .select("owners")
+        .eq("id", courseId)
+        .single()
+  
+      if (fetchError) {
+        console.error("Error fetching current owners:", fetchError)
+        throw fetchError
+      }
+  
+      const existingOwners: string[] = currentData?.owners || []
+  
+      const mergedOwners = Array.from(new Set([...existingOwners, ...newOwners]))
+  
+      const { data: updatedData, error: updateError } = await supabase
+        .from("courses")
+        .update({ owners: mergedOwners })
+        .eq("id", courseId)
+        .select()
+  
+      if (updateError) {
+        console.error("Error updating course owners:", updateError)
+        throw updateError
+      }
+  
+      return updatedData
+    } catch (error) {
+      console.error("Error in addCourseOwners:", error)
+      throw error
+    }
+  },  
 
   async getModuleIdByPosition(courseId: string, position: number) {
     try {
@@ -182,39 +294,39 @@ export const courseService = {
 
   async updateModule(moduleId: string, title: string) {
     console.log("Updating module title:", { moduleId, title });
-  
+
     try {
       const { data: existingModule, error: checkError } = await supabase
         .from("modules")
         .select("*")
         .eq("id", moduleId)
         .single();
-  
+
       if (checkError) {
         console.error("Error checking module existence:", checkError);
         throw checkError;
       }
-  
+
       if (!existingModule) {
         throw new Error(`Module with ID ${moduleId} not found`);
       }
-  
+
       const updateFields = {
         title: title
       };
-  
+
       const { data, error: updateError } = await supabase
         .from("modules")
         .update(updateFields)
         .eq("id", moduleId)
         .select()
         .single();
-  
+
       if (updateError) {
         console.error("Error updating module:", updateError);
         throw updateError;
       }
-  
+
       console.log("Module title updated successfully:", data);
       return data;
     } catch (error) {

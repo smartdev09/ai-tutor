@@ -1,18 +1,35 @@
 
-export type Lesson = string;
+export type Lesson = {
+  title: string;
+  content: string;
+};
 
 export type Module = {
   title: string;
   lessons: Lesson[];
 };
 
+export type Faqs = {
+  question: string;
+  answer: string;
+};
+
+export enum Owner {
+  USER = 'USER',
+  COMMUNITY = 'COMMUNITY',
+  STAFF = 'STAFF',
+}
+
 export type AiCourse = {
+  owners: Owner[];
   id?: string;
+  metaDescription?: string;
   title: string;
   modules: Module[];
   difficulty: string;
   done: string[];
   slug?: string;
+  faqs?: Faqs[];
 };
 
 export type CourseFineTuneData = {
@@ -61,11 +78,15 @@ export type ResultItem = Title | Topic | Label;
 // DB Types
 
 export type DBCourse = {
+  owners: Owner[];
   id?: string;
+  metaDescription?: string;
   title: string;
-  difficulty: string;
-  slug?: string;
   modules: DBModule[];
+  difficulty: string;
+  done?: string[];
+  slug?: string;
+  faqs?: Faqs[];
 };
 
 export type DBModule = {

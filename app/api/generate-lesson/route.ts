@@ -6,42 +6,45 @@ const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
 
 export async function POST(req: Request) {
   try {
-    // Get request body
-    let {  moduleTitle, lessonTitle, userPrompt = null } = await req.json();
-    lessonTitle = 'what is machine learnig'
-    moduleTitle = 'Intro to machine learning'
+    const { moduleTitle, lessonTitle, userPrompt = null, lang, difficulty = 'beginner' } = await req.json();
+    let language = 'English';
+    if (lang === 'de') {
+      language = 'German';
+    } else if (lang === 'ar') {
+      language = 'Arabic';
+    } else if (lang === 'en') {
+      language = 'English';
+    }
 
-    // Validate required fields
-    if ( !moduleTitle || !lessonTitle) {
+    if (!moduleTitle || !lessonTitle) {
       return new Response(
         JSON.stringify({ error: 'Module title and lesson title are required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // Build our prompt for the AI model
-    const systemPrompt = `You are an expert educator creating content for a course titled "${moduleTitle}" 
-    at begineer difficulty level.
-    
-    You need to create detailed lesson content for the lesson "${lessonTitle}" 
+    const systemPrompt = `You are an expert educator creating SEO-optimized content for a course titled "${moduleTitle}"
+    at ${difficulty} difficulty level.
+    Create detailed, search-engine optimized lesson content for "${lessonTitle}"
     which is part of the module "${moduleTitle}".
-    
-    ${userPrompt ? `Most importantly, ${userPrompt}.` : "" }
-    
-    The content should be comprehensive, educational, and well-structured in Markdown format.
-    Include:
-    
-    1. A brief introduction explaining the importance of this topic
-    2. Clear explanations of key concepts
-    3. Examples to illustrate the concepts
-    4. Code snippets if applicable
-    5. Practice exercises or activities
-    6. A summary of key points
-    
-    Format the content with appropriate headings, bullet points, and code blocks as needed.`;
+    ${userPrompt ? `Most importantly, ${userPrompt}.` : ""}
+    The content should be comprehensive, educational, well-structured, and optimized for search engines. Format in Markdown and include:
+    1. A compelling H1 heading that includes the main keyword "${lessonTitle}"
+    2. A brief introduction (250-300 words) explaining the importance of this topic and including the main keyword naturally
+    3. Use H2 and H3 headings with relevant keywords throughout the lesson
+    4. Clear explanations of key concepts with relevant keywords naturally incorporated
+    5. Examples, case studies, or scenarios to illustrate the concepts
+    6. Code snippets if applicable (properly formatted)
+    7. Practice exercises or activities with clear instructions
+    8. A summary of key points that reinforces the main concepts
+    9. A "Further Reading" section with suggested topics (these will be internal links)
+    10. 3-5 FAQ questions with answers that target common search queries related to "${lessonTitle}"
+    Make sure the content is at least 1,500 words long for better SEO performance.
+    Use varied paragraph lengths, bullet points, numbered lists, and other formatting to improve readability.
+    Include transition words and phrases to improve content flow.
+    Naturally incorporate the primary keyword "${lessonTitle}" 5-7 times throughout the content.`;
 
-    // User message
-    const userMessage = `Create detailed content for the lesson "${lessonTitle}" in module "${moduleTitle}".`;
+    const userMessage = `Create detailed content for the lesson "${lessonTitle}" in module "${moduleTitle} in ${language} language".`;
 
     // Generate lesson content with streaming
     const result = streamText({

@@ -1,13 +1,12 @@
 "use client"
 
-import type { AiCourse, DBCourse } from "@/types"
+import { Owner, type AiCourse, type DBCourse } from "@/types"
 import { ModuleItem } from "./ModuleItem"
 import { BookOpen, GraduationCap, Sparkles, Minimize2, Save, Loader } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sidebar, SidebarHeader, SidebarProvider, SidebarRail } from "@/components/ui/sidebar"
 import { useState, useEffect } from "react"
 import { LessonContent } from "./LessonContent"
-import { RegenerateButton } from "../CourseControls/RegenerateButton"
 import { Button } from "@/components/ui/button"
 import { courseService } from "@/lib/services/course"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
@@ -23,6 +22,7 @@ import { toast } from "@/hooks/use-toast"
 import { ChatButton } from "../CourseControls/ChatButton"
 import ChatbotUI from "./ChatBot"
 import { useTranslations } from "next-intl"
+import { useRouter } from "next/navigation"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -35,7 +35,6 @@ interface ModuleListProps {
 export function ModuleList({
   isLoading,
   course,
-  handleRegenerate,
   streamingModuleIndex = -1,
 }: ModuleListProps) {
   const dispatch = useAppDispatch()
@@ -51,10 +50,35 @@ export function ModuleList({
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
   const [toggleBot, setToggleBot] = useState(false)
+  
+  const router = useRouter() 
 
   useEffect(()=>{
     if(!isLoading){
       collapseAll()
+      const dbCourse: DBCourse = {
+        title: course.title,
+        difficulty: course.difficulty,
+        metaDescription: course.metaDescription,
+        slug: course.slug ? decodeURIComponent(course.slug) : '',
+        modules: course.modules.map((module, moduleIndex) => ({
+          title: module.title,
+          position: moduleIndex,
+          lessons: module.lessons.map((lessonTitle, lessonIndex) => ({
+            title: lessonTitle.title,
+            position: lessonIndex,
+            content: lessonTitle.content
+          }))
+        })),
+        done: course.done,
+        faqs: course.faqs?.map((faq) => ({
+          question: faq.question,
+          answer: faq.answer,
+        })),
+        owners: [Owner.USER]
+      }
+      courseService.createCourse(dbCourse)
+      router.push(`/ai/${dbCourse.slug || decodeURIComponent(course.slug || "")}`)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[isLoading])
@@ -129,6 +153,7 @@ export function ModuleList({
       const dbCourse: DBCourse = {
         title: course.title,
         difficulty: course.difficulty,
+        metaDescription: course.metaDescription,
         slug: course.slug,
         modules: course.modules.map((module, moduleIndex) => ({
           title: module.title,
@@ -140,12 +165,18 @@ export function ModuleList({
               : "";
 
             return {
-              title: lessonTitle,
+              title: String(lessonTitle),
               position: lessonIndex,
               content: content
             };
           }),
         })),
+        done: course.done,
+        faqs: course.faqs?.map((faq) => ({
+          question: faq.question,
+          answer: faq.answer,
+        })),
+        owners: [Owner.USER]
       };
 
       await courseService.createCourse(dbCourse);
@@ -235,7 +266,7 @@ export function ModuleList({
       <div className="w-full p-6">
         <div className="flex mb-4">
           <ChatButton toggleBot={toggleBot} setToggleBot={setToggleBot} />
-          <RegenerateButton onRegenerate={handleRegenerate} />
+          {/* <RegenerateButton onRegenerate={handleRegenerate} /> */}
           <Button
             onClick={handleSaveCourse}
             className="ml-2"

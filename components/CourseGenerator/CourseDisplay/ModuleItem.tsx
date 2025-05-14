@@ -127,8 +127,8 @@ export function ModuleItem({
           <ul className="space-y-1 py-2 pl-11 pr-2">
             {module.lessons.map((lesson, index) => (
               <LessonItem
-                key={lesson}
-                lesson={lesson}
+                key={lesson.title}
+                lesson={lesson.title}
                 lessonNumber={index + 1}
                 isActive={isSelected && selectedLessonIndex === index}
                 isStreaming={isStreaming && index === module.lessons.length - 1}

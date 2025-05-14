@@ -61,7 +61,7 @@ const LanguageSwitcher: React.FC = () => {
   };
 
   return (
-    <div ref={ref} className="fixed top-4 right-40 z-50">
+    <div ref={ref} className="fixed top-4 right-4 z-50">
       <button
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Language switcher"

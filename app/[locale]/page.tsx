@@ -7,6 +7,7 @@ import YourCourses from '@/components/HomeScreen/Tabs/MyCourses';
 import FeaturedCourses from '@/components/HomeScreen/Tabs/StaffPicks';
 import ExploreCourses from '@/components/HomeScreen/Tabs/Community';
 import { TabType } from '@/components/HomeScreen/Sidebar';
+import { Logout } from '@/components/logout-button/Logout';
 
 export default function Page() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -29,6 +30,7 @@ export default function Page() {
   
   return (
     <div className="flex flex-col h-screen bg-purple-50">
+      <Logout/>
       
       {/* Mobile Header - Only visible on mobile */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-purple-200">

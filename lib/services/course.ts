@@ -92,15 +92,12 @@ export const courseService = {
 
       // Insert FAQs
       if (course.faqs?.length) {
-        const { error: faqError } = await supabase
-          .from("faqs")
-          .insert(course.faqs.map(faq => ({
-            course_id: courseData.id,
-            question: faq.question,
-            answer: faq.answer,
-          })));
-
-        if (faqError) throw faqError;
+          supabase.from("faqs")
+            .insert(course.faqs.map(faq => ({
+              course_id: courseData.id,
+              question: faq.question,
+              answer: faq.answer,
+            })));
       }
 
       return courseData;
@@ -113,10 +110,10 @@ export const courseService = {
   async updateContent(
     courseId: string,
     moduleIndex: number,
-    lessonIndex: number,
+    lessonTitle: string,
     newContent: string
   ): Promise<void> {
-    
+
     try {
       const { data: moduleData, error: moduleError } = await supabase
         .from('modules')
@@ -124,25 +121,25 @@ export const courseService = {
         .eq('course_id', courseId)
         .eq('position', moduleIndex)
         .single();
-        
+
       if (moduleError) {
         console.error('[updateContent] Error fetching module:', moduleError);
         throw new Error(`Failed to find module: ${moduleError.message}`);
       }
-      
+
       const moduleId = moduleData.id;
-      
+
       const { error } = await supabase
         .from('lessons')
         .update({ content: newContent })
         .eq('module_id', moduleId)
-        .eq('position', lessonIndex);
-        
+        .eq('title', lessonTitle);
+
       if (error) {
         console.error('[updateContent] Supabase returned an error:', error);
         throw new Error(`Failed to update lesson content: ${error.message}`);
       }
-      
+
     } catch (err) {
       console.error('[updateContent] Caught exception:', err);
       throw err;
@@ -243,33 +240,33 @@ export const courseService = {
         .select("owners")
         .eq("id", courseId)
         .single()
-  
+
       if (fetchError) {
         console.error("Error fetching current owners:", fetchError)
         throw fetchError
       }
-  
+
       const existingOwners: string[] = currentData?.owners || []
-  
+
       const mergedOwners = Array.from(new Set([...existingOwners, ...newOwners]))
-  
+
       const { data: updatedData, error: updateError } = await supabase
         .from("courses")
         .update({ owners: mergedOwners })
         .eq("id", courseId)
         .select()
-  
+
       if (updateError) {
         console.error("Error updating course owners:", updateError)
         throw updateError
       }
-  
+
       return updatedData
     } catch (error) {
       console.error("Error in addCourseOwners:", error)
       throw error
     }
-  },  
+  },
 
   async getModuleIdByPosition(courseId: string, position: number) {
     try {

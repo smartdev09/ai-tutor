@@ -50,12 +50,11 @@ export function ModuleList({
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
   const [toggleBot, setToggleBot] = useState(false)
-  
-  const router = useRouter() 
 
-  useEffect(()=>{
-    if(!isLoading){
-      collapseAll()
+  const router = useRouter()
+
+  const createCourseFromData = async () => {
+    try {
       const dbCourse: DBCourse = {
         title: course.title,
         difficulty: course.difficulty,
@@ -64,10 +63,10 @@ export function ModuleList({
         modules: course.modules.map((module, moduleIndex) => ({
           title: module.title,
           position: moduleIndex,
-          lessons: module.lessons.map((lessonTitle, lessonIndex) => ({
-            title: lessonTitle.title,
+          lessons: module.lessons.map((lesson, lessonIndex) => ({
+            title: lesson.title,
             position: lessonIndex,
-            content: lessonTitle.content
+            content: lesson.content
           }))
         })),
         done: course.done,
@@ -76,12 +75,25 @@ export function ModuleList({
           answer: faq.answer,
         })),
         owners: [Owner.USER]
-      }
-      courseService.createCourse(dbCourse)
-      router.push(`/ai/${dbCourse.slug || decodeURIComponent(course.slug || "")}`)
+      };
+
+      await courseService.createCourse(dbCourse);
+      console.log('Course created successfully');
+    } catch (error) {
+      console.error('Error creating course:', error);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[isLoading])
+  };
+
+
+  useEffect(() => {
+    if (!isLoading) {
+      collapseAll()
+      createCourseFromData().then(() => {
+        router.push(`/ai/${decodeURIComponent(course.slug || "")}`)
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading])
 
   useEffect(() => {
     if (course.modules.length > 0 && (isLoading || streamingModuleIndex !== -1)) {

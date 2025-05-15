@@ -61,7 +61,7 @@ export function AICourseContent({
       setLessonContent(completion)
       if (!isCompletionLoading && completion) {
         // Save the completed lesson content to the database
-        courseService.updateContent(course.id || "", selectedModuleIndex, selectedLessonIndex, completion)
+        courseService.updateContent(course.id || "", selectedModuleIndex, lessonTitle, completion)
           .then(() => {
             // Update local course data structure to include the content
             if (course.modules && course.modules[selectedModuleIndex] && course.modules[selectedModuleIndex].lessons) {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { DBCourse } from "@/types/index"
+import { Owner, type DBCourse } from "@/types/index"
 import { useTranslations } from "next-intl"
 import { CourseSidebar } from "./CourseSidebar"
 import { CourseHeader } from "./CourseHeader"
@@ -9,6 +9,11 @@ import { CourseContent } from "./CourseContent"
 import { useCompletion } from "@ai-sdk/react"
 import { courseService } from "@/lib/services/course"
 import FAQs from "./Faqs"
+import ForkBanner from "@/components/ui/fork"
+import ChatbotUI from "../CourseDisplay/ChatBot"
+import FurtherReading from "./FurtherReading"
+import { setCurrentLessonContent, setCurrentLessonTitle } from "@/store/courseSlice"
+import { useAppDispatch } from "@/store/hooks"
 
 interface AICourseContentProps {
   courseSlug: string
@@ -19,11 +24,11 @@ interface AICourseContentProps {
   onRegenerateOutline: (prompt?: string) => void
 }
 
-export function AICourseContent({ 
-  course, 
-  isStreaming, 
-  error, 
-  onRegenerateOutline 
+export function AICourseContent({
+  course,
+  isStreaming,
+  error,
+  onRegenerateOutline
 }: AICourseContentProps) {
   const [selectedModuleIndex, setSelectedModuleIndex] = useState<number | null>(null)
   const [selectedLessonIndex, setSelectedLessonIndex] = useState<number | null>(null)
@@ -32,7 +37,9 @@ export function AICourseContent({
   const [lessonError, setLessonError] = useState("")
   const [regeneratePrompt, setRegeneratePrompt] = useState("")
   const [isRegenerateOpen, setIsRegenerateOpen] = useState(false)
+  const [toggleBot, setToggleBot] = useState(false)
   const t = useTranslations()
+  const dispatch = useAppDispatch()
 
   // State to track if the component has mounted
   const [hasMounted, setHasMounted] = useState(false)
@@ -87,7 +94,7 @@ export function AICourseContent({
 
     // When loading is complete, mark the lesson as no longer loading
     setIsLoadingLesson(isCompletionLoading)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completion, isCompletionLoading, hasMounted])
 
   // Effect to handle completion errors
@@ -168,18 +175,20 @@ export function AICourseContent({
 
   // Get current module and lesson titles
   const currentModule = selectedModuleIndex !== null ? course.modules[selectedModuleIndex] : null
-  const currentLesson = currentModule && selectedLessonIndex !== null 
-    ? currentModule.lessons[selectedLessonIndex] 
+  const currentLesson = currentModule && selectedLessonIndex !== null
+    ? currentModule.lessons[selectedLessonIndex]
     : null
-  
-  const moduleTitle = currentModule 
-    ? (typeof currentModule.title === "string" ? currentModule.title : "Untitled Module") 
-    : ""
-  
-  const lessonTitle = currentLesson 
-    ? (typeof currentLesson === "string" ? currentLesson : currentLesson?.title || "Untitled Lesson") 
+
+  const moduleTitle = currentModule
+    ? (typeof currentModule.title === "string" ? currentModule.title : "Untitled Module")
     : ""
 
+  const lessonTitle = currentLesson
+    ? (typeof currentLesson === "string" ? currentLesson : currentLesson?.title || "Untitled Lesson")
+    : ""
+
+  dispatch(setCurrentLessonTitle(lessonTitle))
+  dispatch(setCurrentLessonContent(currentLesson?.content || ''))
   const handleSelectLesson = async (moduleIndex: number, lessonIndex: number) => {
     setSelectedModuleIndex(moduleIndex)
     setSelectedLessonIndex(lessonIndex)
@@ -240,7 +249,7 @@ export function AICourseContent({
     <div className="w-full mx-auto p-4">
       <div className="flex flex-col md:flex-row gap-6">
         {/* Course Sidebar */}
-        <CourseSidebar 
+        <CourseSidebar
           course={course}
           totalLessons={totalLessons}
           progressPercentage={progressPercentage}
@@ -258,21 +267,21 @@ export function AICourseContent({
 
         {/* Lesson Content */}
         <div className="md:w-2/3 lg:w-3/4">
+          {!course.owners?.includes(Owner.USER) && <ForkBanner courseId={course.id || ""} />}
           {selectedModuleIndex !== null && selectedLessonIndex !== null ? (
             <div className="bg-white rounded-lg shadow-md p-6">
-              <CourseHeader 
+              <CourseHeader
                 moduleTitle={moduleTitle}
                 lessonTitle={lessonTitle}
-                courseId={course.id || ""}
-                owners={course.owners || []}
               />
 
-              <CourseContent 
-                slug={course.slug ?? ""}
+              <CourseContent
                 lessonContent={lessonContent}
                 lessonError={lessonError}
                 isLoadingLesson={isLoadingLesson || isCompletionLoading}
                 handleSelectLesson={() => handleSelectLesson(selectedModuleIndex, selectedLessonIndex)}
+                toggleBot={toggleBot}
+                setToggleBot={setToggleBot}
               />
             </div>
           ) : (
@@ -294,10 +303,20 @@ export function AICourseContent({
               <h3 className="text-xl font-medium mb-2">{t("ai-course-content.select_lesson_to_begin")}</h3>
               <p className="text-gray-600 mb-4">{t("ai-course-content.click_module_expand")}</p>
 
-<FAQs faqs={course.faqs || []}/>
             </div>
           )}
+          <FAQs faqs={course.faqs || []} />
+          <FurtherReading slug={course.slug || ""} />
         </div>
+
+        {/* ChatBot area */}
+        {toggleBot && (
+          <div className="w-1/3 h-full p-4 sticky top-0">
+            <div className="h-full">
+              <ChatbotUI />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

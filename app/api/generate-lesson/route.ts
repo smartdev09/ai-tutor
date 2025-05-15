@@ -1,8 +1,7 @@
 import { streamText } from 'ai';
-import { deepseek } from '@ai-sdk/deepseek';
+import { createGroq } from "@ai-sdk/groq"
 
-// You would configure your Deepseek model access here
-const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
+const model = createGroq({ apiKey: process.env.GROQ_API_KEY! })("llama3-70b-8192")
 
 export async function POST(req: Request) {
   try {
@@ -46,18 +45,16 @@ export async function POST(req: Request) {
 
     const userMessage = `Create detailed content for the lesson "${lessonTitle}" in module "${moduleTitle} in ${language} language".`;
 
-    // Generate lesson content with streaming
     const result = streamText({
-      model: deepseek(DEEPSEEK_MODEL),
+      model: model,
       system: systemPrompt,
       prompt: userMessage,
       temperature: 0.7,
       maxTokens: 4000
     });
-    
-    // Return streaming response
+
     return result.toDataStreamResponse();
-    
+
   } catch (error) {
     console.error('Error in lesson generation:', error);
     return new Response(

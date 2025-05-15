@@ -1,7 +1,6 @@
 "use client"
 import { useState } from 'react';
 import { MenuIcon } from 'lucide-react';
-import LanguageSwitcher from '@/components/lang-switch';
 import Sidebar from '@/components/HomeScreen/Sidebar';
 import HomeScreen from '@/components/HomeScreen/Tabs/Main';
 import YourCourses from '@/components/HomeScreen/Tabs/MyCourses';
@@ -30,7 +29,6 @@ export default function Page() {
   
   return (
     <div className="flex flex-col h-screen bg-purple-50">
-      <LanguageSwitcher />
       
       {/* Mobile Header - Only visible on mobile */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-purple-200">

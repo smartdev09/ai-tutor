@@ -50,6 +50,7 @@ const HomeScreen: React.FC = () => {
           type="text"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)}
           placeholder={t('landing.placeholder_topic')}
           className="w-full p-2 md:p-3 border border-purple-300 rounded-md mb-4 text-sm md:text-base"
         />

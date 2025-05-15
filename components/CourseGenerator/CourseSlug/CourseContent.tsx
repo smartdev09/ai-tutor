@@ -1,19 +1,25 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import FurtherReading from "./FurtherReading"
 import { parseContentFromMarkdown } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { FlaskConical } from "lucide-react"
+import { useState } from "react"
+import TestMyKnowledge from "../CourseDisplay/TestMyKnowledge"
+import { ChatButton } from "../CourseControls/ChatButton"
 
 interface CourseContentProps {
-  slug: string
   lessonContent: string
   lessonError: string
   isLoadingLesson: boolean
   handleSelectLesson: () => void
+  toggleBot: boolean
+  setToggleBot: (value: boolean) => void
 }
 
-export function CourseContent({ slug, lessonContent, lessonError, isLoadingLesson, handleSelectLesson }: CourseContentProps) {
+export function CourseContent({ lessonContent, lessonError, isLoadingLesson, handleSelectLesson, toggleBot, setToggleBot }: CourseContentProps) {
   const t = useTranslations()
+  const [testMyKnowledgeToggle, setTestMyKnowledgeToggle] = useState<boolean>(false)
 
   // Parse the markdown content to HTML
   const parsedContent = parseContentFromMarkdown(lessonContent)
@@ -33,9 +39,14 @@ export function CourseContent({ slug, lessonContent, lessonError, isLoadingLesso
     )
   }
 
+  const handleTestMyKnowledgeToggle = () => {
+    setTestMyKnowledgeToggle(!testMyKnowledgeToggle)
+  }
+
   return (
     <>
       <div className="prose prose-blue max-w-none">
+        <ChatButton toggleBot={toggleBot} setToggleBot={setToggleBot} />
         {/* Rendering the parsed HTML content with streaming support */}
         {lessonContent ? (
           <div className="relative">
@@ -57,7 +68,22 @@ export function CourseContent({ slug, lessonContent, lessonError, isLoadingLesso
           <p className="text-gray-500">{t("ai-course-content.no_content_available")}</p>
         )}
       </div>
-      <FurtherReading slug={slug} />
+
+      {!isLoadingLesson && (
+        testMyKnowledgeToggle ? (
+          <div className="mt-12">
+            <TestMyKnowledge />
+          </div>
+        ) : (
+          <Button
+            variant="default"
+            onClick={handleTestMyKnowledgeToggle}
+          >
+            <FlaskConical />
+            {t('lesson-content.testKnowledgeButton')}
+          </Button>
+        )
+      )}
     </>
   )
 }

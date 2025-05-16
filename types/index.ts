@@ -102,3 +102,17 @@ export type DBLesson = {
   content?: string;
   position: number;
 };
+
+export type ForkedCourse = {
+  created_at: any;
+  updated_at: any;
+  owners: Owner[];
+  id?: string;
+  metaDescription?: string;
+  title: string;
+  modules: DBModule[];
+  difficulty: string;
+  done?: string[];
+  slug?: string;
+  faqs?: Faqs[];
+};

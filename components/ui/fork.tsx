@@ -5,15 +5,16 @@ import { useState } from "react"
 
 interface ForkBannerProps {
   courseId: string
+  userId: string
 }
 
-export default function ForkBanner({ courseId }: ForkBannerProps) {
+export default function ForkBanner({ courseId, userId }: ForkBannerProps) {
   const [loading, setLoading] = useState(false)
 
   const handleFork = async () => {
     try {
       setLoading(true)
-      await courseService.addCourseOwners(courseId, ["USER"])
+      await courseService.forkCourse(parseInt(courseId), userId)
     } catch (error) {
       console.error("Failed to fork course:", error)
     } finally {

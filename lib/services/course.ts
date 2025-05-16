@@ -1,8 +1,8 @@
-import type { DBCourse } from "@/types"
+import { Faqs, ForkedCourse, Owner, type DBCourse } from "@/types"
 import { supabase } from "../supabase/client"
 
 export const courseService = {
-  async createCourse(course: DBCourse) {
+  async createCourse(course: ForkedCourse | DBCourse) {
     try {
       const { data: existingCourse, error: existingCourseError } = await supabase
         .from("courses")
@@ -23,7 +23,9 @@ export const courseService = {
         metaDescription: course.metaDescription,
         done: course.done,
         faqs: course.faqs,
-        owners: course.owners
+        owners: course.owners,
+        user_id: course.user_id,
+        forked_from_course_id: course.forked_from_course_id
       };
 
       if (existingCourse) {
@@ -92,12 +94,12 @@ export const courseService = {
 
       // Insert FAQs
       if (course.faqs?.length) {
-          supabase.from("faqs")
-            .insert(course.faqs.map(faq => ({
-              course_id: courseData.id,
-              question: faq.question,
-              answer: faq.answer,
-            })));
+        supabase.from("faqs")
+          .insert(course.faqs.map(faq => ({
+            course_id: courseData.id,
+            question: faq.question,
+            answer: faq.answer,
+          })));
       }
 
       return courseData;
@@ -106,6 +108,62 @@ export const courseService = {
       throw error;
     }
   },
+
+  async forkCourse(
+    originalCourseId: number,
+    userId: string
+  ): Promise<{ newSlug : string | null; error?: string }> {
+    
+    const { data: slug, error: courseError } = await supabase
+      .from('courses')
+      .select('slug')
+      .eq('id', originalCourseId)
+      .single();
+  
+    if (courseError || !slug) {
+      console.error('❌ Original course not found', courseError);
+      return { newSlug : null, error: 'Original course not found' };
+    }
+
+    const originalCourse = await courseService.getCourse(slug.slug)
+  
+    const forkedCourse: ForkedCourse = {
+      ...originalCourse,
+      slug: `${originalCourse.slug}-fork-${Date.now()}`,
+      owners: [Owner.USER],
+      user_id: userId,
+      forked_from_course_id: originalCourse.id,
+      done: [],
+      modules: originalCourse.modules.map((module: { title: any; position: any; lessons: { title: any; content: any; position: any; }[]; }) => ({
+        title: module.title,
+        position: module.position,
+        lessons: module.lessons.map((lesson: { title: any; content: any; position: any; }) => ({
+          title: lesson.title,
+          content: lesson.content || "",
+          position: lesson.position,
+        })),
+      })),
+      faqs: originalCourse.faqs?.map((faq: Faqs) => ({
+        question: faq.question,
+        answer: faq.answer,
+      })) || [],
+    };
+  
+    delete forkedCourse.id;
+    delete forkedCourse.created_at;
+    delete forkedCourse.updated_at;
+
+    const forkCourse = await courseService.createCourse(forkedCourse)
+
+    if (!forkCourse) {
+      console.error('❌ Failed to create forked course');
+      return { newSlug : null, error: 'Failed to create forked course' };
+    }
+  
+    const newSlug = forkCourse.slug;
+  
+    return { newSlug  };
+  },  
 
   async updateContent(
     courseId: string,
@@ -206,11 +264,12 @@ export const courseService = {
     }
   },
 
-  async getAllCourses(owners: string | string[]) {
+  async getAllCourses(owners: string | string[], id?: string) {
     try {
-      const { data: courses, error } = await supabase
+      const query = supabase
         .from("courses")
-        .select(`
+        .select(
+          `
           *,
           modules:modules!course_id (
             *,
@@ -218,18 +277,26 @@ export const courseService = {
               *
             )
           )
-        `)
-        .contains("owners", Array.isArray(owners) ? owners : [owners])
-
-      if (error) {
-        console.error("Error fetching courses:", error)
-        throw error
+        `
+        )
+        .contains("owners", Array.isArray(owners) ? owners : [owners]);
+  
+      // Apply additional filter if id is provided
+      if (id) {
+        query.eq("user_id", id);
       }
-
-      return courses
+  
+      const { data: courses, error } = await query;
+  
+      if (error) {
+        console.error("Error fetching courses:", error);
+        throw error;
+      }
+  
+      return courses;
     } catch (error) {
-      console.error("Error in getAllCourses:", error)
-      throw error
+      console.error("Error in getAllCourses:", error);
+      throw error;
     }
   },
 
@@ -290,7 +357,6 @@ export const courseService = {
   },
 
   async updateModule(moduleId: string, title: string) {
-    console.log("Updating module title:", { moduleId, title });
 
     try {
       const { data: existingModule, error: checkError } = await supabase
@@ -324,7 +390,6 @@ export const courseService = {
         throw updateError;
       }
 
-      console.log("Module title updated successfully:", data);
       return data;
     } catch (error) {
       console.error("Error in updateModule:", error);
@@ -423,7 +488,6 @@ export const courseService = {
   },
 
   async deleteCourse(id: string) {
-    console.log("Deleting course with ID:", id)
 
     try {
       const { error } = await supabase.from("courses").delete().eq("id", id)
@@ -433,7 +497,6 @@ export const courseService = {
         throw error
       }
 
-      console.log("Course deleted successfully")
     } catch (error) {
       console.error("Error in deleteCourse:", error)
       throw error

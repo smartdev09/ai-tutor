@@ -71,8 +71,8 @@ export default function AuthPage() {
               <form action={(formData) => handleSubmit(signup, formData)}>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email-register">Full Name</Label>
-                    <Input id="email-register" name="name" type="name" placeholder="Jhon Doe" required />
+                    <Label htmlFor="full-name">Full Name</Label>
+                    <Input id="full-name" name="full-name" type="name" placeholder="Jhon Doe" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email-register">Email</Label>

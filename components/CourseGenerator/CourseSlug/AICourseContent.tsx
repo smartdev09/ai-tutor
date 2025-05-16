@@ -13,7 +13,10 @@ import ForkBanner from "@/components/ui/fork"
 import ChatbotUI from "../CourseDisplay/ChatBot"
 import FurtherReading from "./FurtherReading"
 import { setCurrentLessonContent, setCurrentLessonTitle } from "@/store/courseSlice"
-import { useAppDispatch } from "@/store/hooks"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { supabase } from "@/lib/supabase/client"
+import { setName, setUserId } from "@/store/authSlice"
+import { getCookie } from "@/lib/utils"
 
 interface AICourseContentProps {
   courseSlug: string
@@ -40,6 +43,55 @@ export function AICourseContent({
   const [toggleBot, setToggleBot] = useState(false)
   const t = useTranslations()
   const dispatch = useAppDispatch()
+
+  // Get current module and lesson titles
+  const currentModule = selectedModuleIndex !== null ? course.modules[selectedModuleIndex] : null
+  const currentLesson = currentModule && selectedLessonIndex !== null
+    ? currentModule.lessons[selectedLessonIndex]
+    : null
+
+  const moduleTitle = currentModule
+    ? (typeof currentModule.title === "string" ? currentModule.title : "Untitled Module")
+    : ""
+
+  const lessonTitle = currentLesson
+    ? (typeof currentLesson === "string" ? currentLesson : currentLesson?.title || "Untitled Lesson")
+    : ""
+
+  // Move Redux dispatches into useEffect at the top
+  useEffect(() => {
+    if (lessonTitle) {
+      dispatch(setCurrentLessonTitle(lessonTitle))
+    }
+  }, [lessonTitle, dispatch])
+
+  useEffect(() => {
+    if (currentLesson?.content !== undefined) {
+      dispatch(setCurrentLessonContent(currentLesson.content))
+    }
+  }, [currentLesson?.content, dispatch])
+
+  useEffect(() => {
+    const getSessionUser = async () => {
+      const id = getCookie('user_id');
+      console.log(id)
+      if (id) {
+        const { data: userData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('auth_user_id', id)
+        .single()
+
+        console.log(userData, id)
+        dispatch(setUserId(userData.id))
+        dispatch(setName(userData.name))
+      }
+    }
+
+    getSessionUser()
+  }, [dispatch])
+
+  const userId = useAppSelector((state) => state.user.userId);
 
   // State to track if the component has mounted
   const [hasMounted, setHasMounted] = useState(false)
@@ -173,22 +225,6 @@ export function AICourseContent({
   const completedLessons = course?.done?.length || 0
   const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
-  // Get current module and lesson titles
-  const currentModule = selectedModuleIndex !== null ? course.modules[selectedModuleIndex] : null
-  const currentLesson = currentModule && selectedLessonIndex !== null
-    ? currentModule.lessons[selectedLessonIndex]
-    : null
-
-  const moduleTitle = currentModule
-    ? (typeof currentModule.title === "string" ? currentModule.title : "Untitled Module")
-    : ""
-
-  const lessonTitle = currentLesson
-    ? (typeof currentLesson === "string" ? currentLesson : currentLesson?.title || "Untitled Lesson")
-    : ""
-
-  dispatch(setCurrentLessonTitle(lessonTitle))
-  dispatch(setCurrentLessonContent(currentLesson?.content || ''))
   const handleSelectLesson = async (moduleIndex: number, lessonIndex: number) => {
     setSelectedModuleIndex(moduleIndex)
     setSelectedLessonIndex(lessonIndex)
@@ -267,7 +303,7 @@ export function AICourseContent({
 
         {/* Lesson Content */}
         <div className="md:w-2/3 lg:w-3/4">
-          {!course.owners?.includes(Owner.USER) && <ForkBanner courseId={course.id || ""} />}
+          {!course.owners?.includes(Owner.USER) && <ForkBanner courseId={course.id || ""} userId={userId} />}
           {selectedModuleIndex !== null && selectedLessonIndex !== null ? (
             <div className="bg-white rounded-lg shadow-md p-6">
               <CourseHeader
@@ -321,3 +357,4 @@ export function AICourseContent({
     </div>
   )
 }
+

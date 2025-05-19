@@ -81,7 +81,7 @@ export function ModuleList({
         difficulty: course.difficulty,
         metaDescription: course.metaDescription,
         user_id: userID,
-        slug: course.slug ? decodeURIComponent(course.slug) : '',
+        slug: course.slug || course.title.toLowerCase().replace(/\s+/g, '-'),
         modules: course.modules.map((module, moduleIndex) => ({
           title: module.title,
           position: moduleIndex,

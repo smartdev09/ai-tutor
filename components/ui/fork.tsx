@@ -1,6 +1,7 @@
 "use client"
 
 import { courseService } from "@/lib/services/course"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 interface ForkBannerProps {
@@ -10,11 +11,13 @@ interface ForkBannerProps {
 
 export default function ForkBanner({ courseId, userId }: ForkBannerProps) {
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleFork = async () => {
     try {
       setLoading(true)
-      await courseService.forkCourse(parseInt(courseId), userId)
+      const slug = await courseService.forkCourse(parseInt(courseId), userId)
+      router.push(`${slug.newSlug}`)
     } catch (error) {
       console.error("Failed to fork course:", error)
     } finally {

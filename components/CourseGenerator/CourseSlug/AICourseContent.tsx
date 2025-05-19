@@ -74,7 +74,6 @@ export function AICourseContent({
   useEffect(() => {
     const getSessionUser = async () => {
       const id = getCookie('user_id');
-      console.log(id)
       if (id) {
         const { data: userData } = await supabase
         .from('users')
@@ -82,7 +81,6 @@ export function AICourseContent({
         .eq('auth_user_id', id)
         .single()
 
-        console.log(userData, id)
         dispatch(setUserId(userData.id))
         dispatch(setName(userData.name))
       }
@@ -148,6 +146,52 @@ export function AICourseContent({
     setIsLoadingLesson(isCompletionLoading)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completion, isCompletionLoading, hasMounted])
+
+  // Effect to handle completion errors
+  useEffect(() => {
+    if (!hasMounted) return
+
+    if (completionError) {
+      setLessonError(completionError.message || "Failed to generate lesson content")
+      setIsLoadingLesson(false)
+    }
+  }, [completionError, hasMounted])
+
+  // Effect to handle completion updates
+  useEffect(() => {
+    if (!hasMounted) return
+
+    if (completion && selectedModuleIndex !== null && selectedLessonIndex !== null) {
+      setLessonContent(completion)
+      
+      if (!isCompletionLoading && completion) {
+        // Save the completed lesson content to the database
+        courseService.updateContent(course.id || "", selectedModuleIndex, lessonTitle, completion)
+          .then(() => {
+            // Update local course data structure to include the content
+            if (course.modules && course.modules[selectedModuleIndex] && course.modules[selectedModuleIndex].lessons) {
+              const currentLesson = course.modules[selectedModuleIndex].lessons[selectedLessonIndex]
+              if (typeof currentLesson === "object") {
+                currentLesson.content = completion
+              } else {
+                // Handle case where lesson might be stored as a string
+                course.modules[selectedModuleIndex].lessons[selectedLessonIndex] = {
+                  title: currentLesson,
+                  content: completion,
+                  position: selectedLessonIndex
+                }
+              }
+            }
+            setIsLoadingLesson(false)
+          })
+          .catch(error => {
+            console.error('Failed to save lesson content:', error)
+            setLessonError('Failed to save lesson content. Please try again.')
+            setIsLoadingLesson(false)
+          })
+      }
+    }
+  }, [completion, isCompletionLoading, hasMounted, selectedModuleIndex, selectedLessonIndex, course.id, lessonTitle])
 
   // Effect to handle completion errors
   useEffect(() => {
@@ -226,6 +270,11 @@ export function AICourseContent({
   const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
   const handleSelectLesson = async (moduleIndex: number, lessonIndex: number) => {
+    // Prevent unnecessary re-renders if selecting the same lesson
+    if (selectedModuleIndex === moduleIndex && selectedLessonIndex === lessonIndex) {
+      return;
+    }
+
     setSelectedModuleIndex(moduleIndex)
     setSelectedLessonIndex(lessonIndex)
     const currentModule = course.modules[moduleIndex]
@@ -244,14 +293,20 @@ export function AICourseContent({
       // Generate content for this lesson using the completion hook
       setIsLoadingLesson(true)
 
-      // Trigger the completion with the lesson details
-      complete("", {
-        body: {
-          courseId: course.id || "",
-          moduleTitle: typeof currentModule.title === "string" ? currentModule.title : "Untitled Module",
-          lessonTitle,
-        },
-      })
+      try {
+        // Trigger the completion with the lesson details
+        await complete("", {
+          body: {
+            courseId: course.id || "",
+            moduleTitle: typeof currentModule.title === "string" ? currentModule.title : "Untitled Module",
+            lessonTitle,
+          },
+        })
+      } catch (error) {
+        console.error('Error generating lesson content:', error)
+        setLessonError('Failed to generate lesson content. Please try again.')
+        setIsLoadingLesson(false)
+      }
     }
   }
 

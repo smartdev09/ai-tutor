@@ -7,6 +7,8 @@ import { FlaskConical } from "lucide-react"
 import { useState } from "react"
 import TestMyKnowledge from "../CourseDisplay/TestMyKnowledge"
 import { ChatButton } from "../CourseControls/ChatButton"
+import { setCurrentLessonContent } from "@/store/courseSlice"
+import { useAppDispatch } from "@/store/hooks"
 
 interface CourseContentProps {
   lessonContent: string
@@ -21,8 +23,11 @@ export function CourseContent({ lessonContent, lessonError, isLoadingLesson, han
   const t = useTranslations()
   const [testMyKnowledgeToggle, setTestMyKnowledgeToggle] = useState<boolean>(false)
 
+  const dispatch = useAppDispatch()
+
   // Parse the markdown content to HTML
   const parsedContent = parseContentFromMarkdown(lessonContent)
+  dispatch(setCurrentLessonContent(parsedContent))
 
   if (lessonError) {
     return (

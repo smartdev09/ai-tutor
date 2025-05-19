@@ -157,7 +157,7 @@ export function GenerateAICourse() {
             currentCourse.modules.push(currentModule);
           }
           currentModule = {
-            title: line.substring(3).trim(),
+            title: line.substring(3).trim().replaceAll("**", ""),
             lessons: []
           };
         } else if (line.startsWith('- ')) {

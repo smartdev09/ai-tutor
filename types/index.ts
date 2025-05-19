@@ -80,6 +80,7 @@ export type ResultItem = Title | Topic | Label;
 export type DBCourse = {
   owners: Owner[];
   id?: string;
+  user_id: string;
   metaDescription?: string;
   title: string;
   modules: DBModule[];

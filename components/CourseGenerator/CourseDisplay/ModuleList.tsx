@@ -23,6 +23,8 @@ import { ChatButton } from "../CourseControls/ChatButton"
 import ChatbotUI from "./ChatBot"
 import { useTranslations } from "next-intl"
 import { useRouter } from "next/navigation"
+import { getCookie } from "@/lib/utils"
+import { supabase } from "@/lib/supabase/client"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -53,12 +55,32 @@ export function ModuleList({
 
   const router = useRouter()
 
+  const [userID, setUserID] = useState('')
+
+  useEffect(() => {
+    const getSessionUser = async () => {
+      const id = getCookie('user_id');
+      if (id) {
+        const { data: userData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('auth_user_id', id)
+        .single()
+
+        setUserID(userData.id)
+      }
+    }
+
+    getSessionUser()
+  }, [dispatch])
+
   const createCourseFromData = async () => {
     try {
       const dbCourse: DBCourse = {
         title: course.title,
         difficulty: course.difficulty,
         metaDescription: course.metaDescription,
+        user_id: userID,
         slug: course.slug ? decodeURIComponent(course.slug) : '',
         modules: course.modules.map((module, moduleIndex) => ({
           title: module.title,
@@ -166,6 +188,7 @@ export function ModuleList({
         title: course.title,
         difficulty: course.difficulty,
         metaDescription: course.metaDescription,
+        user_id: userID,
         slug: course.slug,
         modules: course.modules.map((module, moduleIndex) => ({
           title: module.title,

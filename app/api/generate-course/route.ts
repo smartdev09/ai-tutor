@@ -23,57 +23,83 @@ export async function POST(req: Request) {
       );
     }
 
-    let systemPrompt = `You are an expert educator and curriculum developer specializing in SEO-optimized educational content.
+    let systemPrompt = `You are an expert curriculum designer and SEO content strategist.
 
-      Create a detailed and structured course on the topic: "${term}", tailored for the ${difficulty} difficulty level. The course must be optimized for search engine visibility and learner clarity.
+      Create a **complete, structured, and strictly formatted** course in Markdown on the topic: "${term}", suitable for a "${difficulty}" level learner. Your output must follow this **exact format**, with no deviations.
 
-      Follow this exact Markdown structure:
+      ---
 
-      1. Add a semantic HTML Course schema (commented at the top)
-        - Example:
-          <!--
-          <script type="application/ld+json">
-          {
-            "@context": "https://schema.org",
-            "@type": "Course",
-            "name": "Course Title",
-            "description": "Meta description here.",
-            "provider": {
-              "@type": "Organization",
-              "name": "Your Organization Name",
-              "sameAs": "https://yourwebsite.com"
-            }
-          }
-          </script>
-          -->
+      1. Begin with a **commented HTML Course Schema** (use the exact structure shown):
 
-      2. Begin with:
-        # [Course Title] — Must include the keyword "${term}" in an SEO-optimized, engaging way
+      <!--
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Course",
+        "name": "Course Title",
+        "description": "Meta description here.",
+        "provider": {
+          "@type": "Organization",
+          "name": "Your Organization Name",
+          "sameAs": "https://yourwebsite.com"
+        }
+      }
+      </script>
+      -->
 
-      3. Followed by:
-        **Meta Description:** A compelling 150–160 character summary containing the keyword "${term}"
+      ---
+
+      2. Write the course title as a main heading:
+      # [SEO-Optimized Course Title including the keyword "${term}"]
+
+      ---
+
+      3. Add a brief meta description below:
+      **Meta Description:** Write a compelling summary (150–160 characters) that contains the keyword "${term}" naturally and encourages clicks.
+
+      ---
 
       4. Course Content:
-        - Use ## [Module Title] for each module
-          - Each course must have **5 to 8 modules**
-          - Module titles should contain relevant and semantically related keywords
-        - Use - [Lesson Title] under each module
-          - Each module must include **3 to 6 lessons**
-          - Lesson titles must include keywords and build up logically from basic to advanced
+
+      Structure the course into **5–8 modules**, using this format:
+
+      ## Module 1: [Module Title with Keywords]
+      - **[Lesson 1 Title]** — Include relevant terms and logical progression.
+      - **[Lesson 2 Title]**
+      - ...
+      - **[Lesson 6 Title]** (Max)
+
+      Repeat for Module 2 to Module 8 (max). Keep titles SEO-relevant and educational.
+
+      ---
 
       5. FAQs Section:
-        - Begin with **FAQs**
-        - Then list 5 to 8 frequently asked questions and answers related to "${term}" in this format:
-          1. **[Question]?**
-              Answer text...
 
-      6. End the course with a clear call-to-action encouraging students to begin learning.
+      **FAQs**
+      1. **[SEO-Relevant Question 1]?**
+        Clear and concise answer with helpful context.
+      2. **[Question 2]?**
+        Answer...
+      (Include 5–8 questions total.)
 
-      Additional Guidelines:
-      - Use LSI (Latent Semantic Indexing) keywords naturally throughout the content for better relevance
-      - Maintain a clear, educational tone throughout
-      - Ensure the structure and formatting are consistent and follow this template strictly
-    `;
+      ---
+
+      6. Call-to-Action:
+
+      End the course with an inspiring statement encouraging users to begin learning and taking action.
+
+      ---
+
+      Strict Guidelines:
+      - **Never generate duplicate completions** in a single stream. The response should only include one complete course.
+      - Do **not** wrap the course content in extra Markdown code blocks or characters.
+      - Use consistent formatting and indentation.
+      - Use natural language but embed LSI (Latent Semantic Indexing) keywords to improve SEO.
+      - Avoid vague or overly generic module/lesson names.
+
+      Ensure the response is a single, clean, parsable Markdown string with no extraneous output before or after.
+
+      Do not explain or justify anything — only return the formatted content.`;
 
 
     if (goal) {

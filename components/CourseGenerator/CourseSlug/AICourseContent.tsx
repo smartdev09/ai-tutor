@@ -63,23 +63,20 @@ export function AICourseContent({
     if (lessonTitle) {
       dispatch(setCurrentLessonTitle(lessonTitle))
     }
-  }, [lessonTitle, dispatch])
-
-  useEffect(() => {
     if (currentLesson?.content !== undefined) {
       dispatch(setCurrentLessonContent(currentLesson.content))
     }
-  }, [currentLesson?.content, dispatch])
+  }, [lessonTitle, currentLesson?.content, dispatch])
 
   useEffect(() => {
     const getSessionUser = async () => {
       const id = getCookie('user_id');
       if (id) {
         const { data: userData } = await supabase
-        .from('users')
-        .select('*')
-        .eq('auth_user_id', id)
-        .single()
+          .from('users')
+          .select('*')
+          .eq('auth_user_id', id)
+          .single()
 
         dispatch(setUserId(userData.id))
         dispatch(setName(userData.name))
@@ -109,62 +106,20 @@ export function AICourseContent({
     setHasMounted(true)
   }, [])
 
-  // Effect to update lesson content in real-time as it streams
-  useEffect(() => {
-    if (!hasMounted) return
-
-    // Update content in real-time as it streams
-    if (completion && selectedModuleIndex !== null && selectedLessonIndex !== null) {
-      setLessonContent(completion)
-      if (!isCompletionLoading && completion) {
-        // Save the completed lesson content to the database
-        courseService.updateContent(course.id || "", selectedModuleIndex, lessonTitle, completion)
-          .then(() => {
-            // Update local course data structure to include the content
-            if (course.modules && course.modules[selectedModuleIndex] && course.modules[selectedModuleIndex].lessons) {
-              const currentLesson = course.modules[selectedModuleIndex].lessons[selectedLessonIndex]
-              if (typeof currentLesson === "object") {
-                currentLesson.content = completion
-              } else {
-                // Handle case where lesson might be stored as a string
-                course.modules[selectedModuleIndex].lessons[selectedLessonIndex] = {
-                  title: currentLesson,
-                  content: completion,
-                  position: selectedLessonIndex
-                }
-              }
-            }
-          })
-          .catch(error => {
-            console.error('Failed to save lesson content:', error)
-            setLessonError('Failed to save lesson content. Please try again.')
-          })
-      }
-    }
-
-    // When loading is complete, mark the lesson as no longer loading
-    setIsLoadingLesson(isCompletionLoading)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [completion, isCompletionLoading, hasMounted])
-
-  // Effect to handle completion errors
+  // Consolidated effect to handle completion updates and errors
   useEffect(() => {
     if (!hasMounted) return
 
     if (completionError) {
       setLessonError(completionError.message || "Failed to generate lesson content")
       setIsLoadingLesson(false)
+      return
     }
-  }, [completionError, hasMounted])
-
-  // Effect to handle completion updates
-  useEffect(() => {
-    if (!hasMounted) return
 
     if (completion && selectedModuleIndex !== null && selectedLessonIndex !== null) {
       setLessonContent(completion)
       
-      if (!isCompletionLoading && completion) {
+      if (!isCompletionLoading) {
         // Save the completed lesson content to the database
         courseService.updateContent(course.id || "", selectedModuleIndex, lessonTitle, completion)
           .then(() => {
@@ -192,16 +147,6 @@ export function AICourseContent({
       }
     }
   }, [completion, isCompletionLoading, hasMounted, selectedModuleIndex, selectedLessonIndex, course.id, lessonTitle, course.modules])
-
-  // Effect to handle completion errors
-  useEffect(() => {
-    if (!hasMounted) return
-
-    if (completionError) {
-      setLessonError(completionError.message || "Failed to generate lesson content")
-      setIsLoadingLesson(false)
-    }
-  }, [completionError, hasMounted])
 
   // Streaming state with partial content
   if (isStreaming) {

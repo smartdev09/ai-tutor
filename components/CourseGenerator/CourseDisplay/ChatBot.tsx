@@ -1,5 +1,6 @@
 import { useAppSelector } from '@/store/hooks';
 import { useChat } from '@ai-sdk/react';
+import { Bot, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -52,13 +53,19 @@ const ChatbotUI = () => {
           <div
             key={m.id}
             className={`p-3 rounded-lg ${m.role === 'user'
-                ? 'bg-purple-100 ml-6'
-                : 'bg-gray-100 mr-6'
+              ? 'bg-purple-100 ml-6'
+              : 'bg-gray-100 mr-6'
               }`}
           >
-            <div className="font-bold mb-1">
-              {m.role === 'user' ? `👤 ${t('chatbot.you')}` : `🤖 ${t('chatbot.assistant')}`}
-            </div>
+            <span className="font-bold mb-1">
+              {m.role === 'user' ?
+                <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
+                  <User size={18} className="text-purple-600" />
+                </span> :
+                <span className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center">
+                  <Bot size={18} className="text-purple-600" />
+                </span>}
+            </span>
             <div className="prose max-w-none">
               <ReactMarkdown>{m.content}</ReactMarkdown>
             </div>

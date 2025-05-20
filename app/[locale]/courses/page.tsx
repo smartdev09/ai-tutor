@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useCompletion } from '@ai-sdk/react';
+import { courseService } from '@/lib/services/course';
+import { Owner } from '@/types';
 
 // Types based on the provided schema
 type Faqs = {
@@ -11,6 +13,7 @@ type Faqs = {
 
 type DBCourse = {
   id?: string;
+  owners: Owner[];
   metaDescription?: string;
   title: string;
   modules: DBModule[];
@@ -61,7 +64,8 @@ const parseCourseFromMarkdown = (markdown: string, difficulty: string): DBCourse
       title: '', 
       modules: [], 
       difficulty: difficulty, 
-      done: [] 
+      done: [],
+      owners: []
     };
     let currentModule: DBModule | null = null;
     let processingFAQs = false;
@@ -252,20 +256,21 @@ export default function CourseGenerator() {
     try {
       addLog(`💾 Saving course to database: ${course.title}`);
       
-      const response = await fetch('/api/generate-courses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(course)
-      });
+      // const response = await fetch('/api/generate-courses', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify(course)
+      // });
+      course.owners = [Owner.COMMUNITY];
+      const createdCourse = await courseService.createCourse(course);
       
-      if (response.ok) {
-        addLog(`✅ Course saved successfully: ${course.title}`);
+      if (createdCourse) {
+        addLog(`✅ Course saved successfully: ${createdCourse.title}`);
         setSavingStatus(prev => ({ ...prev, success: prev.success + 1 }));
         return true;
       } else {
-        const error = await response.text();
         addLog(`❌ Failed to save course: ${error}`);
         setSavingStatus(prev => ({ ...prev, failure: prev.failure + 1 }));
         return false;

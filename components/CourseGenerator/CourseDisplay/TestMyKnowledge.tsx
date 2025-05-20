@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useCompletion } from "@ai-sdk/react";
 import { BotMessageSquare, X, Send, Bot, Loader, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { cleanText, cleanTextAR, cleanTextDE, parseMCQQuestions, parseMCQQuestionsAR, parseMCQQuestionsDE } from '@/lib/utils/quiz-parser';
+import { cleanText, parseMCQQuestions } from '@/lib/utils/quiz-parser';
 
 const TestMyKnowledge = () => {
   const t = useTranslations()
@@ -27,7 +27,6 @@ const TestMyKnowledge = () => {
   const [score, setScore] = useState<number | null>(null);
   const [allQuestionsAnswered, setAllQuestionsAnswered] = useState(false);
   const [reviewMode, setReviewMode] = useState(false);
-  const [stableQuestionCount, setStableQuestionCount] = useState(0);
   const [parsedQuestions, setParsedQuestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const lang = useLocale();
@@ -37,17 +36,12 @@ const TestMyKnowledge = () => {
   }, [currentQuestionIndex]);
 
   const processCompletionText = (text: string) => {
-    const cleanedText = lang === 'ar' ? cleanTextAR(text) :
-      lang === 'de' ? cleanTextDE(text) :
-        cleanText(text);
+    const cleanedText = cleanText(text);
 
-    return lang === 'ar' ? parseMCQQuestionsAR(cleanedText) :
-      lang === 'de' ? parseMCQQuestionsDE(cleanedText) :
-        parseMCQQuestions(cleanedText);
+    return parseMCQQuestions(cleanedText);
   };
 
   const {
-    completion,
     complete,
   } = useCompletion({
     api: '/api/generate-quiz',
@@ -62,13 +56,13 @@ const TestMyKnowledge = () => {
 
         if (parsedQuestions.length > 0) {
           setQuestions(parsedQuestions);
+          setParsedQuestions(parsedQuestions);
           setAnswers(Array(parsedQuestions.length).fill(null));
           setIsLoading(false);
         } else {
           setError('Failed to parse quiz questions');
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err) {
+      } catch {
         setError('Failed to generate quiz');
       }
     },
@@ -77,44 +71,6 @@ const TestMyKnowledge = () => {
       setIsLoading(false);
     }
   });
-
-  useEffect(() => {
-    if (completion) {
-      try {
-        const newParsedQuestions = processCompletionText(completion);
-        setParsedQuestions(newParsedQuestions);
-
-        if (newParsedQuestions.length > stableQuestionCount) {
-          setStableQuestionCount(newParsedQuestions.length);
-          if (answers.length < newParsedQuestions.length) {
-            setAnswers(prev => [
-              ...prev,
-              ...Array(newParsedQuestions.length - prev.length).fill(null)
-            ]);
-          }
-        }
-
-        if (newParsedQuestions.length > 0) {
-          const stableQuestions = [...newParsedQuestions];
-
-          while (stableQuestions.length < stableQuestionCount) {
-            const lastQuestion = stableQuestions[stableQuestions.length - 1] || {
-              question: "Loading question...",
-              options: ["Loading...", "Loading...", "Loading...", "Loading..."],
-              correctAnswer: 0
-            };
-            stableQuestions.push({ ...lastQuestion });
-          }
-
-          setQuestions(stableQuestions);
-          setIsLoading(false);
-        }
-      } catch (err) {
-        console.error('Error parsing streaming quiz content:', err);
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [completion, stableQuestionCount, answers.length]);
 
   useEffect(() => {
     if (!hasGenerated) {

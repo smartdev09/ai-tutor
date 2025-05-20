@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl"
 import { parseContentFromMarkdown } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { FlaskConical } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import TestMyKnowledge from "../CourseDisplay/TestMyKnowledge"
 import { ChatButton } from "../CourseControls/ChatButton"
 import { setCurrentLessonContent } from "@/store/courseSlice"
@@ -22,6 +22,10 @@ interface CourseContentProps {
 export function CourseContent({ lessonContent, lessonError, isLoadingLesson, handleSelectLesson, toggleBot, setToggleBot }: CourseContentProps) {
   const t = useTranslations()
   const [testMyKnowledgeToggle, setTestMyKnowledgeToggle] = useState<boolean>(false)
+
+  useEffect(() => {
+    setTestMyKnowledgeToggle(false);
+  }, [lessonContent]);
 
   const dispatch = useAppDispatch()
 

@@ -3,38 +3,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCompletion } from '@ai-sdk/react';
 import { courseService } from '@/lib/services/course';
-import { Owner } from '@/types';
+import { Owner, DBCourse, DBModule } from '@/types';
 
 // Types based on the provided schema
 type Faqs = {
   question: string;
   answer: string;
-};
-
-type DBCourse = {
-  id?: string;
-  owners: Owner[];
-  metaDescription?: string;
-  title: string;
-  modules: DBModule[];
-  difficulty: string;
-  done?: string[];
-  slug?: string;
-  faqs?: Faqs[];
-};
-
-type DBModule = {
-  id?: string;
-  title: string;
-  position: number;
-  lessons: DBLesson[];
-};
-
-type DBLesson = {
-  id?: string;
-  title: string;
-  content?: string;
-  position: number;
 };
 
 const difficulties = ["beginner", "intermediate", "advanced"];
@@ -65,7 +39,8 @@ const parseCourseFromMarkdown = (markdown: string, difficulty: string): DBCourse
       modules: [], 
       difficulty: difficulty, 
       done: [],
-      owners: []
+      owners: [],
+      user_id: ""
     };
     let currentModule: DBModule | null = null;
     let processingFAQs = false;

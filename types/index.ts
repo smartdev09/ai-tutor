@@ -108,6 +108,8 @@ export type ForkedCourse = {
   created_at: any;
   updated_at: any;
   owners: Owner[];
+  user_id: string;
+  forked_from_course_id: string;
   id?: string;
   metaDescription?: string;
   title: string;

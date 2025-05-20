@@ -25,7 +25,7 @@ export const courseService = {
         faqs: course.faqs,
         owners: course.owners,
         user_id: course.user_id,
-        forked_from_course_id: course.forked_from_course_id
+        forked_from_course_id: (course as ForkedCourse).forked_from_course_id
       };
 
       if (existingCourse) {

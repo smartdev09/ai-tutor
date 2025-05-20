@@ -191,7 +191,7 @@ export function AICourseContent({
           })
       }
     }
-  }, [completion, isCompletionLoading, hasMounted, selectedModuleIndex, selectedLessonIndex, course.id, lessonTitle])
+  }, [completion, isCompletionLoading, hasMounted, selectedModuleIndex, selectedLessonIndex, course.id, lessonTitle, course.modules])
 
   // Effect to handle completion errors
   useEffect(() => {

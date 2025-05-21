@@ -5,7 +5,6 @@ import { courseService } from '@/lib/services/course';
 import { AiCourse } from '@/types';
 import { Loader } from 'lucide-react';
 import { getCookie } from '@/lib/utils';
-import { supabase } from '@/lib/supabase/client';
 
 const YourCourses: React.FC = () => {
   const [courses, setCourses] = useState<AiCourse[]>([]);
@@ -16,13 +15,7 @@ const YourCourses: React.FC = () => {
       setLoading(true)
       const id = getCookie('user_id');
       if (id) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('auth_user_id', id)
-          .single()
-
-        const data = await courseService.getAllCourses("USER", userData.id);
+        const data = await courseService.getAllCourses("USER", id);
         setCourses(data);
       }
       setLoading(false)

@@ -24,7 +24,6 @@ import ChatbotUI from "./ChatBot"
 import { useTranslations } from "next-intl"
 import { useRouter } from "next/navigation"
 import { getCookie } from "@/lib/utils"
-import { supabase } from "@/lib/supabase/client"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -61,13 +60,9 @@ export function ModuleList({
     const getSessionUser = async () => {
       const id = getCookie('user_id');
       if (id) {
-        const { data: userData } = await supabase
-        .from('users')
-        .select('*')
-        .eq('auth_user_id', id)
-        .single()
+        const user = await courseService.getProfile(id)
 
-        setUserID(userData.id)
+        setUserID(user.id)
       }
     }
 
@@ -99,6 +94,7 @@ export function ModuleList({
         owners: [Owner.USER]
       };
 
+      console.log(dbCourse)
       await courseService.createCourse(dbCourse);
       console.log('Course created successfully');
     } catch (error) {

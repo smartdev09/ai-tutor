@@ -112,7 +112,7 @@ export const courseService = {
   async forkCourse(
     originalCourseId: number,
     userId: string
-  ): Promise<{ newSlug : string | null; error?: string }> {
+  ): Promise<{ newSlug: string | null; error?: string }> {
 
     const { data: existingFork } = await supabase
       .from("courses")
@@ -127,20 +127,20 @@ export const courseService = {
         error: "You have already forked this course"
       }
     }
-    
+
     const { data: slug, error: courseError } = await supabase
       .from('courses')
       .select('slug')
       .eq('id', originalCourseId)
       .single();
-  
+
     if (courseError || !slug) {
       console.error('❌ Original course not found', courseError);
-      return { newSlug : null, error: 'Original course not found' };
+      return { newSlug: null, error: 'Original course not found' };
     }
 
     const originalCourse = await courseService.getCourse(slug.slug)
-  
+
     const forkedCourse: ForkedCourse = {
       ...originalCourse,
       slug: `${originalCourse.slug}-fork-${Date.now()}`,
@@ -162,7 +162,7 @@ export const courseService = {
         answer: faq.answer,
       })) || [],
     };
-  
+
     delete forkedCourse.id;
     delete forkedCourse.created_at;
     delete forkedCourse.updated_at;
@@ -171,13 +171,13 @@ export const courseService = {
 
     if (!forkCourse) {
       console.error('❌ Failed to create forked course');
-      return { newSlug : null, error: 'Failed to create forked course' };
+      return { newSlug: null, error: 'Failed to create forked course' };
     }
-  
+
     const newSlug = forkCourse.slug;
-  
-    return { newSlug  };
-  },  
+
+    return { newSlug };
+  },
 
   async updateContent(
     courseId: string,
@@ -294,19 +294,26 @@ export const courseService = {
         `
         )
         .contains("owners", Array.isArray(owners) ? owners : [owners]);
-  
+
       // Apply additional filter if id is provided
       if (id) {
-        query.eq("user_id", id);
+        const { data: userData } = await supabase
+          .from('users')
+          .select('*')
+          .eq('auth_user_id', id)
+          .single()
+
+
+        query.eq("user_id", userData.id);
       }
-  
+
       const { data: courses, error } = await query;
-  
+
       if (error) {
         console.error("Error fetching courses:", error);
         throw error;
       }
-  
+
       return courses;
     } catch (error) {
       console.error("Error in getAllCourses:", error);
@@ -516,6 +523,30 @@ export const courseService = {
       throw error
     }
   },
+
+  async getProfile(id: string) {
+
+    try {
+      const { data: user, error } = await supabase
+        .from("users")
+        .select(`
+          *
+        `)
+        .eq("auth_user_id", id)
+        .maybeSingle()
+
+      if (error) {
+        console.error("Error getting user:", error)
+        throw error
+      }
+
+      return user
+
+    } catch (error) {
+      console.error("Error in getting user:", error)
+      throw error
+    }
+  },
 }
 
 export const hasUserForkedCourse = async (courseId: string, userId: string) => {
@@ -525,6 +556,6 @@ export const hasUserForkedCourse = async (courseId: string, userId: string) => {
     .eq('forked_from_course_id', courseId)
     .eq('user_id', userId)
     .single()
-  
+
   return !!data
 }

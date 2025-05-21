@@ -14,7 +14,6 @@ import ChatbotUI from "../CourseDisplay/ChatBot"
 import FurtherReading from "./FurtherReading"
 import { setCurrentLessonContent, setCurrentLessonTitle } from "@/store/courseSlice"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import { supabase } from "@/lib/supabase/client"
 import { setName, setUserId } from "@/store/authSlice"
 import { getCookie } from "@/lib/utils"
 
@@ -73,14 +72,9 @@ export function AICourseContent({
     const getSessionUser = async () => {
       const id = getCookie('user_id');
       if (id) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('auth_user_id', id)
-          .single()
-
-        dispatch(setUserId(userData.id))
-        dispatch(setName(userData.name))
+        const user = await courseService.getProfile(id)
+        dispatch(setUserId(user.id))
+        dispatch(setName(user.name))
       }
     }
 

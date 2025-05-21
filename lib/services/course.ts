@@ -113,6 +113,20 @@ export const courseService = {
     originalCourseId: number,
     userId: string
   ): Promise<{ newSlug : string | null; error?: string }> {
+
+    const { data: existingFork } = await supabase
+      .from("courses")
+      .select()
+      .eq('forked_from_course_id', originalCourseId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (existingFork) {
+      return {
+        newSlug: "/",
+        error: "You have already forked this course"
+      }
+    }
     
     const { data: slug, error: courseError } = await supabase
       .from('courses')
@@ -502,4 +516,15 @@ export const courseService = {
       throw error
     }
   },
+}
+
+export const hasUserForkedCourse = async (courseId: string, userId: string) => {
+  const { data } = await supabase
+    .from('courses')
+    .select('id')
+    .eq('forked_from_course_id', courseId)
+    .eq('user_id', userId)
+    .single()
+  
+  return !!data
 }

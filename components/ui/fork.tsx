@@ -11,13 +11,16 @@ interface ForkBannerProps {
 
 export default function ForkBanner({ courseId, userId }: ForkBannerProps) {
   const [loading, setLoading] = useState(false)
+  const [Error, setError] = useState("")
   const router = useRouter()
 
   const handleFork = async () => {
     try {
       setLoading(true)
       const slug = await courseService.forkCourse(parseInt(courseId), userId)
-      router.push(`${slug.newSlug}`)
+      if(!slug.error)
+        router.push(`${slug.newSlug}`)
+      setError(slug?.error ?? "")
     } catch (error) {
       console.error("Failed to fork course:", error)
     } finally {
@@ -53,6 +56,7 @@ export default function ForkBanner({ courseId, userId }: ForkBannerProps) {
           <path d="M12 12v3" />
         </svg>
         {loading ? "Forking..." : "Fork Course"}
+        {Error && <p className="text-red-500">{Error}</p>}
       </button>
     </div>
   )

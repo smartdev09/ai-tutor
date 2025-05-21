@@ -7,7 +7,7 @@ import { CourseSidebar } from "./CourseSidebar"
 import { CourseHeader } from "./CourseHeader"
 import { CourseContent } from "./CourseContent"
 import { useCompletion } from "@ai-sdk/react"
-import { courseService } from "@/lib/services/course"
+import { courseService, hasUserForkedCourse } from "@/lib/services/course"
 import FAQs from "./Faqs"
 import ForkBanner from "@/components/ui/fork"
 import ChatbotUI from "../CourseDisplay/ChatBot"
@@ -41,6 +41,7 @@ export function AICourseContent({
   const [regeneratePrompt, setRegeneratePrompt] = useState("")
   const [isRegenerateOpen, setIsRegenerateOpen] = useState(false)
   const [toggleBot, setToggleBot] = useState(false)
+  const [hasForked, setHasForked] = useState(false)
   const t = useTranslations()
   const dispatch = useAppDispatch()
 
@@ -105,6 +106,18 @@ export function AICourseContent({
   useEffect(() => {
     setHasMounted(true)
   }, [])
+
+  // Add effect to check if user has forked
+  useEffect(() => {
+    const checkForkStatus = async () => {
+      if (course.id && userId) {
+        const forked = await hasUserForkedCourse(course.id, userId)
+        setHasForked(forked)
+      }
+    }
+    
+    checkForkStatus()
+  }, [course.id, userId])
 
   // Consolidated effect to handle completion updates and errors
   useEffect(() => {
@@ -303,7 +316,9 @@ export function AICourseContent({
 
         {/* Lesson Content */}
         <div className="md:w-2/3 lg:w-3/4">
-          {!course.owners?.includes(Owner.USER) && <ForkBanner courseId={course.id || ""} userId={userId} />}
+          {!course.owners?.includes(Owner.USER) && !hasForked && (
+            <ForkBanner courseId={course.id || ""} userId={userId} />
+          )}
           {selectedModuleIndex !== null && selectedLessonIndex !== null ? (
             <div className="bg-white rounded-lg shadow-md p-6">
               <CourseHeader

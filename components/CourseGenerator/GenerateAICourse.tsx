@@ -7,6 +7,7 @@ import { ModuleList } from './CourseDisplay/ModuleList';
 import { ErrorState } from './CourseStates/ErrorState';
 import { AiCourse, Faqs, Module } from '@/types';
 import { useLocale } from 'next-intl';
+import { useAppSelector } from '@/store/hooks';
 
 export function GenerateAICourse() {
   const searchParams = useSearchParams();
@@ -14,6 +15,8 @@ export function GenerateAICourse() {
   const [error, setError] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const lang = useLocale();
+  const tokens = useAppSelector((state) => state.user.tokens);
+  const userid = useAppSelector((state) => state.user.userId);
   
   // Track the highest module count we've seen to prevent fluctuations
   const highestModuleCountRef = useRef(0);
@@ -39,7 +42,9 @@ export function GenerateAICourse() {
       instructions,
       goal,
       about,
-      lang
+      lang,
+      tokens,
+      userid
     },
     onFinish: (prompt, completion) => {
       try {

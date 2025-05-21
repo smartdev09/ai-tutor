@@ -1,11 +1,19 @@
 import { streamText } from 'ai';
 import { createGroq } from "@ai-sdk/groq"
+import { tokenUsageService } from '@/lib/services/tokenUsage';
 
 const model = createGroq({ apiKey: process.env.GROQ_API_KEY! })("llama3-70b-8192")
 
 export async function POST(req: Request) {
   try {
-    const { term = "ML", difficulty = "beginner", instructions, goal, about, prompt, lang } = await req.json();
+    const { term = "ML", difficulty = "beginner", instructions, goal, about, prompt, lang, tokens, userid } = await req.json();
+
+    if (tokens <= 0) {
+      return new Response(
+        JSON.stringify({ error: 'You are out of daily token usage' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
     let language = 'English';
     if (lang === 'de') {
@@ -116,6 +124,13 @@ export async function POST(req: Request) {
 
     const userMessage = prompt || `Create a course on ${term} at ${difficulty} difficulty level in ${language} language.`;
 
+    if (tokens < (userMessage.length + 1500)) {
+      return new Response(
+        JSON.stringify({ error: 'You are out of daily token usage' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const result = streamText({
       model: model,
       system: systemPrompt,
@@ -123,6 +138,27 @@ export async function POST(req: Request) {
       temperature: 0.7,
       maxTokens: 2000
     });
+
+    (async () => {
+      try {
+        const usage = await result.usage;
+        if (usage) {
+          console.log('Token usage:', {
+            tokens,
+            promptTokens: usage.promptTokens,
+            completionTokens: usage.completionTokens,
+            totalTokens: usage.totalTokens
+          });
+          try {
+            await tokenUsageService.updateUsage(userid, usage.totalTokens);
+          } catch (error) {
+            console.error("Token update failed:", error instanceof Error ? error.message : error);
+          }
+        }
+      } catch (error) {
+        console.error('Error logging token usage:', error);
+      }
+    })();
 
     return result.toDataStreamResponse();
 

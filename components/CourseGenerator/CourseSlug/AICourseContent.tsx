@@ -16,6 +16,8 @@ import { setCurrentLessonContent, setCurrentLessonTitle } from "@/store/courseSl
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { setName, setUserId } from "@/store/authSlice"
 import { getCookie } from "@/lib/utils"
+import { tokenUsageService } from "@/lib/services/tokenUsage"
+import { TokenUsage } from "@/components/TokenUsage"
 
 interface AICourseContentProps {
   courseSlug: string
@@ -43,6 +45,7 @@ export function AICourseContent({
   const [hasForked, setHasForked] = useState(false)
   const t = useTranslations()
   const dispatch = useAppDispatch()
+  const userid = useAppSelector((state) => state.user.userId);
 
   // Get current module and lesson titles
   const currentModule = selectedModuleIndex !== null ? course.modules[selectedModuleIndex] : null
@@ -73,6 +76,7 @@ export function AICourseContent({
       const id = getCookie('user_id');
       if (id) {
         const user = await courseService.getProfile(id)
+        console.log(await tokenUsageService.getCurrentUsage(user.id))
         dispatch(setUserId(user.id))
         dispatch(setName(user.name))
       }
@@ -109,7 +113,7 @@ export function AICourseContent({
         setHasForked(forked)
       }
     }
-    
+
     checkForkStatus()
   }, [course.id, userId])
 
@@ -125,7 +129,7 @@ export function AICourseContent({
 
     if (completion && selectedModuleIndex !== null && selectedLessonIndex !== null) {
       setLessonContent(completion)
-      
+
       if (!isCompletionLoading) {
         // Save the completed lesson content to the database
         courseService.updateContent(course.id || "", selectedModuleIndex, lessonTitle, completion)
@@ -313,6 +317,7 @@ export function AICourseContent({
           {!course.owners?.includes(Owner.USER) && !hasForked && (
             <ForkBanner courseId={course.id || ""} userId={userId} />
           )}
+          <TokenUsage userId={userid} />
           {selectedModuleIndex !== null && selectedLessonIndex !== null ? (
             <div className="bg-white rounded-lg shadow-md p-6">
               <CourseHeader

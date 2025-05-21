@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useFormStatus } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,27 +10,67 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { login, signup } from "./actions"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Loader2 } from "lucide-react"
+
+// Create a submit button component to handle loading state
+function SubmitButton({ children, loadingText }: { children: React.ReactNode; loadingText: string }) {
+  const { pending } = useFormStatus()
+  
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          {loadingText}
+        </>
+      ) : (
+        children
+      )}
+    </Button>
+  )
+}
 
 export default function AuthPage() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [showConfirmation, setShowConfirmation] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
+  const verified = searchParams.get("verified")
   const redirectTo = searchParams.get("redirectTo") || "/"
 
   const handleSubmit = async (action: typeof login | typeof signup, formData: FormData) => {
-    setIsLoading(true)
-    // Add the redirectTo parameter to the form data
     formData.append("redirectTo", redirectTo)
 
     try {
-      await action(formData)
-      router.refresh()
+      const result = await action(formData)
+      if (action === signup && result?.success) {
+        setShowConfirmation(true)
+      } else {
+        router.refresh()
+      }
     } catch (error) {
       console.error("Authentication error:", error)
-    } finally {
-      setIsLoading(false)
     }
+  }
+
+  if (showConfirmation) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">Check your email</CardTitle>
+            <CardDescription className="text-center">
+              We have sent you a confirmation link. Please check your email to complete your registration.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Button onClick={() => setShowConfirmation(false)}>
+              Return to login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -43,6 +84,11 @@ export default function AuthPage() {
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {verified && (
+            <Alert className="mb-4 bg-green-50 border-green-200 text-green-800">
+              <AlertDescription>Email verified successfully! Please sign in to continue.</AlertDescription>
             </Alert>
           )}
           <Tabs defaultValue="login" className="w-full">
@@ -61,9 +107,7 @@ export default function AuthPage() {
                     <Label htmlFor="password-login">Password</Label>
                     <Input id="password-login" name="password" type="password" required />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Signing in..." : "Sign In"}
-                  </Button>
+                  <SubmitButton loadingText="Signing in...">Sign In</SubmitButton>
                 </div>
               </form>
             </TabsContent>
@@ -82,9 +126,7 @@ export default function AuthPage() {
                     <Label htmlFor="password-register">Password</Label>
                     <Input id="password-register" name="password" type="password" required />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Sign Up"}
-                  </Button>
+                  <SubmitButton loadingText="Creating account...">Sign Up</SubmitButton>
                 </div>
               </form>
             </TabsContent>

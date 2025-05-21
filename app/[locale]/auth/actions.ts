@@ -44,6 +44,9 @@ export async function signup(formData: FormData) {
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/confirm`,
+    },
   })
 
   if (authError) {
@@ -70,8 +73,8 @@ export async function signup(formData: FormData) {
     }
   }
 
-  revalidatePath("/", "layout")
-  redirect("/auth/confirmation")
+  // Instead of redirecting, return a success response
+  return { success: true, message: "Registration successful. Please check your email." }
 }
 
 export async function logout() {
@@ -80,5 +83,5 @@ export async function logout() {
 
   await supabase.auth.signOut()
   revalidatePath("/", "layout")
-  redirect("/")
+  redirect("/auth")
 }

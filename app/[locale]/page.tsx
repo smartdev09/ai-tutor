@@ -34,7 +34,6 @@ export default function Page() {
           id: user.id,
           tokens: tokens
         };
-        console.log(userInfo)
         localStorage.setItem("user_info", JSON.stringify(userInfo));
       }
     }

@@ -21,7 +21,6 @@ import {
 import { toast } from "@/hooks/use-toast"
 import { ChatButton } from "../CourseControls/ChatButton"
 import ChatbotUI from "./ChatBot"
-import { useTranslations } from "next-intl"
 import { useRouter } from "next/navigation"
 
 interface ModuleListProps {
@@ -43,7 +42,6 @@ export function ModuleList({
   const expandedModules = useAppSelector((state) => state.course.expandedModules)
   const isSaving = useAppSelector((state) => state.course.isSaving)
   const processedLessons = useAppSelector((state) => state.course.processedLessons)
-  const t = useTranslations()
 
   const [waitingForLesson, setWaitingForLesson] = useState<boolean>(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -224,7 +222,7 @@ export function ModuleList({
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-600">
-                {t('module-list.course_modules')}
+                {('module-list.course_modules')}
               </h2>
               {!isLoading && streamingModuleIndex === -1 && (
                 <button
@@ -292,12 +290,12 @@ export function ModuleList({
             {isSaving ? (
               <>
                 <Loader className="mr-2 h-4 w-4 animate-spin" />
-                {t('module-list.saving')}
+                {('module-list.saving')}
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                {t('module-list.save_course')}
+                {('module-list.save_course')}
               </>
             )}
           </Button>
@@ -311,8 +309,8 @@ export function ModuleList({
                 <div className="bg-primary/10 p-6 rounded-full">
                   <BookOpen className="h-12 w-12 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold">{t('module-list.select_module')}</h2>
-                <p className="text-muted-foreground max-w-md">{t('module-list.select_module_description')}</p>
+                <h2 className="text-2xl font-bold">{('module-list.select_module')}</h2>
+                <p className="text-muted-foreground max-w-md">{('module-list.select_module_description')}</p>
               </div>
             ) : (
               <LessonContent

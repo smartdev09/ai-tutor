@@ -1,5 +1,4 @@
 "use client"
-import { useTranslations } from "next-intl"
 import { parseContentFromMarkdown } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { FlaskConical, Loader } from "lucide-react"
@@ -26,7 +25,6 @@ export function CourseContent({
   toggleBot, 
   setToggleBot 
 }: CourseContentProps) {
-  const t = useTranslations()
   const [testMyKnowledgeToggle, setTestMyKnowledgeToggle] = useState<boolean>(false)
   const dispatch = useAppDispatch()
 
@@ -52,14 +50,14 @@ export function CourseContent({
             </svg>
           </div>
           <div className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-800">{t("ai-course-content.error_loading_lesson")}</h3>
+            <h3 className="text-xl font-bold text-gray-800">{("ai-course-content.error_loading_lesson")}</h3>
             <p className="text-muted-foreground max-w-md">{lessonError}</p>
             <Button
               onClick={handleSelectLesson}
               variant="default"
               className="mt-4"
             >
-              {t("ai-course-content.try_again_short")}
+              {("ai-course-content.try_again_short")}
             </Button>
           </div>
         </div>
@@ -95,7 +93,7 @@ export function CourseContent({
                 className="mt-12"
               >
                 <FlaskConical className="mr-2 h-4 w-4" />
-                {t('lesson-content.testKnowledgeButton')}
+                {('lesson-content.testKnowledgeButton')}
               </Button>
             )
           )}
@@ -109,9 +107,9 @@ export function CourseContent({
             <div className="absolute -top-2 -right-2 h-4 w-4 bg-purple-500 rounded-full animate-ping"></div>
           </div>
           <div className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-800">{t('lesson-content.loadingTitle')}</h3>
+            <h3 className="text-xl font-bold text-gray-800">{('lesson-content.loadingTitle')}</h3>
             <p className="text-muted-foreground max-w-md">
-              {t('lesson-content.loadingDescription')}
+              {('lesson-content.loadingDescription')}
             </p>
           </div>
         </div>
@@ -124,7 +122,7 @@ export function CourseContent({
           </div>
           <div className="space-y-3">
             <h3 className="text-xl font-bold text-gray-800">No Content Available</h3>
-            <p className="text-muted-foreground max-w-md">{t("ai-course-content.no_content_available")}</p>
+            <p className="text-muted-foreground max-w-md">{("ai-course-content.no_content_available")}</p>
           </div>
         </div>
       )}

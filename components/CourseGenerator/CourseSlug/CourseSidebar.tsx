@@ -1,6 +1,5 @@
 "use client"
 import Link from "next/link"
-import { useTranslations } from "next-intl"
 import type { DBCourse } from "@/types/index"
 
 interface CourseSidebarProps {
@@ -34,7 +33,6 @@ export function CourseSidebar({
   setRegeneratePrompt,
   handleRegenerateOutline,
 }: CourseSidebarProps) {
-  const t = useTranslations()
 
   return (
     <div className="md:w-1/4 lg:w-1/5 md:sticky md:top-0 md:self-start md:max-h-screen md:overflow-y-auto">
@@ -44,13 +42,13 @@ export function CourseSidebar({
           <span className="text-sm font-medium text-gray-600 mr-2">{course.difficulty}</span>
           <span className="text-sm text-gray-500">•</span>
           <span className="text-sm text-gray-600 ml-2">
-            {totalLessons} {t("ai-course-content.lessons")}
+            {totalLessons} {("ai-course-content.lessons")}
           </span>
         </div>
 
         <div className="mb-4">
           <div className="flex justify-between mb-1">
-            <span className="text-sm font-medium text-gray-700">{t("ai-course-content.progress")}</span>
+            <span className="text-sm font-medium text-gray-700">{("ai-course-content.progress")}</span>
             <span className="text-sm font-medium text-gray-700">{progressPercentage}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
@@ -68,18 +66,18 @@ export function CourseSidebar({
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
           </svg>
-          {t("ai-course-content.back_to_tutor")}
+          {("ai-course-content.back_to_tutor")}
         </Link>
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">{t("ai-course-content.course_outline")}</h2>
+          <h2 className="text-lg font-semibold">{("ai-course-content.course_outline")}</h2>
           <button
             onClick={() => setIsRegenerateOpen(!isRegenerateOpen)}
             className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
           >
-            {t("ai-course-content.regenerate")}
+            {("ai-course-content.regenerate")}
           </button>
         </div>
 
@@ -97,10 +95,10 @@ export function CourseSidebar({
                 onClick={() => setIsRegenerateOpen(false)}
                 className="text-xs px-3 py-1 border border-gray-300 rounded"
               >
-                {t("ai-course-content.cancel")}
+                {("ai-course-content.cancel")}
               </button>
               <button onClick={handleRegenerateOutline} className="text-xs px-3 py-1 bg-blue-600 text-white rounded">
-                {t("ai-course-content.regenerate")}
+                {("ai-course-content.regenerate")}
               </button>
             </div>
           </div>

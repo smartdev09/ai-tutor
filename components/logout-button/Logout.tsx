@@ -1,5 +1,5 @@
 import { LogOut, Loader2 } from "lucide-react";
-import { logout } from "@/app/[locale]/auth/actions";
+import { logout } from "@/app/auth/actions";
 import { useTransition } from "react";
 
 export function Logout() {

@@ -6,7 +6,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
-import { useTranslations } from "next-intl"
 
 interface ModuleItemProps {
   module: Module
@@ -37,7 +36,6 @@ export function ModuleItem({
 }: ModuleItemProps) {
   const [isOpen, setIsOpen] = useState(false)
   const prevIsSelected = useRef(isSelected)
-  const t = useTranslations()
 
   useEffect(() => {
     if (isExpanded !== undefined) {
@@ -102,7 +100,7 @@ export function ModuleItem({
                 {module.title}
               </span>
               <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                <span>{module.lessons.length} {t('ai-course-content.lessons')}</span>
+                <span>{module.lessons.length} {('ai-course-content.lessons')}</span>
               </div>
             </div>
           </div>

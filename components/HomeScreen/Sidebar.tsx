@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { StarIcon, BookOpen, UsersIcon, Rocket, XIcon, Home } from 'lucide-react';
-import { useTranslations } from "next-intl";
 
 export type TabType = 'main' | 'myCourses' | 'staffPicks' | 'community';
 
@@ -33,7 +32,6 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActiveTab }) => {
-  const t = useTranslations();
 
   const handleTabClick = (tab: TabType) => {
     setActiveTab(tab);
@@ -55,8 +53,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
             AI
           </div>
           <div>
-            <h1 className="font-bold text-purple-500">{t('landing.app_name')}</h1>
-            <p className="text-xs text-purple-500">{t('landing.by_ai_tutor')}</p>
+            <h1 className="font-bold text-purple-500">{('landing.app_name')}</h1>
+            <p className="text-xs text-purple-500">{('landing.by_ai_tutor')}</p>
           </div>
         </div>
         <button className="md:hidden" onClick={onClose}>
@@ -64,12 +62,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
         </button>
       </div>
 
-      <p className="text-xs text-purple-500 mb-6">{t('landing.tagline')}</p>
+      <p className="text-xs text-purple-500 mb-6">{('landing.tagline')}</p>
 
       <div className="mb-4">
         <SidebarItem 
           icon={<Home size={18} />} 
-          text={t('landing.new_course')} 
+          text={('landing.new_course')} 
           active={activeTab === 'main'} 
           onClick={() => handleTabClick('main')} 
         />
@@ -78,19 +76,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
       <div className="space-y-1 mb-4">
         <SidebarItem 
           icon={<BookOpen size={18} />} 
-          text={t('landing.my_courses')} 
+          text={('landing.my_courses')} 
           active={activeTab === 'myCourses'} 
           onClick={() => handleTabClick('myCourses')} 
         />
         <SidebarItem 
           icon={<StarIcon size={18} />} 
-          text={t('landing.staff_picks')} 
+          text={('landing.staff_picks')} 
           active={activeTab === 'staffPicks'} 
           onClick={() => handleTabClick('staffPicks')} 
         />
         <SidebarItem 
           icon={<UsersIcon size={18} />} 
-          text={t('landing.community')} 
+          text={('landing.community')} 
           active={activeTab === 'community'}
           onClick={() => handleTabClick('community')} 
         />
@@ -99,9 +97,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
       <div className="mt-auto bg-purple-50 rounded-md p-3">
         <div className="flex items-center mb-1">
           <Rocket size={18} className="text-purple-500" />
-          <span className="ml-2 font-medium">{t('landing.level_up')}</span>
+          <span className="ml-2 font-medium">{('landing.level_up')}</span>
         </div>
-        <p className="text-xs text-purple-700">{t('landing.level_up_desc')}</p>
+        <p className="text-xs text-purple-700">{('landing.level_up_desc')}</p>
       </div>
     </div>
   );

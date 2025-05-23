@@ -2,7 +2,6 @@ import { getSessionUserInfo } from '@/lib/utils';
 import { useAppSelector } from '@/store/hooks';
 import { useChat } from '@ai-sdk/react';
 import { Bot, User } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 
@@ -14,7 +13,6 @@ const ChatbotUI = () => {
   const tokens = storedUser.tokens;
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const messageEndRef = useRef(null);
-  const t = useTranslations()
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     body: {
@@ -48,7 +46,7 @@ const ChatbotUI = () => {
 
   return (
     <div className="flex flex-col h-[90vh] shadow-lg rounded-2xl border border-purple-400">
-      <div className="bg-gradient-to-r from-purple-500 to-purple-700 text-white text-lg font-semibold px-4 py-3 rounded-t-2xl">
+      <div className="bg-gradient-to-r from-purple-500 to-purple-700 text-white text-lg font-semibold px-4 py-3 rounded--2xl">
         {currentLessonTitle}
       </div>
 
@@ -95,14 +93,14 @@ const ChatbotUI = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="flex items-center border-t border-purple-300 bg-white p-3 rounded-b-2xl mt-auto"
+        className="flex items-center border- border-purple-300 bg-white p-3 rounded-b-2xl mt-auto"
       >
         <input
           type="text"
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder={t('chatbot.placeholder')}
+          placeholder={('chatbot.placeholder')}
           className="flex-1 px-4 py-2 text-sm border border-purple-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
           disabled={isLoading}
         />
@@ -111,7 +109,7 @@ const ChatbotUI = () => {
           className="ml-3 px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-full transition disabled:bg-purple-400"
           disabled={isLoading || !input.trim()}
         >
-          {t('chatbot.send')}
+          {('chatbot.send')}
         </button>
       </form>
     </div>

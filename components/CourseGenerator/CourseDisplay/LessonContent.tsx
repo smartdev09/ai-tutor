@@ -26,7 +26,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import TestMyKnowledge from "./TestMyKnowledge"
 import ContextModalButton from "./EditPrompt"
-import { useLocale, useTranslations } from "next-intl"
 
 interface LessonContentProps {
   module: Module
@@ -45,9 +44,7 @@ export function LessonContent({
   onLessonReached,
   slug,
 }: LessonContentProps) {
-  const t = useTranslations()
   const dispatch = useAppDispatch()
-  const lang = useLocale();
   const currentUserId = useAppSelector((state) => state.user.userId)
   const currentUserTokens = useAppSelector((state) => state.user.tokens)
   const currentModuleIndex = useAppSelector((state) => state.course.currentModuleIndex)
@@ -207,7 +204,6 @@ export function LessonContent({
             body: {
               moduleTitle: module?.title,
               lessonTitle: module?.lessons[nextLessonToGenerate] || "",
-              lang: lang,
               currentUserId,
               currentUserTokens
             },
@@ -297,7 +293,6 @@ export function LessonContent({
               body: {
                 moduleTitle: module?.title,
                 lessonTitle: module?.lessons[futureIndex] || "",
-                lang: lang,
               },
             })
             getSessionUserInfo()
@@ -310,7 +305,6 @@ export function LessonContent({
             body: {
               moduleTitle: module?.title,
               lessonTitle: module?.lessons[nextIndex] || "",
-              lang: lang,
             },
           })
         }
@@ -334,7 +328,6 @@ export function LessonContent({
     dispatch,
     reduxProcessedLessons,
     userSelectedLesson,
-    lang,
   ])
 
   const progressPercentage = module?.lessons?.length
@@ -436,7 +429,6 @@ export function LessonContent({
           moduleTitle: module?.title,
           lessonTitle: module?.lessons[currentLessonIndex] || "",
           userPrompt: userPrompt,
-          lang: lang,
         },
       })
       getSessionUserInfo()
@@ -468,7 +460,7 @@ export function LessonContent({
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    {t('lesson-content.saveButton')}
+                    {('lesson-content.saveButton')}
                   </Button>
                   <Button
                     size="sm"
@@ -480,12 +472,12 @@ export function LessonContent({
                     {isSaving ? (
                       <>
                         <Loader className="h-4 w-4 mr-1 animate-spin" />
-                        {t('lesson-content.savingButton')}
+                        {('lesson-content.savingButton')}
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-1" />
-                        {t('lesson-content.saveButton')}
+                        {('lesson-content.saveButton')}
                       </>
                     )}
                   </Button>
@@ -509,14 +501,14 @@ export function LessonContent({
           {isProcessing && (
             <div className="flex items-center gap-2 text-sm text-white bg-white/20 px-3 py-1.5 rounded-full">
               <div className="h-2 w-2 bg-white rounded-full animate-pulse"></div>
-              <span>{t('lesson-content.generatingIndicator')}</span>
+              <span>{('lesson-content.generatingIndicator')}</span>
             </div>
           )}
         </div>
 
         <div className="mb-4">
           <div className="flex justify-between text-white/90 text-sm mb-1">
-            <span>{t('lesson-content.progressLabel')}</span>
+            <span>{('lesson-content.progressLabel')}</span>
             <span>{Math.round(progressPercentage)}%</span>
           </div>
           <Progress value={progressPercentage} className="h-2 bg-white/30" />
@@ -531,7 +523,7 @@ export function LessonContent({
             {waitingForLesson && !isLessonGenerated && !isCurrentLessonBeingGenerated && (
               <span className="inline-flex items-center bg-white/20 px-2 py-1 rounded-full text-xs">
                 <Loader className="h-3 w-3 mr-1 animate-spin" />
-                {t('lesson-content.waitingIndicator')}
+                {('lesson-content.waitingIndicator')}
               </span>
             )}
           </p>
@@ -548,7 +540,7 @@ export function LessonContent({
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    {t('lesson-content.cancelButton')}
+                    {('lesson-content.cancelButton')}
                   </Button>
                   <Button
                     size="sm"
@@ -560,12 +552,12 @@ export function LessonContent({
                     {isSaving ? (
                       <>
                         <Loader className="h-4 w-4 mr-1 animate-spin" />
-                        {t('lesson-content.savingButton')}
+                        {('lesson-content.savingButton')}
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-1" />
-                        {t('lesson-content.saveButton')}
+                        {('lesson-content.saveButton')}
                       </>
                     )}
                   </Button>
@@ -578,7 +570,7 @@ export function LessonContent({
                   onClick={handleEditToggle}
                 >
                   <Edit className="h-4 w-4 mr-1" />
-                  {t('lesson-content.editButton')}
+                  {('lesson-content.editButton')}
                 </Button>
               )}
             </div>
@@ -595,7 +587,7 @@ export function LessonContent({
               clipRule="evenodd"
             />
           </svg>
-          {t('lesson-content.errorMessage')}
+          {('lesson-content.errorMessage')}
         </div>
       )}
 
@@ -612,9 +604,9 @@ export function LessonContent({
               <div className="absolute -top-2 -right-2 h-4 w-4 bg-purple-500 rounded-full animate-ping"></div>
             </div>
             <div className="space-y-3">
-              <h3 className="text-xl font-bold text-gray-800">{t('lesson-content.loadingTitle')}</h3>
+              <h3 className="text-xl font-bold text-gray-800">{('lesson-content.loadingTitle')}</h3>
               <p className="text-muted-foreground max-w-md">
-                {t('lesson-content.loadingDescription')}
+                {('lesson-content.loadingDescription')}
               </p>
             </div>
           </div>
@@ -624,7 +616,7 @@ export function LessonContent({
               value={editingLessonContent}
               onChange={handleContentChange}
               className="min-h-[70vh] font-mono text-sm p-4"
-              placeholder={`${t('lesson-content.contentPlaceholder')}`}
+              placeholder={`${('lesson-content.contentPlaceholder')}`}
             />
           </div>
         ) : (
@@ -642,7 +634,7 @@ export function LessonContent({
                   onClick={handleTestMyKnowledgeToggle}
                 >
                   <FlaskConical />
-                  {t('lesson-content.testKnowledgeButton')}
+                  {('lesson-content.testKnowledgeButton')}
                 </Button>
               )
             )}

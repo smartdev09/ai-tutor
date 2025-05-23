@@ -38,8 +38,8 @@ export function CourseContent({
 
   if (lessonError) {
     return (
-      <div className="bg-white rounded-xl p-8 min-h-[85vh] overflow-auto shadow-md border border-gray-100">
-        <div className="flex flex-col items-center justify-center h-full space-y-6 text-center">
+      <div className="bg-white min-h-[85vh] overflow-auto justify-center items-center">
+        <div className="flex flex-col items-center justify-center mt-[20%] h-full space-y-6 text-center">
           <div className="bg-red-100 p-5 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-600" viewBox="0 0 20 20" fill="currentColor">
               <path
@@ -99,10 +99,10 @@ export function CourseContent({
           )}
         </div>
       ) : isLoadingLesson ? (
-        <div className="flex flex-col items-center justify-center h-full space-y-6 text-center">
+        <div className="flex flex-col items-center justify-center h-full space-y-6 text-center mt-[20%]">
           <div className="relative">
             <div className="bg-purple-100 p-5 rounded-full">
-              <Loader className="h-12 w-12 text-purple-600 animate-spin" />
+              <Loader className="h-12 w-12 text-purple-400 animate-spin" />
             </div>
             <div className="absolute -top-2 -right-2 h-4 w-4 bg-purple-500 rounded-full animate-ping"></div>
           </div>

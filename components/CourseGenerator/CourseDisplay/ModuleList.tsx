@@ -22,6 +22,7 @@ import { toast } from "@/hooks/use-toast"
 import { ChatButton } from "../CourseControls/ChatButton"
 import ChatbotUI from "./ChatBot"
 import { useRouter } from "next/navigation"
+import { Logout } from "@/components/logout-button/Logout"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -214,6 +215,7 @@ export function ModuleList({
 
   return (
     <div className="flex h-full">
+          <Logout/>
       <SidebarProvider>
         <Sidebar className="w-80 border-r">
           <SidebarHeader className="border-b border-purple-100 pb-4">

@@ -45,8 +45,8 @@ const ChatbotUI = () => {
   };
 
   return (
-    <div className="flex flex-col h-[90vh] shadow-lg rounded-2xl border border-purple-400">
-      <div className="bg-gradient-to-r from-purple-500 to-purple-700 text-white text-lg font-semibold px-4 py-3 rounded--2xl">
+    <div className="flex flex-col h-[97vh] shadow-lg border border-gray-100">
+      <div className="bg-gray-100 text-black text-lg font-semibold px-4 py-3">
         {currentLessonTitle}
       </div>
 
@@ -78,14 +78,15 @@ const ChatbotUI = () => {
         ))}
 
         {isLoading && (
-          <div className="p-3 bg-gray-100 rounded-lg mr-6">
-            <div className="font-bold mb-1">🤖 Assistant</div>
-            <div className="flex space-x-2">
-              <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-              <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '600ms' }}></div>
+          <div className="p-3 bg-gray-100 rounded-lg mr-6 flex items-center space-x-2">
+            <Bot size={18} className="text-purple-600" />
+            <div className="flex space-x-1">
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '600ms' }}></div>
             </div>
           </div>
+
         )}
 
         <div ref={messageEndRef} />
@@ -93,7 +94,7 @@ const ChatbotUI = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="flex items-center border- border-purple-300 bg-white p-3 rounded-b-2xl mt-auto"
+        className="flex items-center bg-gray-200 p-1 mt-auto"
       >
         <input
           type="text"
@@ -101,12 +102,12 @@ const ChatbotUI = () => {
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
-          className="flex-1 px-4 py-2 text-sm border border-purple-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="flex-1 px-4 py-2 text-sm"
           disabled={isLoading}
         />
         <button
           type="submit"
-          className="ml-3 px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-full transition disabled:bg-purple-400"
+          className="ml-1 px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white transition disabled:bg-purple-400"
           disabled={isLoading || !input.trim()}
         >
           Send

@@ -15,6 +15,7 @@ import { setCurrentLessonContent, setCurrentLessonTitle } from "@/store/courseSl
 import { useAppDispatch } from "@/store/hooks"
 import { TokenUsage } from "@/components/TokenUsage"
 import { getSessionUserInfo } from "@/lib/utils"
+import { Logout } from "@/components/logout-button/Logout"
 
 interface AICourseContentProps {
   courseSlug: string
@@ -279,6 +280,7 @@ export function AICourseContent({
 
   return (
     <div className="w-full mx-auto p-4">
+      <Logout/>
       <div className="flex flex-col md:flex-row gap-6">
         {/* Course Sidebar */}
         <CourseSidebar
@@ -346,7 +348,7 @@ export function AICourseContent({
 
         {/* ChatBot area */}
         {toggleBot && (
-          <div className="w-1/3 h-full p-4 sticky top-0">
+          <div className="w-1/3 h-full sticky top-0">
             <div className="h-full">
               <ChatbotUI />
             </div>

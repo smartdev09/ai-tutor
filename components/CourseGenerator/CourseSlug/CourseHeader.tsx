@@ -5,12 +5,11 @@ interface CourseHeaderProps {
   lessonTitle: string
 }
 
-export function CourseHeader({ moduleTitle, lessonTitle }: CourseHeaderProps) {
+export function CourseHeader({ moduleTitle }: CourseHeaderProps) {
 
   return (
     <>
-      <h2 className="text-2xl font-bold mb-2">{lessonTitle}</h2>
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-gray-600">
         Module: {moduleTitle}
       </p>
     </>

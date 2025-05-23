@@ -7,6 +7,7 @@ import { ModuleList } from './CourseDisplay/ModuleList';
 import { ErrorState } from './CourseStates/ErrorState';
 import { AiCourse, Faqs, Module } from '@/types';
 import { useLocale } from 'next-intl';
+import { getSessionUserInfo } from '@/lib/utils';
 
 export function GenerateAICourse() {
   const searchParams = useSearchParams();
@@ -48,6 +49,7 @@ export function GenerateAICourse() {
     },
     onFinish: (prompt, completion) => {
       try {
+        getSessionUserInfo()
         const parsedCourse = parseCourseFromMarkdown(completion);
         if (parsedCourse) {
           setCourse(parsedCourse);

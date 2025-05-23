@@ -8,38 +8,20 @@ import FeaturedCourses from '@/components/HomeScreen/Tabs/StaffPicks';
 import ExploreCourses from '@/components/HomeScreen/Tabs/Community';
 import { TabType } from '@/components/HomeScreen/Sidebar';
 import { Logout } from '@/components/logout-button/Logout';
-import { courseService } from '@/lib/services/course';
-import { tokenUsageService } from '@/lib/services/tokenUsage';
-import { getCookie } from '@/lib/utils';
-import { setUserId, setName, setUserTokens } from '@/store/authSlice';
-import { useAppDispatch } from '@/store/hooks';
+import { getSessionUserInfo } from '@/lib/utils';
 
 export default function Page() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [tokens, setTokens] = useState(0);
-  const dispatch = useAppDispatch()
   const [activeTab, setActiveTab] = useState<TabType>('main');
 
   useEffect(() => {
     const getSessionUser = async () => {
-      const id = getCookie('user_id');
-      if (id) {
-        const user = await courseService.getProfile(id)
-        setTokens(await tokenUsageService.getCurrentUsage(user.id))
-        tokenUsageService.checkAndResetTokens(user.id);
-        dispatch(setUserId(user.id))
-        dispatch(setName(user.name))
-        dispatch(setUserTokens(tokens))
-        const userInfo = {
-          id: user.id,
-          tokens: tokens
-        };
-        localStorage.setItem("user_info", JSON.stringify(userInfo));
-      }
+    const session = await getSessionUserInfo();
+    console.log(session);
     }
 
     getSessionUser()
-  }, [dispatch, tokens])
+  }, [])
 
   const renderTabContent = () => {
     switch (activeTab) {

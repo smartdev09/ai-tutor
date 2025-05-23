@@ -15,6 +15,7 @@ import FurtherReading from "./FurtherReading"
 import { setCurrentLessonContent, setCurrentLessonTitle } from "@/store/courseSlice"
 import { useAppDispatch } from "@/store/hooks"
 import { TokenUsage } from "@/components/TokenUsage"
+import { getSessionUserInfo } from "@/lib/utils"
 
 interface AICourseContentProps {
   courseSlug: string
@@ -243,6 +244,7 @@ export function AICourseContent({
             userId
           },
         })
+        getSessionUserInfo()
       } catch (error) {
         console.error('Error generating lesson content:', error)
         setLessonError('Failed to generate lesson content. Please try again.')

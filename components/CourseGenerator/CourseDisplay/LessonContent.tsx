@@ -5,7 +5,7 @@ import type React from "react"
 import type { Module } from "@/types"
 import { useCompletion } from "@ai-sdk/react"
 import { useState, useEffect, useRef } from "react"
-import { parseContentFromMarkdown } from "@/lib/utils"
+import { getSessionUserInfo, parseContentFromMarkdown } from "@/lib/utils"
 import { BookOpen, Loader, Edit, Save, X, FlaskConical } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
@@ -212,6 +212,7 @@ export function LessonContent({
               currentUserTokens
             },
           })
+          getSessionUserInfo()
         } else {
           setIsProcessing(false)
           onModuleProcessed()
@@ -299,6 +300,7 @@ export function LessonContent({
                 lang: lang,
               },
             })
+            getSessionUserInfo()
           } else {
             setIsProcessing(false)
             onModuleProcessed()
@@ -437,6 +439,7 @@ export function LessonContent({
           lang: lang,
         },
       })
+      getSessionUserInfo()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPrompt])

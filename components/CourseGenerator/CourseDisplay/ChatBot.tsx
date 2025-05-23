@@ -1,3 +1,4 @@
+import { getSessionUserInfo } from '@/lib/utils';
 import { useAppSelector } from '@/store/hooks';
 import { useChat } from '@ai-sdk/react';
 import { Bot, User } from 'lucide-react';
@@ -8,6 +9,9 @@ import ReactMarkdown from 'react-markdown';
 const ChatbotUI = () => {
   const currentLessonContent = useAppSelector((state) => state.course.currentLessonContent);
   const currentLessonTitle = useAppSelector((state) => state.course.currentLessonTitle);
+  const storedUser = JSON.parse(localStorage.getItem("user_info") || '{}');
+  const userid = storedUser.id;
+  const tokens = storedUser.tokens;
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const messageEndRef = useRef(null);
   const t = useTranslations()
@@ -15,6 +19,8 @@ const ChatbotUI = () => {
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     body: {
       content: currentLessonContent,
+      tokens,
+      userid
     }
   });
 
@@ -24,6 +30,7 @@ const ChatbotUI = () => {
       const scrollHeight = container.scrollHeight;
       const height = container.clientHeight;
       const maxScrollTop = scrollHeight - height;
+      getSessionUserInfo()
 
       container.scrollTo({
         top: maxScrollTop,

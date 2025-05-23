@@ -2,6 +2,8 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { courseService } from "./services/course";
+import { tokenUsageService } from "./services/tokenUsage";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -42,4 +44,23 @@ export function getCookie(name: string): string | null {
     return parts.pop()?.split(';').shift() || null;
   }
   return null;
+}
+
+export const getSessionUserInfo = async () => {
+  console.log("I was called")
+  const id = getCookie('user_id');
+  let userInfo = {
+      id: "",
+      tokens: 0
+    };
+  if (id) {
+    const user = await courseService.getProfile(id)
+    tokenUsageService.checkAndResetTokens(user.id);
+    userInfo = {
+      id: user.id,
+      tokens: user.tokens
+    };
+    localStorage.setItem("user_info", JSON.stringify(userInfo));
+  }
+  return userInfo;
 }

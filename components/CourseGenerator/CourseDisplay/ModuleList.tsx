@@ -23,7 +23,6 @@ import { ChatButton } from "../CourseControls/ChatButton"
 import ChatbotUI from "./ChatBot"
 import { useTranslations } from "next-intl"
 import { useRouter } from "next/navigation"
-import { getCookie } from "@/lib/utils"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -51,23 +50,10 @@ export function ModuleList({
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
   const [toggleBot, setToggleBot] = useState(false)
+  const storedUser = JSON.parse(localStorage.getItem("user_info") || '{}');
+  const userID = storedUser.id;
 
   const router = useRouter()
-
-  const [userID, setUserID] = useState('')
-
-  useEffect(() => {
-    const getSessionUser = async () => {
-      const id = getCookie('user_id');
-      if (id) {
-        const user = await courseService.getProfile(id)
-
-        setUserID(user.id)
-      }
-    }
-
-    getSessionUser()
-  }, [dispatch])
 
   const createCourseFromData = async () => {
     try {

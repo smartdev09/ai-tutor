@@ -7,6 +7,7 @@ import { useCompletion } from "@ai-sdk/react";
 import { BotMessageSquare, X, Send, Bot, Loader, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { cleanText, parseMCQQuestions } from '@/lib/utils/quiz-parser';
+import { getSessionUserInfo } from '@/lib/utils';
 
 const TestMyKnowledge = () => {
   const t = useTranslations()
@@ -30,6 +31,9 @@ const TestMyKnowledge = () => {
   const [parsedQuestions, setParsedQuestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const lang = useLocale();
+  const storedUser = JSON.parse(localStorage.getItem("user_info") || '{}');
+  const userid = storedUser.id;
+  const tokens = storedUser.tokens;
 
   useEffect(() => {
     setShowSuggestions(false);
@@ -48,10 +52,13 @@ const TestMyKnowledge = () => {
     body: {
       content: currentLessonContent,
       type: 'mcq',
-      lang
+      lang,
+      tokens,
+      userid
     },
     onFinish: (prompt, completion) => {
       try {
+        getSessionUserInfo()
         const parsedQuestions = processCompletionText(completion);
 
         if (parsedQuestions.length > 0) {

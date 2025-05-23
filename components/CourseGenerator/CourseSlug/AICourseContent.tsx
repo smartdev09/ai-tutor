@@ -306,7 +306,7 @@ export function AICourseContent({
           )}
           <TokenUsage userId={userId} />
           {selectedModuleIndex !== null && selectedLessonIndex !== null ? (
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-12">
               <CourseHeader
                 moduleTitle={moduleTitle}
                 lessonTitle={lessonTitle}

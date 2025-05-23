@@ -21,20 +21,27 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState<TabType>('main');
 
   useEffect(() => {
-      const getSessionUser = async () => {
-        const id = getCookie('user_id');
-        if (id) {
-          const user = await courseService.getProfile(id)
-          setTokens(await tokenUsageService.getCurrentUsage(user.id))
-          dispatch(setUserId(user.id))
-          dispatch(setName(user.name))
-          dispatch(setUserTokens(tokens))
-        }
+    const getSessionUser = async () => {
+      const id = getCookie('user_id');
+      if (id) {
+        const user = await courseService.getProfile(id)
+        setTokens(await tokenUsageService.getCurrentUsage(user.id))
+        tokenUsageService.checkAndResetTokens(user.id);
+        dispatch(setUserId(user.id))
+        dispatch(setName(user.name))
+        dispatch(setUserTokens(tokens))
+        const userInfo = {
+          id: user.id,
+          tokens: tokens
+        };
+        console.log(userInfo)
+        localStorage.setItem("user_info", JSON.stringify(userInfo));
       }
-  
-      getSessionUser()
+    }
+
+    getSessionUser()
   }, [dispatch, tokens])
-  
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'main':
@@ -49,11 +56,11 @@ export default function Page() {
         return <HomeScreen />;
     }
   };
-  
+
   return (
     <div className="flex flex-col h-screen bg-purple-50">
-      <Logout/>
-      
+      <Logout />
+
       {/* Mobile Header - Only visible on mobile */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-purple-200">
         <div className="flex items-center">
@@ -66,23 +73,23 @@ export default function Page() {
           <MenuIcon className="text-purple-500" />
         </button>
       </div>
-      
+
       {/* Main content layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - Fixed width on desktop, overlay on mobile */}
         <div className="hidden md:block w-72 flex-shrink-0">
           <Sidebar
             isOpen={true}
-            onClose={() => {}}
+            onClose={() => { }}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
         </div>
-        
+
         {/* Mobile Sidebar - Only rendered when open */}
         {isSidebarOpen && (
           <>
-            <div 
+            <div
               className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
               onClick={() => setIsSidebarOpen(false)}
             />
@@ -96,7 +103,7 @@ export default function Page() {
             </div>
           </>
         )}
-        
+
         {/* Main Content Area - Takes remaining width */}
         <div className="flex-1 p-4 md:p-8 overflow-auto">
           {renderTabContent()}

@@ -124,6 +124,11 @@ export async function POST(req: Request) {
 
     const userMessage = prompt || `Create a course on ${term} at ${difficulty} difficulty level in ${language} language.`;
 
+    let maxTokens = 2000;
+    if(tokens < 3000) {
+      maxTokens = tokens;
+    }
+
     if (tokens < (userMessage.length + 1500)) {
       return new Response(
         JSON.stringify({ error: 'You are out of daily token usage' }),
@@ -136,7 +141,7 @@ export async function POST(req: Request) {
       system: systemPrompt,
       prompt: userMessage,
       temperature: 0.7,
-      maxTokens: 2000
+      maxTokens: maxTokens
     });
 
     (async () => {

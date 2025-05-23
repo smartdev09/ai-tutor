@@ -13,10 +13,7 @@ import ForkBanner from "@/components/ui/fork"
 import ChatbotUI from "../CourseDisplay/ChatBot"
 import FurtherReading from "./FurtherReading"
 import { setCurrentLessonContent, setCurrentLessonTitle } from "@/store/courseSlice"
-import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import { setName, setUserId } from "@/store/authSlice"
-import { getCookie } from "@/lib/utils"
-import { tokenUsageService } from "@/lib/services/tokenUsage"
+import { useAppDispatch } from "@/store/hooks"
 import { TokenUsage } from "@/components/TokenUsage"
 
 interface AICourseContentProps {
@@ -45,7 +42,9 @@ export function AICourseContent({
   const [hasForked, setHasForked] = useState(false)
   const t = useTranslations()
   const dispatch = useAppDispatch()
-  const userid = useAppSelector((state) => state.user.userId);
+  const storedUser = JSON.parse(localStorage.getItem("user_info") || '{}');
+  const userId = storedUser.id;
+  const userTokens = storedUser.tokens;
 
   // Get current module and lesson titles
   const currentModule = selectedModuleIndex !== null ? course.modules[selectedModuleIndex] : null
@@ -70,22 +69,6 @@ export function AICourseContent({
       dispatch(setCurrentLessonContent(currentLesson.content))
     }
   }, [lessonTitle, currentLesson?.content, dispatch])
-
-  useEffect(() => {
-    const getSessionUser = async () => {
-      const id = getCookie('user_id');
-      if (id) {
-        const user = await courseService.getProfile(id)
-        console.log(await tokenUsageService.getCurrentUsage(user.id))
-        dispatch(setUserId(user.id))
-        dispatch(setName(user.name))
-      }
-    }
-
-    getSessionUser()
-  }, [dispatch])
-
-  const userId = useAppSelector((state) => state.user.userId);
 
   // State to track if the component has mounted
   const [hasMounted, setHasMounted] = useState(false)
@@ -157,7 +140,7 @@ export function AICourseContent({
           })
       }
     }
-  }, [completion, isCompletionLoading, hasMounted, selectedModuleIndex, selectedLessonIndex, course.id, lessonTitle, course.modules])
+  }, [completion, isCompletionLoading, hasMounted, selectedModuleIndex, selectedLessonIndex, course.id, lessonTitle, course.modules, completionError])
 
   // Streaming state with partial content
   if (isStreaming) {
@@ -256,6 +239,8 @@ export function AICourseContent({
             courseId: course.id || "",
             moduleTitle: typeof currentModule.title === "string" ? currentModule.title : "Untitled Module",
             lessonTitle,
+            userTokens,
+            userId
           },
         })
       } catch (error) {
@@ -317,7 +302,7 @@ export function AICourseContent({
           {!course.owners?.includes(Owner.USER) && !hasForked && (
             <ForkBanner courseId={course.id || ""} userId={userId} />
           )}
-          <TokenUsage userId={userid} />
+          <TokenUsage userId={userId} />
           {selectedModuleIndex !== null && selectedLessonIndex !== null ? (
             <div className="bg-white rounded-lg shadow-md p-6">
               <CourseHeader

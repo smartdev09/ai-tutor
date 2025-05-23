@@ -48,6 +48,8 @@ export function LessonContent({
   const t = useTranslations()
   const dispatch = useAppDispatch()
   const lang = useLocale();
+  const currentUserId = useAppSelector((state) => state.user.userId)
+  const currentUserTokens = useAppSelector((state) => state.user.tokens)
   const currentModuleIndex = useAppSelector((state) => state.course.currentModuleIndex)
   const reduxProcessedLessons = useAppSelector((state) => state.course.processedLessons)
   const isEditing = useAppSelector((state) => state.course.isEditing)
@@ -206,6 +208,8 @@ export function LessonContent({
               moduleTitle: module?.title,
               lessonTitle: module?.lessons[nextLessonToGenerate] || "",
               lang: lang,
+              currentUserId,
+              currentUserTokens
             },
           })
         } else {
@@ -214,7 +218,7 @@ export function LessonContent({
         }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     module?.title,
     module?.lessons,
@@ -434,7 +438,7 @@ export function LessonContent({
         },
       })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPrompt])
 
   return (

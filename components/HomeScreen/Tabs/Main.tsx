@@ -39,8 +39,8 @@ const HomeScreen: React.FC = () => {
   return (
     <div className="h-full flex-1 flex flex-col items-center justify-center p-4 md:p-6">
       <div className="text-center max-w-xl mb-4 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2 md:mb-4">{('landing.heading')}</h1>
-        <p className="text-purple-600 text-sm md:text-base">{('landing.subheading')}</p>
+        <h1 className="text-2xl md:text-3xl font-bold mb-2 md:mb-4">What can I help you learn?</h1>
+        <p className="text-purple-600 text-sm md:text-base">Enter a topic below to generate a personalized course for it</p>
       </div>
 
       <div className="w-full max-w-3xl bg-white rounded-lg p-4 md:p-6 shadow-sm border border-purple-200">
@@ -49,7 +49,7 @@ const HomeScreen: React.FC = () => {
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)}
-          placeholder={('landing.placeholder_topic')}
+          placeholder="e.g. JavaScript Promises, React Hooks, Go Routines etc"
           className="w-full p-2 md:p-3 border border-purple-300 rounded-md mb-4 text-sm md:text-base"
         />
 
@@ -60,9 +60,9 @@ const HomeScreen: React.FC = () => {
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
               >
-                <option>{('landing.beginner')}</option>
-                <option>{('landing.intermediate')}</option>
-                <option>{('landing.advanced')}</option>
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                 <svg className="h-4 w-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@ const HomeScreen: React.FC = () => {
                 onChange={() => setExplainMore(!explainMore)}
                 className="mr-2"
               />
-              <span className="text-xs md:text-sm">{('landing.explain_more')}</span>
+              <span className="text-xs md:text-sm">Explain more for a better course</span>
             </label>
           </div>
 
@@ -88,40 +88,40 @@ const HomeScreen: React.FC = () => {
             disabled={isSubmitting || !topic}
           >
             <ArrowRightIcon className="mr-2" size={16} />
-            {('landing.generate_course')}
+            Generate Course
           </Button>
         </div>
 
         {explainMore && (
           <div className="border- border-purple-200 pt-4 space-y-4">
             <div>
-              <h3 className="text-xs md:text-sm font-medium mb-2">{('landing.about_self_label')}</h3>
+              <h3 className="text-xs md:text-sm font-medium mb-2">Tell us about yourself</h3>
               <input
                 type="text"
                 value={about}
                 onChange={(e) => setAboutSelf(e.target.value)}
-                placeholder={('landing.about_self_placeholder')}
+                placeholder="e.g. I am a frontend developer and have good knowledge of HTML, CSS, and JavaScript."
                 className="w-full p-2 md:p-3 border border-purple-300 rounded-md text-sm"
               />
             </div>
 
             <div>
-              <h3 className="text-xs md:text-sm font-medium mb-2">{('landing.goal_label')}</h3>
+              <h3 className="text-xs md:text-sm font-medium mb-2">What is your goal with this course?</h3>
               <input
                 type="text"
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
-                placeholder={('landing.goal_placeholder')}
+                placeholder="e.g. I want to be able to build Node.js APIs with Express.js and MongoDB."
                 className="w-full p-2 md:p-3 border border-purple-300 rounded-md text-sm"
               />
             </div>
 
             <div>
-              <h3 className="text-xs md:text-sm font-medium mb-2">{('landing.custom_instructions_label')}</h3>
+              <h3 className="text-xs md:text-sm font-medium mb-2">Custom Instructions (Optional)</h3>
               <textarea
                 value={customInstructions}
                 onChange={(e) => setCustomInstructions(e.target.value)}
-                placeholder={('landing.custom_instructions_placeholder')}
+                placeholder="Give additional instructions to the AI as if you were giving them to a friend."
                 className="w-full p-2 md:p-3 border border-purple-300 rounded-md text-sm"
                 rows={3}
               />

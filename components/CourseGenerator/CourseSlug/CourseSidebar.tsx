@@ -42,13 +42,13 @@ export function CourseSidebar({
           <span className="text-sm font-medium text-gray-600 mr-2">{course.difficulty}</span>
           <span className="text-sm text-gray-500">•</span>
           <span className="text-sm text-gray-600 ml-2">
-            {totalLessons} {("ai-course-content.lessons")}
+            {totalLessons} Lessons
           </span>
         </div>
 
         <div className="mb-4">
           <div className="flex justify-between mb-1">
-            <span className="text-sm font-medium text-gray-700">{("ai-course-content.progress")}</span>
+            <span className="text-sm font-medium text-gray-700">Progress</span>
             <span className="text-sm font-medium text-gray-700">{progressPercentage}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
@@ -66,18 +66,18 @@ export function CourseSidebar({
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
           </svg>
-          {("ai-course-content.back_to_tutor")}
+          Back to AI Tutor
         </Link>
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">{("ai-course-content.course_outline")}</h2>
+          <h2 className="text-lg font-semibold">Course outline</h2>
           <button
             onClick={() => setIsRegenerateOpen(!isRegenerateOpen)}
             className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
           >
-            {("ai-course-content.regenerate")}
+            Regenerate
           </button>
         </div>
 
@@ -95,10 +95,10 @@ export function CourseSidebar({
                 onClick={() => setIsRegenerateOpen(false)}
                 className="text-xs px-3 py-1 border border-gray-300 rounded"
               >
-                {("ai-course-content.cancel")}
+                Cancel
               </button>
               <button onClick={handleRegenerateOutline} className="text-xs px-3 py-1 bg-blue-600 text-white rounded">
-                {("ai-course-content.regenerate")}
+                Regenerate
               </button>
             </div>
           </div>

@@ -46,25 +46,27 @@ export function AICourse() {
               <Sparkles className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold mb-2 text-purple-800">{('ai.title')}</h1>
-          <p className="text-purple-600 text-lg">{('ai.subtitle')}</p>
+          <h1 className="text-4xl font-bold mb-2 text-purple-800">AI Course Generator</h1>
+          <p className="text-purple-600 text-lg">
+            Tell us what you want to learn, and our AI will create a customized course for you.
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-purple-600 p-4 flex items-center">
             <BookOpen className="h-6 w-6 text-white mr-2" />
-            <h2 className="text-xl font-bold text-white">{('ai.section_title')}</h2>
+            <h2 className="text-xl font-bold text-white">Create Your Learning Quest</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="bg-purple-100 p-4 rounded-xl">
               <label htmlFor="term" className="block text-sm font-bold text-purple-800 mb-2">
-                {('ai.label_term')}
+                What would you like to learn today?
               </label>
               <input
                 type="text"
                 id="term"
-                placeholder={('ai.placeholder_term')}
+                placeholder="e.g., JavaScript, Machine Learning, Photography"
                 value={term}
                 onChange={(e) => setTerm(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-purple-900"
@@ -74,7 +76,7 @@ export function AICourse() {
 
             <div className="bg-purple-100 p-4 rounded-xl">
               <label htmlFor="difficulty" className="block text-sm font-bold text-purple-800 mb-2">
-                {('ai.label_difficulty')}
+                Choose Your Difficulty Level
               </label>
               <select
                 id="difficulty"
@@ -82,9 +84,9 @@ export function AICourse() {
                 onChange={(e) => setDifficulty(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-purple-900"
               >
-                <option value="beginner">{('ai.difficulty_beginner')}</option>
-                <option value="intermediate">{('ai.difficulty_intermediate')}</option>
-                <option value="advanced">{('ai.difficulty_advanced')}</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
               </select>
             </div>
 
@@ -96,7 +98,7 @@ export function AICourse() {
               >
                 <div className="flex items-center">
                   <Brain className="w-5 h-5 mr-2" />
-                  {('ai.button_advanced_options')}
+                  Advanced Options
                 </div>
                 {isAdvancedOptionsOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </button>
@@ -105,11 +107,11 @@ export function AICourse() {
                 <div className="mt-4 space-y-4 p-5 bg-indigo-50 rounded-xl border-2 border-indigo-100">
                   <div>
                     <label htmlFor="about" className="block text-sm font-bold text-indigo-800 mb-2">
-                      {('ai.label_about')}
+                      About Yourself (Optional)
                     </label>
                     <textarea
                       id="about"
-                      placeholder={('ai.placeholder_about')}
+                      placeholder="Tell us about your background, experience level, etc."
                       value={about}
                       onChange={(e) => setAbout(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -119,11 +121,11 @@ export function AICourse() {
 
                   <div>
                     <label htmlFor="goal" className="block text-sm font-bold text-indigo-800 mb-2">
-                      {('ai.label_goal')}
+                      Your Learning Goals (Optional)
                     </label>
                     <textarea
                       id="goal"
-                      placeholder={('ai.placeholder_goal')}
+                      placeholder="What do you hope to achieve by learning this topic?"
                       value={goal}
                       onChange={(e) => setGoal(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -133,11 +135,11 @@ export function AICourse() {
 
                   <div>
                     <label htmlFor="customInstructions" className="block text-sm font-bold text-indigo-800 mb-2">
-                      {('ai.label_custom_instructions')}
+                      Special Instructions (Optional)
                     </label>
                     <textarea
                       id="customInstructions"
-                      placeholder={('ai.placeholder_custom_instructions')}
+                      placeholder="Any specific requirements or topics you want covered in the course?"
                       value={customInstructions}
                       onChange={(e) => setCustomInstructions(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -158,7 +160,7 @@ export function AICourse() {
                   }`}
               >
                 <Rocket className="w-5 h-5" />
-                <span>{isSubmitting ? ('ai.button_submitting') : ('ai.button_submit')}</span>
+                <span>{isSubmitting ? "Creating Your Course..." : "Generate Course"}</span>
               </button>
             </div>
           </form>

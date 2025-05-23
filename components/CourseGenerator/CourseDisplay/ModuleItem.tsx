@@ -100,7 +100,7 @@ export function ModuleItem({
                 {module.title}
               </span>
               <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                <span>{module.lessons.length} {('ai-course-content.lessons')}</span>
+                <span>{module.lessons.length} Lessons</span>
               </div>
             </div>
           </div>

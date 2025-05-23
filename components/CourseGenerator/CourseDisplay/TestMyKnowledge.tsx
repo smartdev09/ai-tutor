@@ -213,15 +213,17 @@ const TestMyKnowledge = () => {
     }
   };
 
+  // Replace loading state text
   if (isLoading || questions.length === 0) {
     return (
       <div className="p-6 bg-white rounded-lg shadow flex flex-col items-center justify-center min-h-60">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border--transparent mb-4"></div>
-        <p className="text-gray-700 font-medium">{('TestMyKnowledge.generatingQuiz')}</p>
+        <p className="text-gray-700 font-medium">Generating your multiple choice quiz questions...</p>
       </div>
     );
   }
 
+  // Replace error state text
   if (error) {
     return (
       <div className="p-6 bg-white rounded-lg shadow">
@@ -242,17 +244,18 @@ const TestMyKnowledge = () => {
     );
   }
 
+  // Replace quiz results text
   if (quizComplete && score !== null && !reviewMode) {
     return (
       <div className="p-6 bg-white rounded-lg shadow">
-        <h2 className="text-2xl font-bold text-center mb-6">{('TestMyKnowledge.quizResults')}</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Quiz Results</h2>
 
         <div className="text-center mb-8">
           <div className="text-6xl font-bold text-purple-600 mb-2">{Math.round(score)}%</div>
           <p className="text-gray-700">
-            {('TestMyKnowledge.youGot')} {answers.filter((answer, index) =>
+            You got {answers.filter((answer, index) =>
               typeof answer === 'number' && index < parsedQuestions.length && answer === parsedQuestions[index].correctAnswer
-            ).length} {('TestMyKnowledge.outOf')} {parsedQuestions.length} {('TestMyKnowledge.questionsCorrect')}
+            ).length} out of {parsedQuestions.length} questions correct
           </p>
         </div>
 
@@ -264,18 +267,17 @@ const TestMyKnowledge = () => {
               setCurrentQuestionIndex(0);
             }}
           >
-            {('TestMyKnowledge.reviewQuestions')}
+            Review Questions
           </Button>
-          <Button
-            onClick={restartQuiz}
-          >
-            {('TestMyKnowledge.retakeQuiz')}
+          <Button onClick={restartQuiz}>
+            Retake Quiz
           </Button>
         </div>
       </div>
     );
   }
 
+  // Replace main quiz interface text
   const currentQuestion = questions[currentQuestionIndex];
   const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
 
@@ -285,11 +287,11 @@ const TestMyKnowledge = () => {
     <div className="p-6 bg-white rounded-lg shadow">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          {quizComplete ? ('TestMyKnowledge.quizResults') : ('TestMyKnowledge.multipleChoiceQuiz')}
+          {quizComplete ? 'Quiz Results' : 'Multiple Choice Quiz'}
         </h2>
         {quizComplete && (
           <div className="text-purple-600 font-medium">
-            {('TestMyKnowledge.score')} {Math.round(score || 0)}%
+            Score: {Math.round(score || 0)}%
           </div>
         )}
         {!quizComplete && (
@@ -306,7 +308,7 @@ const TestMyKnowledge = () => {
 
       <div className="pb-4 border-b border-gray-200">
         <div className="flex items-center mb-2">
-          <span className="text-gray-700 font-medium">{('TestMyKnowledge.question')} {currentQuestionIndex + 1} of {parsedQuestions.length}</span>
+          <span className="text-gray-700 font-medium">Question {currentQuestionIndex + 1} of {parsedQuestions.length}</span>
           <div className="ml-2 flex-grow h-2 bg-gray-200 rounded-full">
             <div
               className="h-full bg-purple-500 rounded-full"
@@ -374,7 +376,7 @@ const TestMyKnowledge = () => {
           <div className="relative bg-gray-100 text-gray-800 rounded-2xl shadow-md my-2 w-1/3 flex flex-col max-h-[350px] overflow-scroll">
             <div className="bg-purple-500 text-white px-4 py-3 flex items-center gap-2">
               <Bot size={20} />
-              <span className="font-medium">{('TestMyKnowledge.quizAssistant')}</span>
+              <span className="font-medium">Quiz Assistant</span>
               <div className="ml-auto flex items-center">
                 <span className="text-xs animate-[spin_8s_linear_infinite] px-2 py-1 rounded-full">
                   <Loader />
@@ -432,7 +434,7 @@ const TestMyKnowledge = () => {
                 value={userPrompt}
                 onKeyDown={handleKeyDown}
                 onChange={(e) => setUserPrompt(e.target.value)}
-                placeholder={('chatbot.placeholder')}
+                placeholder="Type a message..."
                 className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <Button onClick={handleAssistanceQuerry} disabled={!userPrompt.trim()} className="p-2.5 bg-primary rounded-full text-white hover:bg-purple-700">
@@ -447,12 +449,12 @@ const TestMyKnowledge = () => {
       <div className="pt-4 border- border-gray-200 flex justify-between">
         <div className="text-purple-600 font-medium">
           {!quizComplete && !allQuestionsAnswered && currentQuestionIndex === parsedQuestions.length - 1 &&
-            ('TestMyKnowledge.answer_all_to_submit')
+            'Please answer all questions to submit'
           }
           {quizComplete && (
             <>
               <p className={answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? 'text-green-500' : 'text-red-500'}>
-                {answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? ('TestMyKnowledge.correct_answer') : ('TestMyKnowledge.incorrect_answer')}
+                {answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? 'Correct answer!' : 'Incorrect answer'}
               </p>
               <p className='text-gray-500'>{questions[currentQuestionIndex].explanation}</p>
             </>
@@ -467,7 +469,7 @@ const TestMyKnowledge = () => {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            {('TestMyKnowledge.previous')}
+            Previous
           </Button>
 
           {quizComplete ? (
@@ -478,14 +480,14 @@ const TestMyKnowledge = () => {
                   setReviewMode(false);
                 }}
               >
-                {('TestMyKnowledge.showSummary')}
+                Show Summary
               </Button>
             ) : (
               <Button
                 className="px-4 py-2 bg-purple-500 text-white rounded-lg flex items-center"
                 onClick={goToNextQuestion}
               >
-                {('TestMyKnowledge.next')}
+                Next
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -500,7 +502,7 @@ const TestMyKnowledge = () => {
               onClick={goToNextQuestion}
               disabled={currentQuestionIndex === parsedQuestions.length - 1 && !allQuestionsAnswered}
             >
-              {currentQuestionIndex === parsedQuestions.length - 1 ? ('TestMyKnowledge.submit') : ('TestMyKnowledge.next')}
+              {currentQuestionIndex === parsedQuestions.length - 1 ? 'Submit' : 'Next'}
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>

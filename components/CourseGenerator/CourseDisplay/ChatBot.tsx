@@ -100,7 +100,7 @@ const ChatbotUI = () => {
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder={('chatbot.placeholder')}
+          placeholder="Type a message..."
           className="flex-1 px-4 py-2 text-sm border border-purple-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
           disabled={isLoading}
         />
@@ -109,7 +109,7 @@ const ChatbotUI = () => {
           className="ml-3 px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-full transition disabled:bg-purple-400"
           disabled={isLoading || !input.trim()}
         >
-          {('chatbot.send')}
+          Send
         </button>
       </form>
     </div>

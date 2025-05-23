@@ -11,7 +11,7 @@ export function CourseHeader({ moduleTitle, lessonTitle }: CourseHeaderProps) {
     <>
       <h2 className="text-2xl font-bold mb-2">{lessonTitle}</h2>
       <p className="text-sm text-gray-600 mb-6">
-        {("ai-course-content.module")} {moduleTitle}
+        Module: {moduleTitle}
       </p>
     </>
   )

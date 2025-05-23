@@ -222,7 +222,7 @@ export function ModuleList({
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-600">
-                {('module-list.course_modules')}
+                Course Modules
               </h2>
               {!isLoading && streamingModuleIndex === -1 && (
                 <button
@@ -290,12 +290,12 @@ export function ModuleList({
             {isSaving ? (
               <>
                 <Loader className="mr-2 h-4 w-4 animate-spin" />
-                {('module-list.saving')}
+                Saving...
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                {('module-list.save_course')}
+                Save Course
               </>
             )}
           </Button>
@@ -309,8 +309,8 @@ export function ModuleList({
                 <div className="bg-primary/10 p-6 rounded-full">
                   <BookOpen className="h-12 w-12 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold">{('module-list.select_module')}</h2>
-                <p className="text-muted-foreground max-w-md">{('module-list.select_module_description')}</p>
+                <h2 className="text-2xl font-bold">Select a Module</h2>
+                <p className="text-muted-foreground max-w-md">Please select a module from the sidebar to start learning.</p>
               </div>
             ) : (
               <LessonContent

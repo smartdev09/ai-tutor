@@ -50,14 +50,14 @@ export function CourseContent({
             </svg>
           </div>
           <div className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-800">{("ai-course-content.error_loading_lesson")}</h3>
+            <h3 className="text-xl font-bold text-gray-800">Error Loading Lesson</h3>
             <p className="text-muted-foreground max-w-md">{lessonError}</p>
             <Button
               onClick={handleSelectLesson}
               variant="default"
               className="mt-4"
             >
-              {("ai-course-content.try_again_short")}
+              Try Again
             </Button>
           </div>
         </div>
@@ -93,7 +93,7 @@ export function CourseContent({
                 className="mt-12"
               >
                 <FlaskConical className="mr-2 h-4 w-4" />
-                {('lesson-content.testKnowledgeButton')}
+                Test My Knowledge
               </Button>
             )
           )}
@@ -107,9 +107,9 @@ export function CourseContent({
             <div className="absolute -top-2 -right-2 h-4 w-4 bg-purple-500 rounded-full animate-ping"></div>
           </div>
           <div className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-800">{('lesson-content.loadingTitle')}</h3>
+            <h3 className="text-xl font-bold text-gray-800">Preparing your lesson</h3>
             <p className="text-muted-foreground max-w-md">
-              {('lesson-content.loadingDescription')}
+              Your selected lesson is being prepared. Please wait while we generate content for lessons in sequence.
             </p>
           </div>
         </div>
@@ -122,7 +122,7 @@ export function CourseContent({
           </div>
           <div className="space-y-3">
             <h3 className="text-xl font-bold text-gray-800">No Content Available</h3>
-            <p className="text-muted-foreground max-w-md">{("ai-course-content.no_content_available")}</p>
+            <p className="text-muted-foreground max-w-md">No content available yet.</p>
           </div>
         </div>
       )}

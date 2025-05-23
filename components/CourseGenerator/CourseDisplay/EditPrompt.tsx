@@ -23,7 +23,7 @@ export default function ContextModalButton({ onSubmit }: ContextModalProps) {
                 onClick={() => setIsOpen(true)}
                 className="z-50 fixed top-4 right-28 inline-flex items-center justify-center px-2.5 py-2.5 overflow-hidden font-semibold text-white transition-all duration-300 bg-primary rounded-full shadow-lg hover:bg-purple-700 hover:shadow-xl active:scale-95"
             >
-                <span title={('edit-prompt.addContextButtonTitle')} className="z-10">
+                <span title="Add Context" className="z-10">
                     <Edit />
                 </span>
             </button>
@@ -34,10 +34,10 @@ export default function ContextModalButton({ onSubmit }: ContextModalProps) {
                     <div className="w-[35%] p-6 bg-white rounded-lg shadow-xl">
                         <div className="flex flex-col">
                             <h2 className="mb-4 text-xl font-semibold text-gray-800">
-                                {('edit-prompt.modalTitle')}
+                                Give AI more context
                             </h2>
                             <p className="mb-3 text-sm text-gray-600">
-                                {('edit-prompt.modalDescription')}
+                                Pass additional information to the AI to generate a lesson.
                             </p>
 
                             <textarea
@@ -45,11 +45,11 @@ export default function ContextModalButton({ onSubmit }: ContextModalProps) {
                                 onChange={(e) => setContextInput(e.target.value)}
                                 className="w-full p-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 rows={4}
-                                placeholder={('edit-prompt.textareaPlaceholder')}
+                                placeholder="e.g. make sure to add a section on React hooks"
                             />
 
                             <p className="mb-4 text-sm text-gray-600">
-                                {('edit-prompt.completeSentenceText')}
+                                Complete the sentence: I want AI to...
                             </p>
 
                             <div className="flex justify-end space-x-2">
@@ -58,12 +58,12 @@ export default function ContextModalButton({ onSubmit }: ContextModalProps) {
                                     className="hover:bg-gray-300"
                                     variant={"outline"}
                                 >
-                                    {('edit-prompt.cancelButton')}
+                                    Cancel
                                 </Button>
                                 <Button
                                     onClick={handleSubmit}
                                 >
-                                    {('edit-prompt.modifyPromptButton')}
+                                    Modify Prompt
                                 </Button>
                             </div>
                         </div>

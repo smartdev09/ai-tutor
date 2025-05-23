@@ -53,8 +53,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
             AI
           </div>
           <div>
-            <h1 className="font-bold text-purple-500">{('landing.app_name')}</h1>
-            <p className="text-xs text-purple-500">{('landing.by_ai_tutor')}</p>
+            <h1 className="font-bold text-purple-500">AI Tutor</h1>
+            <p className="text-xs text-purple-500">By AI-Tutor</p>
           </div>
         </div>
         <button className="md:hidden" onClick={onClose}>
@@ -62,12 +62,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
         </button>
       </div>
 
-      <p className="text-xs text-purple-500 mb-6">{('landing.tagline')}</p>
+      <p className="text-xs text-purple-500 mb-6">Your personalized learning companion for any topic</p>
 
       <div className="mb-4">
         <SidebarItem 
           icon={<Home size={18} />} 
-          text={('landing.new_course')} 
+          text="New Course"
           active={activeTab === 'main'} 
           onClick={() => handleTabClick('main')} 
         />
@@ -76,19 +76,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
       <div className="space-y-1 mb-4">
         <SidebarItem 
           icon={<BookOpen size={18} />} 
-          text={('landing.my_courses')} 
+          text="My Courses"
           active={activeTab === 'myCourses'} 
           onClick={() => handleTabClick('myCourses')} 
         />
         <SidebarItem 
           icon={<StarIcon size={18} />} 
-          text={('landing.staff_picks')} 
+          text="Staff Picks"
           active={activeTab === 'staffPicks'} 
           onClick={() => handleTabClick('staffPicks')} 
         />
         <SidebarItem 
           icon={<UsersIcon size={18} />} 
-          text={('landing.community')} 
+          text="Community"
           active={activeTab === 'community'}
           onClick={() => handleTabClick('community')} 
         />
@@ -97,9 +97,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
       <div className="mt-auto bg-purple-50 rounded-md p-3">
         <div className="flex items-center mb-1">
           <Rocket size={18} className="text-purple-500" />
-          <span className="ml-2 font-medium">{('landing.level_up')}</span>
+          <span className="ml-2 font-medium">Level Up</span>
         </div>
-        <p className="text-xs text-purple-700">{('landing.level_up_desc')}</p>
+        <p className="text-xs text-purple-700">Get prepared for all your courses with benefits of the AI Tutor.</p>
       </div>
     </div>
   );

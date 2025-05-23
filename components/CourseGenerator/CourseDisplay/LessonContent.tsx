@@ -460,7 +460,7 @@ export function LessonContent({
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    {('lesson-content.saveButton')}
+                    Cancel
                   </Button>
                   <Button
                     size="sm"
@@ -472,12 +472,12 @@ export function LessonContent({
                     {isSaving ? (
                       <>
                         <Loader className="h-4 w-4 mr-1 animate-spin" />
-                        {('lesson-content.savingButton')}
+                        Saving...
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-1" />
-                        {('lesson-content.saveButton')}
+                        Save
                       </>
                     )}
                   </Button>
@@ -501,14 +501,14 @@ export function LessonContent({
           {isProcessing && (
             <div className="flex items-center gap-2 text-sm text-white bg-white/20 px-3 py-1.5 rounded-full">
               <div className="h-2 w-2 bg-white rounded-full animate-pulse"></div>
-              <span>{('lesson-content.generatingIndicator')}</span>
+              <span>Generating content...</span>
             </div>
           )}
         </div>
 
         <div className="mb-4">
           <div className="flex justify-between text-white/90 text-sm mb-1">
-            <span>{('lesson-content.progressLabel')}</span>
+            <span>Progress</span>
             <span>{Math.round(progressPercentage)}%</span>
           </div>
           <Progress value={progressPercentage} className="h-2 bg-white/30" />
@@ -523,7 +523,7 @@ export function LessonContent({
             {waitingForLesson && !isLessonGenerated && !isCurrentLessonBeingGenerated && (
               <span className="inline-flex items-center bg-white/20 px-2 py-1 rounded-full text-xs">
                 <Loader className="h-3 w-3 mr-1 animate-spin" />
-                {('lesson-content.waitingIndicator')}
+                Waiting for content...
               </span>
             )}
           </p>
@@ -540,7 +540,7 @@ export function LessonContent({
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    {('lesson-content.cancelButton')}
+                    Cancel
                   </Button>
                   <Button
                     size="sm"
@@ -552,12 +552,12 @@ export function LessonContent({
                     {isSaving ? (
                       <>
                         <Loader className="h-4 w-4 mr-1 animate-spin" />
-                        {('lesson-content.savingButton')}
+                        Saving...
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-1" />
-                        {('lesson-content.saveButton')}
+                        Save
                       </>
                     )}
                   </Button>
@@ -570,7 +570,7 @@ export function LessonContent({
                   onClick={handleEditToggle}
                 >
                   <Edit className="h-4 w-4 mr-1" />
-                  {('lesson-content.editButton')}
+                  Edit
                 </Button>
               )}
             </div>
@@ -587,7 +587,7 @@ export function LessonContent({
               clipRule="evenodd"
             />
           </svg>
-          {('lesson-content.errorMessage')}
+          Error loading lesson content. Please try again.
         </div>
       )}
 
@@ -604,9 +604,9 @@ export function LessonContent({
               <div className="absolute -top-2 -right-2 h-4 w-4 bg-purple-500 rounded-full animate-ping"></div>
             </div>
             <div className="space-y-3">
-              <h3 className="text-xl font-bold text-gray-800">{('lesson-content.loadingTitle')}</h3>
+              <h3 className="text-xl font-bold text-gray-800">Preparing your lesson</h3>
               <p className="text-muted-foreground max-w-md">
-                {('lesson-content.loadingDescription')}
+                Your selected lesson is being prepared. Please wait while we generate content for lessons in sequence.
               </p>
             </div>
           </div>
@@ -616,7 +616,7 @@ export function LessonContent({
               value={editingLessonContent}
               onChange={handleContentChange}
               className="min-h-[70vh] font-mono text-sm p-4"
-              placeholder={`${('lesson-content.contentPlaceholder')}`}
+              placeholder="Edit your lesson content here..."
             />
           </div>
         ) : (
@@ -634,7 +634,7 @@ export function LessonContent({
                   onClick={handleTestMyKnowledgeToggle}
                 >
                   <FlaskConical />
-                  {('lesson-content.testKnowledgeButton')}
+                  Test My Knowledge
                 </Button>
               )
             )}

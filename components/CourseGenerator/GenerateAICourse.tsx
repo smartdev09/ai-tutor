@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation';
 import { ModuleList } from './CourseDisplay/ModuleList';
 import { ErrorState } from './CourseStates/ErrorState';
 import { AiCourse, Faqs, Module } from '@/types';
-import { useLocale } from 'next-intl';
 import { getSessionUserInfo } from '@/lib/utils';
 
 export function GenerateAICourse() {
@@ -14,7 +13,6 @@ export function GenerateAICourse() {
   const [course, setCourse] = useState<AiCourse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
-  const lang = useLocale();
   const storedUser = JSON.parse(localStorage.getItem("user_info") || '{}');
   const userid = storedUser.id;
   const tokens = storedUser.tokens;
@@ -43,7 +41,6 @@ export function GenerateAICourse() {
       instructions,
       goal,
       about,
-      lang,
       tokens,
       userid
     },

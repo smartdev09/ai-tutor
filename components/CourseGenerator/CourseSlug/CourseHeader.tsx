@@ -9,7 +9,7 @@ export function CourseHeader({ moduleTitle }: CourseHeaderProps) {
 
   return (
     <>
-      <p className="text-sm text-gray-600">
+      <p className="text-lg text-gray-600">
         Module: {moduleTitle}
       </p>
     </>

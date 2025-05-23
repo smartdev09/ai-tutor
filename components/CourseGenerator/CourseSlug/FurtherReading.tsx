@@ -27,7 +27,7 @@ export default function FurtherReading({ slug }: { slug: string }) {
 
   return (
     <aside className="mt-10 rounded-xl overflow-hidden shadow-lg border border-purple-100 bg-gradient-to-br from-white to-purple-50">
-      <div className="bg-gradient-to-r from-purple-500 to-purple-600 py-4 px-6">
+      <div className="bg-purple-400 py-4 px-6">
         <h2 className="text-xl font-bold text-white flex items-center">
           <BookOpen className="h-5 w-5 mr-2" />
           Further Reading

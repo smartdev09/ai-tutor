@@ -5,22 +5,13 @@ import { streamText } from "ai";
 const model = createGroq({ apiKey: process.env.GROQ_API_KEY! })("llama3-70b-8192");
 
 export async function POST(req: Request) {
-  const { content, lang, tokens, userid } = await req.json();
+  const { content, tokens, userid } = await req.json();
 
   if (tokens <= 0) {
     return new Response(
       JSON.stringify({ error: 'You are out of daily token usage' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
-  }
-
-  let language = 'English';
-  if (lang === 'de') {
-    language = 'German';
-  } else if (lang === 'ar') {
-    language = 'Arabic';
-  } else if (lang === 'en') {
-    language = 'English';
   }
 
   const systemPrompt = `
@@ -61,7 +52,7 @@ export async function POST(req: Request) {
       `;
 
 
-  const userPrompt = `Generate a structured quiz with multiple choice questions based on this lesson content, in ${language} language.`;
+  const userPrompt = `Generate a structured quiz with multiple choice questions based on this lesson content.`;
 
   let maxTokens = 2000;
   if (tokens < 2000) {

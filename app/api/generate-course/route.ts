@@ -6,22 +6,13 @@ const model = createGroq({ apiKey: process.env.GROQ_API_KEY! })("llama3-70b-8192
 
 export async function POST(req: Request) {
   try {
-    const { term = "ML", difficulty = "beginner", instructions, goal, about, prompt, lang, tokens, userid } = await req.json();
+    const { term = "ML", difficulty = "beginner", instructions, goal, about, prompt, tokens, userid } = await req.json();
 
     if (tokens <= 0) {
       return new Response(
         JSON.stringify({ error: 'You are out of daily token usage' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
-    }
-
-    let language = 'English';
-    if (lang === 'de') {
-      language = 'German';
-    } else if (lang === 'ar') {
-      language = 'Arabic';
-    } else if (lang === 'en') {
-      language = 'English';
     }
 
     if (!term || !difficulty) {
@@ -122,7 +113,7 @@ export async function POST(req: Request) {
       systemPrompt += `\n\nAdditional instructions: ${instructions}`;
     }
 
-    const userMessage = prompt || `Create a course on ${term} at ${difficulty} difficulty level in ${language} language.`;
+    const userMessage = prompt || `Create a course on ${term} at ${difficulty} difficulty level.`;
 
     let maxTokens = 2000;
     if(tokens < 3000) {

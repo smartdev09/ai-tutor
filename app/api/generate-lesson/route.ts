@@ -6,22 +6,13 @@ const model = createGroq({ apiKey: process.env.GROQ_API_KEY! })("llama3-70b-8192
 
 export async function POST(req: Request) {
   try {
-    const { moduleTitle, lessonTitle, userPrompt = null, lang, difficulty = 'beginner', userTokens, userId } = await req.json();
+    const { moduleTitle, lessonTitle, userPrompt = null, difficulty = 'beginner', userTokens, userId } = await req.json();
 
     if (userTokens <= 0) {
       return new Response(
         JSON.stringify({ error: 'You are out of daily token usage' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
-    }
-
-    let language = 'English';
-    if (lang === 'de') {
-      language = 'German';
-    } else if (lang === 'ar') {
-      language = 'Arabic';
-    } else if (lang === 'en') {
-      language = 'English';
     }
 
     if (!moduleTitle || !lessonTitle) {
@@ -33,7 +24,7 @@ export async function POST(req: Request) {
 
     const systemPrompt = `You are an expert educator creating SEO-optimized content for a course titled "${moduleTitle}"
     at ${difficulty} difficulty level.
-    Create detailed, search-engine optimized lesson content for "${lessonTitle} in ${language} language"
+    Create detailed, search-engine optimized lesson content for "${lessonTitle}"
     which is part of the module "${moduleTitle}".
     ${userPrompt ? `Most importantly, ${userPrompt}.` : ""}
     The content should be comprehensive, educational, well-structured, and optimized for search engines. Format in Markdown and include:
@@ -52,7 +43,7 @@ export async function POST(req: Request) {
     Include transition words and phrases to improve content flow.
     Naturally incorporate the primary keyword "${lessonTitle}" 5-7 times throughout the content.`;
 
-    const userMessage = `Create detailed content for the lesson "${lessonTitle}" in module "${moduleTitle} in ${language} language".`;
+    const userMessage = `Create detailed content for the lesson "${lessonTitle}" in module "${moduleTitle}.`;
 
     let maxTokens = 4000;
     if(userTokens < 3000) {

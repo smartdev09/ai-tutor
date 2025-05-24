@@ -19,8 +19,6 @@ import {
   setIsSaving,
 } from "@/store/courseSlice"
 import { toast } from "@/hooks/use-toast"
-import { ChatButton } from "../CourseControls/ChatButton"
-import ChatbotUI from "./ChatBot"
 import { useRouter } from "next/navigation"
 import { Logout } from "@/components/logout-button/Logout"
 
@@ -48,7 +46,6 @@ export function ModuleList({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [allModulesGenerated, setAllModulesGenerated] = useState<boolean>(false)
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
-  const [toggleBot, setToggleBot] = useState(false)
   const storedUser = JSON.parse(localStorage.getItem("user_info") || '{}');
   const userID = storedUser.id;
 
@@ -282,8 +279,6 @@ export function ModuleList({
 
       <div className="w-full p-6">
         <div className="flex mb-4">
-          <ChatButton toggleBot={toggleBot} setToggleBot={setToggleBot} />
-          {/* <RegenerateButton onRegenerate={handleRegenerate} /> */}
           <Button
             onClick={handleSaveCourse}
             className="ml-2"
@@ -305,7 +300,7 @@ export function ModuleList({
 
         <div className="flex">
           {/* Main content area */}
-          <div className={`${toggleBot ? 'w-2/3 pr-4' : 'w-full'}`}>
+          <div className='w-full'>
             {currentModuleIndex === null ? (
               <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-4">
                 <div className="bg-primary/10 p-6 rounded-full">
@@ -325,15 +320,6 @@ export function ModuleList({
               />
             )}
           </div>
-
-          {/* ChatBot area */}
-          {toggleBot && (
-            <div className="w-1/3 h-full p-4 sticky top-0">
-              <div className="h-full">
-                <ChatbotUI />
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

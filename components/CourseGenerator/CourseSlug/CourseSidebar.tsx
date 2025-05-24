@@ -105,7 +105,7 @@ export function CourseSidebar({
         )}
 
         <div className="space-y-4">
-          {course?.modules?.map((currentModule, moduleIndex) => (
+          {[...course?.modules || []].sort((a, b) => a.position - b.position).map((currentModule, moduleIndex) => (
             <div key={moduleIndex} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
               <h3
                 className="font-medium cursor-pointer mb-2 hover:text-blue-600"

@@ -31,7 +31,7 @@ export function TokenUsage({ userId }: { userId: string }) {
           <div className="flex mb-2 items-center justify-between">
             <div>
               <span className="text-xs font-semibold inline-block py-1 px-2 rounded-full bg-green-200">
-                {((usage / 10000) * 100).toFixed(2)} % Tokens Left
+                {((usage / 100000) * 100).toFixed(2)} % Tokens Left
               </span>
             </div>
           </div>

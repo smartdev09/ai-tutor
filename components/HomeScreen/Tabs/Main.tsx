@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react';
-import { ArrowRightIcon } from 'lucide-react';
+import { ArrowRightIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { storeFineTuneData } from '@/lib/utils/storage';
 import { useRouter } from 'next/navigation';
@@ -87,7 +87,7 @@ const HomeScreen: React.FC = () => {
             className="w-full md:w-auto"
             disabled={isSubmitting || !topic}
           >
-            <ArrowRightIcon className="mr-2" size={16} />
+            {!isSubmitting? <ArrowRightIcon className="mr-2" size={16} /> : <Loader2 className="mr-2 animate-spin" size={16} /> }
             Generate Course
           </Button>
         </div>

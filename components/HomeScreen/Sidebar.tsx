@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
-import { StarIcon, BookOpen, UsersIcon, Rocket, XIcon, Home } from 'lucide-react';
+import React, { useTransition } from 'react';
+import { StarIcon, BookOpen, UsersIcon, Rocket, XIcon, Home, LogOut, Loader2 } from 'lucide-react';
+import { logout } from '@/app/auth/actions';
 
 export type TabType = 'main' | 'myCourses' | 'staffPicks' | 'community';
 
@@ -14,7 +15,7 @@ interface SidebarItemProps {
 
 const SidebarItem: React.FC<SidebarItemProps> = ({ icon, text, active, onClick }) => {
   return (
-    <div 
+    <div
       className={`flex items-center p-3 rounded-md cursor-pointer ${active ? 'bg-purple-100' : 'hover:bg-purple-100'}`}
       onClick={onClick}
     >
@@ -32,12 +33,19 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActiveTab }) => {
+  const [isPending, startTransition] = useTransition();
 
   const handleTabClick = (tab: TabType) => {
     setActiveTab(tab);
     if (window.innerWidth < 768) {
       onClose();
     }
+  };
+
+  const handleLogout = () => {
+    startTransition(async () => {
+      await logout();
+    });
   };
 
   return (
@@ -65,32 +73,44 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
       <p className="text-xs text-purple-500 mb-6">Your personalized learning companion for any topic</p>
 
       <div className="mb-4">
-        <SidebarItem 
-          icon={<Home size={18} />} 
+        <SidebarItem
+          icon={<Home size={18} />}
           text="New Course"
-          active={activeTab === 'main'} 
-          onClick={() => handleTabClick('main')} 
+          active={activeTab === 'main'}
+          onClick={() => handleTabClick('main')}
         />
       </div>
 
       <div className="space-y-1 mb-4">
-        <SidebarItem 
-          icon={<BookOpen size={18} />} 
+        <SidebarItem
+          icon={<BookOpen size={18} />}
           text="My Courses"
-          active={activeTab === 'myCourses'} 
-          onClick={() => handleTabClick('myCourses')} 
+          active={activeTab === 'myCourses'}
+          onClick={() => handleTabClick('myCourses')}
         />
-        <SidebarItem 
-          icon={<StarIcon size={18} />} 
+        <SidebarItem
+          icon={<StarIcon size={18} />}
           text="Staff Picks"
-          active={activeTab === 'staffPicks'} 
-          onClick={() => handleTabClick('staffPicks')} 
+          active={activeTab === 'staffPicks'}
+          onClick={() => handleTabClick('staffPicks')}
         />
-        <SidebarItem 
-          icon={<UsersIcon size={18} />} 
+        <SidebarItem
+          icon={<UsersIcon size={18} />}
           text="Community"
           active={activeTab === 'community'}
-          onClick={() => handleTabClick('community')} 
+          onClick={() => handleTabClick('community')}
+        />
+      </div>
+      <div className="flex-grow"></div>
+      <div className='mb-8'>
+        <SidebarItem
+          icon={<>{isPending ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <LogOut className="w-5 h-5" />
+          )}</>}
+          text={isPending ? "Signing Out" : "Signout"}
+          onClick={() => handleLogout()}
         />
       </div>
 

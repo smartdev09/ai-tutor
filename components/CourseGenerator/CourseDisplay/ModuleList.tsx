@@ -76,9 +76,7 @@ export function ModuleList({
         owners: [Owner.USER]
       };
 
-      console.log(dbCourse)
       await courseService.createCourse(dbCourse);
-      console.log('Course created successfully');
     } catch (error) {
       console.error('Error creating course:', error);
     }
@@ -212,7 +210,7 @@ export function ModuleList({
 
   return (
     <div className="flex h-full">
-          <Logout/>
+      <Logout />
       <SidebarProvider>
         <Sidebar className="w-80 border-r">
           <SidebarHeader className="border-b border-purple-100 pb-4">
@@ -249,10 +247,10 @@ export function ModuleList({
               {course.modules.map((module, index) => {
                 // During generation, all modules should be disabled
                 // During processing of a specific module, only other modules should be disabled
-                const isModuleDisabled =
-                  isLoading ||
-                  streamingModuleIndex !== -1 ||
-                  (processingModuleIndex !== null && processingModuleIndex !== index)
+                // const isModuleDisabled =
+                //   isLoading ||
+                //   streamingModuleIndex !== -1 ||
+                //   (processingModuleIndex !== null && processingModuleIndex !== index)
 
                 return (
                   <ModuleItem
@@ -267,7 +265,7 @@ export function ModuleList({
                     onLessonSelect={handleLessonSelection}
                     selectedLessonIndex={currentModuleIndex === index ? currentLessonIndex : undefined}
                     waitingForLesson={currentModuleIndex === index ? waitingForLesson : false}
-                    disabled={isModuleDisabled}
+                    disabled={true}
                   />
                 )
               })}

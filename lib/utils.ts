@@ -47,7 +47,6 @@ export function getCookie(name: string): string | null {
 }
 
 export const getSessionUserInfo = async () => {
-  console.log("I was called")
   const id = getCookie('user_id');
   let userInfo = {
       id: "",

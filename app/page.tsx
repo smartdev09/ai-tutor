@@ -16,8 +16,7 @@ export default function Page() {
 
   useEffect(() => {
     const getSessionUser = async () => {
-    const session = await getSessionUserInfo();
-    console.log(session);
+    await getSessionUserInfo();
     }
 
     getSessionUser()

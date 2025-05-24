@@ -363,7 +363,7 @@ const TestMyKnowledge = () => {
                   {/* Immediate feedback message */}
                   {isSelected && showResultInline && !quizComplete && (
                     <span className={`ml-auto text-end text-sm font-medium ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-                      {isCorrect ? ('TestMyKnowledge.correct_answer') : ('TestMyKnowledge.incorrect_answer')}
+                      {isCorrect ? 'Correct answer' : "Incorrect answer"}
                     </span>
                   )}
                 </div>
@@ -391,7 +391,7 @@ const TestMyKnowledge = () => {
                     <div className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center">
                       <User size={18} className="text-purple-600" />
                     </div>
-                    <span className="text-sm font-medium text-purple-700">{('TestMyKnowledge.yourQuery')}</span>
+                    <span className="text-sm font-medium text-purple-700">Your Querry</span>
                   </div>
 
                   <div
@@ -407,7 +407,7 @@ const TestMyKnowledge = () => {
                   <div className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center">
                     <Bot size={18} className="text-purple-600" />
                   </div>
-                  <span className="text-sm font-medium text-purple-700">{('TestMyKnowledge.response')}</span>
+                  <span className="text-sm font-medium text-purple-700">Response</span>
                 </div>
 
                 {isTyping ? (

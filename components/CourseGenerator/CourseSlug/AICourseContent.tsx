@@ -280,7 +280,7 @@ export function AICourseContent({
 
   return (
     <div className="w-full mx-auto p-4">
-      <Logout/>
+      <Logout />
       <div className="flex flex-col md:flex-row gap-6">
         {/* Course Sidebar */}
         <CourseSidebar
@@ -309,7 +309,8 @@ export function AICourseContent({
             <div className="bg-white rounded-lg shadow-md p-12">
               <CourseHeader
                 moduleTitle={moduleTitle}
-                lessonTitle={lessonTitle}
+                toggleBot={toggleBot}
+                setToggleBot={setToggleBot}
               />
 
               <CourseContent
@@ -317,13 +318,11 @@ export function AICourseContent({
                 lessonError={lessonError}
                 isLoadingLesson={isLoadingLesson || isCompletionLoading}
                 handleSelectLesson={() => handleSelectLesson(selectedModuleIndex, selectedLessonIndex)}
-                toggleBot={toggleBot}
-                setToggleBot={setToggleBot}
               />
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow-md p-6 text-center">
-              <svg
+              {/* <svg
                 className="w-16 h-16 mx-auto mb-4 text-gray-400"
                 fill="none"
                 stroke="currentColor"
@@ -338,7 +337,37 @@ export function AICourseContent({
                 ></path>
               </svg>
               <h3 className="text-xl font-medium mb-2">Select a Lesson to Begin</h3>
-              <p className="text-gray-600 mb-4">Click on a module title to expand it, then select a lesson to view its content.</p>
+              <p className="text-gray-600 mb-4">Click on a module title to expand it, then select a lesson to view its content.</p> */}
+              <div className="space-y-6 p-4 text-left">
+                <h1 className="text-2xl font-bold text-gray-500">{course.title}</h1>
+                <p className="bg-blue-400 rounded-lg px-1 w-fit text-sm font-bold text-white">{course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)}</p>
+
+                {course.modules.map((module, moduleIndex) => (
+                  <div key={module.id} className="p-2">
+                    <h2 className="text-xl font-semibold text-gray-500">
+                      {module.title}
+                    </h2>
+
+                    <div className="mt-2 space-y-4">
+                      {module.lessons.map((lesson, lessonIndex) => (
+                        <div key={lesson.id}>
+                          <p
+                            className="flex items-center text-md text-left font-medium text-gray-800 hover:bg-gray-100 border-b-2 border-gray-100 px-2 py-4 cursor-pointer"
+                            onClick={() => handleSelectLesson(moduleIndex, lessonIndex)}
+                          >
+                            <span className="bg-gray-200 rounded-full min-w-8 min-h-8 flex items-center justify-center text-sm font-semibold mr-3">
+                              {moduleIndex + 1}.{lessonIndex + 1}
+                            </span>
+                            {lesson.title}
+                          </p>
+
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
 
             </div>
           )}

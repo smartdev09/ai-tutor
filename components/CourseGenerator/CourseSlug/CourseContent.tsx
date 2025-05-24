@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { FlaskConical, Loader } from "lucide-react"
 import { useEffect, useState } from "react"
 import TestMyKnowledge from "../CourseDisplay/TestMyKnowledge"
-import { ChatButton } from "../CourseControls/ChatButton"
 import { setCurrentLessonContent } from "@/store/courseSlice"
 import { useAppDispatch } from "@/store/hooks"
 
@@ -13,17 +12,13 @@ interface CourseContentProps {
   lessonError: string
   isLoadingLesson: boolean
   handleSelectLesson: () => void
-  toggleBot: boolean
-  setToggleBot: (value: boolean) => void
 }
 
 export function CourseContent({ 
   lessonContent, 
   lessonError, 
   isLoadingLesson, 
-  handleSelectLesson, 
-  toggleBot, 
-  setToggleBot 
+  handleSelectLesson,
 }: CourseContentProps) {
   const [testMyKnowledgeToggle, setTestMyKnowledgeToggle] = useState<boolean>(false)
   const dispatch = useAppDispatch()
@@ -71,8 +66,6 @@ export function CourseContent({
 
   return (
     <div className="bg-white rounded-xl min-h-[85vh] overflow-auto">
-      <ChatButton toggleBot={toggleBot} setToggleBot={setToggleBot} />
-      
       {lessonContent ? (
         <div className="prose prose-lg max-w-none relative min-h-[200px] lesson-content">
           <div className="content-container" dangerouslySetInnerHTML={{ __html: parsedContent }} />

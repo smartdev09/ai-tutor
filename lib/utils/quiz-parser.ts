@@ -20,6 +20,7 @@ export const parseMCQQuestionsAR = (completionText: string) => {
     let match;
     while ((match = questionPattern.exec(completionText)) !== null) {
         try {
+            
             const questionText = match[1].replace(/\*\*/g, '').trim();
             const optionsBlock = match[2].trim();
 
@@ -248,6 +249,8 @@ export const parseMCQQuestions = (completionText: string) => {
     let match;
     while ((match = questionPattern.exec(completionText)) !== null) {
         try {
+          
+            
             const questionText = match[1].replace(/\*\*/g, '').trim();
             const optionsBlock = match[2].trim();
 
@@ -305,13 +308,14 @@ export const parseMCQQuestions = (completionText: string) => {
                 let correctIndex = 0;
 
                 const lines = optionsBlock.split('\n');
-
-                const correct = lines[4].replace("CORRECT: ", "");
-
-                const explanation = lines[5];
+                // Defensive: check if lines[4] and lines[5] exist
+                let correct = "";
+                let explanation = "";
+                correct = lines[4]?.replace("CORRECT: ", "");
+                explanation = lines[5] || ""                
 
                 for (let i = 0; i < 4; i++) {
-                    options.push(lines[i]);
+                    options.push(lines[i] || `Option ${i + 1}`);
                     if (lines[i] === correct) {
                         correctIndex = i;
                     }
@@ -323,7 +327,6 @@ export const parseMCQQuestions = (completionText: string) => {
                     }
 
                     const finalOptions = options.slice(0, 4);
-
                     correctIndex = Math.min(correctIndex, 3);
 
                     parsedQuestions.push({

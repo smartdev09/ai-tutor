@@ -132,6 +132,23 @@ const TestMyKnowledge = () => {
     }
   }, [answers, questions.length, parsedQuestions.length]);
 
+
+
+  //To Be Used Later
+
+//  useEffect(() => {
+//   if (answers.length > 0 && questions.length > 0) {
+//     const actualQuestionCount = parsedQuestions.length;
+//     const allAnswered = answers.slice(0, actualQuestionCount).every(answer => answer !== null);
+//     setAllQuestionsAnswered(prev => {
+//       if (prev !== allAnswered) return allAnswered;
+//       return prev;
+//     });
+//   }
+// }, [answers, questions.length, parsedQuestions.length]);
+
+
+
   const handleOptionSelect = (optionIndex: number) => {
     if (quizComplete) return;
     // setShowSuggestions(true)

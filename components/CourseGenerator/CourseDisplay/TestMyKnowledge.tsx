@@ -77,63 +77,6 @@ const TestMyKnowledge = () => {
       setIsLoading(false);
     }
   });
-
-  // useEffect(() => {
-  //   if (completion) {
-  //     try {
-  //       const newParsedQuestions = processCompletionText(completion);
-  //       setParsedQuestions(newParsedQuestions);
-
-  //       if (newParsedQuestions.length > stableQuestionCount) {
-  //         setStableQuestionCount(newParsedQuestions.length);
-  //         if (answers.length < newParsedQuestions.length) {
-  //           setAnswers(prev => [
-  //             ...prev,
-  //             ...Array(newParsedQuestions.length - prev.length).fill(null)
-  //           ]);
-  //         }
-  //       }
-
-  //       if (newParsedQuestions.length > 0) {
-  //         const stableQuestions = [...newParsedQuestions];
-
-  //         while (stableQuestions.length < stableQuestionCount) {
-  //           const lastQuestion = stableQuestions[stableQuestions.length - 1] || {
-  //             question: "Loading question...",
-  //             options: ["Loading...", "Loading...", "Loading...", "Loading..."],
-  //             correctAnswer: 0
-  //           };
-  //           stableQuestions.push({ ...lastQuestion });
-  //         }
-
-  //         setQuestions(stableQuestions);
-  //         setIsLoading(false);
-  //       }
-  //     } catch (err) {
-  //       console.error('Error parsing streaming quiz content:', err);
-  //     }
-  //   }
-  // // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [completion, stableQuestionCount, answers.length]);
-  // onFinish: (prompt: string, completion: string) => {
-  //   try {
-  //     const parsed = processCompletionText(completion);
-
-  //     if (parsed.length > 0) {
-  //       setQuestions(parsed);
-  //       setAnswers(Array(parsed.length).fill(null));
-  //       setParsedQuestions(parsed); 
-  //       setIsLoading(false);
-  //     } else {
-  //       setError('Failed to parse quiz questions');
-  //     }
-  //   } catch (err) {
-  //     setError('Failed to generate quiz');
-  //   }
-  // }
-
-
-
   useEffect(() => {
     if (!hasGenerated) {
       setHasGenerated(true);
@@ -142,13 +85,6 @@ const TestMyKnowledge = () => {
     }
   }, [hasGenerated, complete]);
 
-  // useEffect(() => {
-  //   if (answers.length > 0 && questions.length > 0) {
-  //     const actualQuestionCount = parsedQuestions.length;
-  //     const allAnswered = answers.slice(0, actualQuestionCount).every(answer => answer !== null);
-  //     setAllQuestionsAnswered(allAnswered);
-  //   }
-  // }, [answers, questions.length, parsedQuestions.length]);
   useEffect(() => {
     if (answers.length > 0 && questions.length > 0) {
       const allAnswered = answers.every((answer) => answer !== null);
@@ -159,8 +95,6 @@ const TestMyKnowledge = () => {
 
   const handleOptionSelect = (optionIndex: number) => {
     if (quizComplete) return;
-    // setShowSuggestions(true)
-
     const newAnswers = [...answers];
     newAnswers[currentQuestionIndex] = optionIndex;
     setAnswers(newAnswers);
@@ -343,8 +277,6 @@ const TestMyKnowledge = () => {
   }
 
   const currentQuestion = questions[currentQuestionIndex];
-  // const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
-  // const progressPercentage = ((currentQuestionIndex + 1) / parsedQuestions.length) * 100;
   const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   const isPlaceholder = currentQuestionIndex >= questions.length;

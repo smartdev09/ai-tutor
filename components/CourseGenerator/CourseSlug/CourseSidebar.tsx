@@ -58,7 +58,7 @@ export function CourseSidebar({
           </div>
         </div>
 
-        <Link href="/ai" className="text-sm text-blue-600 hover:underline flex items-center">
+        <Link href="/" className="text-sm text-blue-600 hover:underline flex items-center">
           <svg
             className="w-3.5 h-3.5 mr-1"
             fill="none"

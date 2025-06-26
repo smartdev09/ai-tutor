@@ -1,4 +1,3 @@
-
 // Arabic (ar) version
 export const cleanTextAR = (text: string): string => {
     let cleaned = text.replace(/\bf:{"messageId".*?}/g, '');
@@ -21,7 +20,6 @@ export const parseMCQQuestionsAR = (completionText: string) => {
     let match;
     while ((match = questionPattern.exec(completionText)) !== null) {
         try {
-            
             const questionText = match[1].replace(/\*\*/g, '').trim();
             const optionsBlock = match[2].trim();
 
@@ -31,7 +29,6 @@ export const parseMCQQuestionsAR = (completionText: string) => {
 
             let optionMatch;
             let optionIndex = 0;
-
             while ((optionMatch = optionsPattern.exec(optionsBlock)) !== null) {
                 let optionText = optionMatch[2].replace(/\*\*/g, '').trim();
 
@@ -145,7 +142,7 @@ export const parseMCQQuestionsDE = (completionText: string) => {
 
             let optionMatch;
             let optionIndex = 0;
-
+ 
             while ((optionMatch = optionsPattern.exec(optionsBlock)) !== null) {
                 let optionText = optionMatch[2].replace(/\*\*/g, '').trim();
 
@@ -250,7 +247,6 @@ export const parseMCQQuestions = (completionText: string) => {
     let match;
     while ((match = questionPattern.exec(completionText)) !== null) {
         try {
-        
             const questionText = match[1].replace(/\*\*/g, '').trim();
             const optionsBlock = match[2].trim();
 
@@ -308,16 +304,19 @@ export const parseMCQQuestions = (completionText: string) => {
                 let correctIndex = 0;
 
                 const lines = optionsBlock.split('\n');
-                // Defensive: check if lines[4] and lines[5] exists
-                let correct = "";
-                let explanation = "";
-                correct = lines[4]?.replace("CORRECT: ", "");
-                explanation = lines[5] || ""                
+
+                // Defensive checks for lines array
+                const correct = lines[4] ? lines[4].replace("CORRECT: ", "") : "";
+                const explanation = lines[5] || "";
 
                 for (let i = 0; i < 4; i++) {
-                    options.push(lines[i] || `Option ${i + 1}`);
-                    if (lines[i] === correct) {
-                        correctIndex = i;
+                    if (lines[i]) {
+                        options.push(lines[i]);
+                        if (lines[i] === correct) {
+                            correctIndex = i;
+                        }
+                    } else {
+                        options.push(`Option ${i + 1}`);
                     }
                 }
 

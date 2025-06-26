@@ -78,43 +78,61 @@ const TestMyKnowledge = () => {
     }
   });
 
-  useEffect(() => {
-    if (completion) {
-      try {
-        const newParsedQuestions = processCompletionText(completion);
-        setParsedQuestions(newParsedQuestions);
+  // useEffect(() => {
+  //   if (completion) {
+  //     try {
+  //       const newParsedQuestions = processCompletionText(completion);
+  //       setParsedQuestions(newParsedQuestions);
 
-        if (newParsedQuestions.length > stableQuestionCount) {
-          setStableQuestionCount(newParsedQuestions.length);
-          if (answers.length < newParsedQuestions.length) {
-            setAnswers(prev => [
-              ...prev,
-              ...Array(newParsedQuestions.length - prev.length).fill(null)
-            ]);
-          }
-        }
+  //       if (newParsedQuestions.length > stableQuestionCount) {
+  //         setStableQuestionCount(newParsedQuestions.length);
+  //         if (answers.length < newParsedQuestions.length) {
+  //           setAnswers(prev => [
+  //             ...prev,
+  //             ...Array(newParsedQuestions.length - prev.length).fill(null)
+  //           ]);
+  //         }
+  //       }
 
-        if (newParsedQuestions.length > 0) {
-          const stableQuestions = [...newParsedQuestions];
+  //       if (newParsedQuestions.length > 0) {
+  //         const stableQuestions = [...newParsedQuestions];
 
-          while (stableQuestions.length < stableQuestionCount) {
-            const lastQuestion = stableQuestions[stableQuestions.length - 1] || {
-              question: "Loading question...",
-              options: ["Loading...", "Loading...", "Loading...", "Loading..."],
-              correctAnswer: 0
-            };
-            stableQuestions.push({ ...lastQuestion });
-          }
+  //         while (stableQuestions.length < stableQuestionCount) {
+  //           const lastQuestion = stableQuestions[stableQuestions.length - 1] || {
+  //             question: "Loading question...",
+  //             options: ["Loading...", "Loading...", "Loading...", "Loading..."],
+  //             correctAnswer: 0
+  //           };
+  //           stableQuestions.push({ ...lastQuestion });
+  //         }
 
-          setQuestions(stableQuestions);
-          setIsLoading(false);
-        }
-      } catch (err) {
-        console.error('Error parsing streaming quiz content:', err);
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [completion, stableQuestionCount, answers.length]);
+  //         setQuestions(stableQuestions);
+  //         setIsLoading(false);
+  //       }
+  //     } catch (err) {
+  //       console.error('Error parsing streaming quiz content:', err);
+  //     }
+  //   }
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [completion, stableQuestionCount, answers.length]);
+  // onFinish: (prompt: string, completion: string) => {
+  //   try {
+  //     const parsed = processCompletionText(completion);
+
+  //     if (parsed.length > 0) {
+  //       setQuestions(parsed);
+  //       setAnswers(Array(parsed.length).fill(null));
+  //       setParsedQuestions(parsed); 
+  //       setIsLoading(false);
+  //     } else {
+  //       setError('Failed to parse quiz questions');
+  //     }
+  //   } catch (err) {
+  //     setError('Failed to generate quiz');
+  //   }
+  // }
+
+
 
   useEffect(() => {
     if (!hasGenerated) {
@@ -124,13 +142,20 @@ const TestMyKnowledge = () => {
     }
   }, [hasGenerated, complete]);
 
+  // useEffect(() => {
+  //   if (answers.length > 0 && questions.length > 0) {
+  //     const actualQuestionCount = parsedQuestions.length;
+  //     const allAnswered = answers.slice(0, actualQuestionCount).every(answer => answer !== null);
+  //     setAllQuestionsAnswered(allAnswered);
+  //   }
+  // }, [answers, questions.length, parsedQuestions.length]);
   useEffect(() => {
     if (answers.length > 0 && questions.length > 0) {
-      const actualQuestionCount = parsedQuestions.length;
-      const allAnswered = answers.slice(0, actualQuestionCount).every(answer => answer !== null);
+      const allAnswered = answers.every((answer) => answer !== null);
       setAllQuestionsAnswered(allAnswered);
     }
-  }, [answers, questions.length, parsedQuestions.length]);
+  }, [answers, questions.length]);
+
 
   const handleOptionSelect = (optionIndex: number) => {
     if (quizComplete) return;
@@ -165,7 +190,7 @@ const TestMyKnowledge = () => {
       }
     });
 
-    const percentageScore = (correctCount / parsedQuestions.length) * 100;
+    const percentageScore = (correctCount / questions.length) * 100;
     setScore(percentageScore);
     setQuizComplete(true);
     setReviewMode(true);
@@ -292,8 +317,8 @@ const TestMyKnowledge = () => {
           <div className="text-6xl font-bold text-purple-600 mb-2">{Math.round(score)}%</div>
           <p className="text-gray-700">
             {t('TestMyKnowledge.youGot')} {answers.filter((answer, index) =>
-              typeof answer === 'number' && index < parsedQuestions.length && answer === parsedQuestions[index].correctAnswer
-            ).length} {t('TestMyKnowledge.outOf')} {parsedQuestions.length} {t('TestMyKnowledge.questionsCorrect')}
+              typeof answer === 'number' && index < questions.length && answer === questions[index].correctAnswer
+            ).length} {t('TestMyKnowledge.outOf')} {questions.length} {t('TestMyKnowledge.questionsCorrect')}
           </p>
         </div>
 
@@ -318,9 +343,11 @@ const TestMyKnowledge = () => {
   }
 
   const currentQuestion = questions[currentQuestionIndex];
+  // const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+  // const progressPercentage = ((currentQuestionIndex + 1) / parsedQuestions.length) * 100;
   const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
 
-  const isPlaceholder = currentQuestionIndex >= parsedQuestions.length;
+  const isPlaceholder = currentQuestionIndex >= questions.length;
 
   return (
     <div className="p-6 bg-white rounded-lg shadow">
@@ -347,7 +374,7 @@ const TestMyKnowledge = () => {
 
       <div className="pb-4 border-b border-gray-200">
         <div className="flex items-center mb-2">
-          <span className="text-gray-700 font-medium">{t('TestMyKnowledge.question')} {currentQuestionIndex + 1} of {parsedQuestions.length}</span>
+          <span className="text-gray-700 font-medium">{t('TestMyKnowledge.question')} {currentQuestionIndex + 1} of {questions.length}</span>
           <div className="ml-2 flex-grow h-2 bg-gray-200 rounded-full">
             <div
               className="h-full bg-purple-500 rounded-full"
@@ -487,9 +514,9 @@ const TestMyKnowledge = () => {
 
       <div className="pt-4 border-t border-gray-200 flex justify-between">
         <div className="text-purple-600 font-medium">
-          {!quizComplete && !allQuestionsAnswered && currentQuestionIndex === parsedQuestions.length - 1 &&
-            t('TestMyKnowledge.answer_all_to_submit')
-          }
+       {!quizComplete && !allQuestionsAnswered && currentQuestionIndex === questions.length - 1 &&
+  t('TestMyKnowledge.answer_all_to_submit')}
+
           {quizComplete && (
             <>
               <p className={answers[currentQuestionIndex] === currentQuestion?.correctAnswer ? 'text-green-500' : 'text-red-500'}>
@@ -511,52 +538,45 @@ const TestMyKnowledge = () => {
             {t('TestMyKnowledge.previous')}
           </Button>
 
-          {quizComplete ? (
-            currentQuestionIndex === parsedQuestions.length - 1 ? (
-              <Button
-                className="px-4 py-2 bg-purple-500 text-white rounded-lg"
-                onClick={() => {
-                  setReviewMode(false);
-                }}
-              >
-                {t('TestMyKnowledge.showSummary')}
-              </Button>
-            ) : (
-              <Button
-                className="px-4 py-2 bg-purple-500 text-white rounded-lg flex items-center"
-                onClick={goToNextQuestion}
-              >
-                {t('TestMyKnowledge.next')}
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Button>
-            )
+          {quizComplete && reviewMode ? (
+            <Button
+              className="px-4 py-2 bg-purple-500 text-white rounded-lg"
+              onClick={() => {
+                setReviewMode(false); // Going to summary mode
+              }}
+            >
+              {t('TestMyKnowledge.showSummary')}
+            </Button>
           ) : (
             <Button
-              className={`px-4 py-2 flex items-center ${currentQuestionIndex === parsedQuestions.length - 1
-                ? (allQuestionsAnswered ? 'bg-green-500' : 'bg-gray-400')
-                : 'bg-purple-500'
+              className={`px-4 py-2 flex items-center ${currentQuestionIndex === questions.length - 1
+                  ? (allQuestionsAnswered ? 'bg-green-500' : 'bg-gray-400')
+                  : 'bg-purple-500'
                 } text-white rounded-lg`}
               onClick={goToNextQuestion}
-              disabled={currentQuestionIndex === parsedQuestions.length - 1 && !allQuestionsAnswered}
+              disabled={currentQuestionIndex === questions.length - 1 && !allQuestionsAnswered}
             >
-              {currentQuestionIndex === parsedQuestions.length - 1 ? t('TestMyKnowledge.submit') : t('TestMyKnowledge.next')}
+              {currentQuestionIndex === questions.length - 1
+                ? (allQuestionsAnswered ? t('TestMyKnowledge.submit') : t('TestMyKnowledge.next'))
+                : t('TestMyKnowledge.next')}
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Button>
           )}
+
+
+
         </div>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {answers.slice(0, parsedQuestions.length).map((answer, index) => (
+        {answers.slice(0, questions.length).map((answer, index) => (
           <div
             key={index}
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
               ${answer !== null
-                ? (quizComplete && parsedQuestions[index] && answer === parsedQuestions[index].correctAnswer
+                ? (quizComplete && questions[index] && answer === questions[index].correctAnswer
                   ? 'bg-green-500 text-white'
                   : quizComplete
                     ? 'bg-red-500 text-white'

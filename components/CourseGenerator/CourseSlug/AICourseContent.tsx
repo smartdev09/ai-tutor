@@ -52,8 +52,9 @@ export function AICourseContent({
     error: completionError,
   } = useCompletion({
     api: "/api/generate-lesson",
+    experimental_throttle:500,//This line will remove the error of Maximum update depth exceeded.
   })
-
+  console.log("Coure FAQ",course.faqs)
   // Effect to set hasMounted to true after the component mounts
   useEffect(() => {
     setHasMounted(true)

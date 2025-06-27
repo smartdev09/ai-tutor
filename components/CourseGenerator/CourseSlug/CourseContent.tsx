@@ -72,7 +72,7 @@ export function CourseContent({ lessonContent, lessonError, isLoadingLesson, han
       {!isLoadingLesson && (
         testMyKnowledgeToggle ? (
           <div className="mt-12">
-            <TestMyKnowledge />
+            <TestMyKnowledge lessonContent={lessonContent} />
           </div>
         ) : (
           <Button

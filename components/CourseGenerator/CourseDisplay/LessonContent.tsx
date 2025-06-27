@@ -214,7 +214,7 @@ export function LessonContent({
         }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     module?.title,
     module?.lessons,
@@ -434,7 +434,7 @@ export function LessonContent({
         },
       })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPrompt])
 
   return (
@@ -623,16 +623,16 @@ export function LessonContent({
         ) : (
           <div className="prose prose-lg max-w-none relative min-h-[200px] lesson-content">
             <div className="content-container" dangerouslySetInnerHTML={{ __html: parsedContent }} />
-
             {!isCurrentLessonBeingGenerated && (
               testMyKnowledgeToggle ? (
                 <div className="mt-12">
-                  <TestMyKnowledge />
+                  <TestMyKnowledge lessonContent={currentContent} />
                 </div>
               ) : (
                 <Button
                   variant="default"
                   onClick={handleTestMyKnowledgeToggle}
+                  disabled={!currentContent}
                 >
                   <FlaskConical />
                   {t('lesson-content.testKnowledgeButton')}
@@ -649,3 +649,4 @@ export function LessonContent({
     </div>
   )
 }
+export default LessonContent

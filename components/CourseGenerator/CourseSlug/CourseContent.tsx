@@ -7,6 +7,7 @@ import { FlaskConical } from "lucide-react"
 import { useState } from "react"
 import TestMyKnowledge from "../CourseDisplay/TestMyKnowledge"
 import { ChatButton } from "../CourseControls/ChatButton"
+import FAQs from "./Faqs"
 
 interface CourseContentProps {
   lessonContent: string
@@ -17,12 +18,67 @@ interface CourseContentProps {
   setToggleBot: (value: boolean) => void
 }
 
-export function CourseContent({ lessonContent, lessonError, isLoadingLesson, handleSelectLesson, toggleBot, setToggleBot }: CourseContentProps) {
+interface FAQ {
+  question: string
+  answer: string
+}
+
+// Util: Extract FAQ from markdown text
+function extractFAQsFromMarkdown(content: string): { question: string; answer: string }[] {
+  // Match all potential FAQ heading variations (case-insensitive)
+  const faqStartRegex = /(##?\s*)?(FAQs|FAQ|Frequently Asked Questions|Common Questions)/i;
+  const splitContent = content.split(faqStartRegex);
+
+  // If nothing matched, bail
+  if (splitContent.length < 2) return [];
+
+  // Get everything after the heading
+  const faqSection = splitContent.slice(-1)[0];
+
+  const questionAnswerRegex = /Q:\s*(.*?)\s*A:\s*(.*?)(?=(Q:|$))/gs;
+  const faqs: { question: string; answer: string }[] = [];
+
+  let match;
+  while ((match = questionAnswerRegex.exec(faqSection)) !== null) {
+    // Remove leading/trailing ** and whitespace, then wrap in <b>...</b>
+    let question = match[1].trim();
+    let answer = match[2].trim();
+    // Remove leading/trailing ** and whitespace from question and answer
+    question = question.replace(/^\*\*\s*/, '').replace(/\s*\*\*$/, '');
+    answer = answer.replace(/^\*\*\s*/, '').replace(/\s*\*\*$/, '');
+    // Wrap question in <b>...</b>
+    question = `<b>${question}</b>`;
+    // Optionally, you can also bold the answer if you want:
+    // answer = `<b>${answer}</b>`;
+    if (question && answer) {
+      faqs.push({ question, answer });
+    }
+  }
+
+  return faqs;
+}
+
+
+export function CourseContent({
+  lessonContent,
+  lessonError,
+  isLoadingLesson,
+  handleSelectLesson,
+  toggleBot,
+  setToggleBot
+}: CourseContentProps) {
   const t = useTranslations()
   const [testMyKnowledgeToggle, setTestMyKnowledgeToggle] = useState<boolean>(false)
 
-  // Parse the markdown content to HTML
-  const parsedContent = parseContentFromMarkdown(lessonContent)
+  // Extract FAQ separately
+  const faqs = extractFAQsFromMarkdown(lessonContent)
+
+  // Remove FAQ from lesson content before parsing markdown
+const contentWithoutFAQ = lessonContent.split(/(##?\s*)?(FAQs|FAQ|Frequently Asked Questions|Common Questions)/i)[0];
+
+
+  // Convert markdown to HTML
+  const parsedContent = parseContentFromMarkdown(contentWithoutFAQ)
 
   if (lessonError) {
     return (
@@ -47,7 +103,7 @@ export function CourseContent({ lessonContent, lessonError, isLoadingLesson, han
     <>
       <div className="prose prose-blue max-w-none">
         <ChatButton toggleBot={toggleBot} setToggleBot={setToggleBot} />
-        {/* Rendering the parsed HTML content with streaming support */}
+
         {lessonContent ? (
           <div className="relative">
             <div dangerouslySetInnerHTML={{ __html: parsedContent }} />
@@ -75,15 +131,19 @@ export function CourseContent({ lessonContent, lessonError, isLoadingLesson, han
             <TestMyKnowledge lessonContent={lessonContent} />
           </div>
         ) : (
-          <Button
-            variant="default"
-            onClick={handleTestMyKnowledgeToggle}
-          >
-            <FlaskConical />
+          <Button variant="default" onClick={handleTestMyKnowledgeToggle}>
+            <FlaskConical className="mr-2" />
             {t('lesson-content.testKnowledgeButton')}
           </Button>
         )
       )}
+
+      {faqs.length > 0 && (
+        <div className="mt-10">
+          <FAQs faqs={faqs} />
+        </div>
+      )}
     </>
   )
 }
+export default CourseContent

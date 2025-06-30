@@ -7,22 +7,31 @@ import { Loader } from 'lucide-react';
 
 const YourCourses: React.FC = () => {
   const [courses, setCourses] = useState<AiCourse[]>([]);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     async function fetchCourses() {
-      setLoading(true)
+      setLoading(true);
       const data = await courseService.getAllCourses("USER");
-      setLoading(false)
       setCourses(data);
+      setLoading(false);
     }
-
     fetchCourses();
   }, []);
 
+  // Filter courses by search input
+  const filteredCourses = courses.filter(course =>
+    course.title.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="w-full max-w-screen p-4">
-      <SearchHeader title="Your Courses" />
+      <SearchHeader
+        title="Your Courses"
+        search={search}
+        setSearch={setSearch}
+      />
 
       {loading ? (
         <div className="flex justify-center items-center h-[80vh] w-full">
@@ -30,7 +39,7 @@ const YourCourses: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {courses.map((course) => (
+          {filteredCourses.map((course) => (
             <CourseCard
               key={course.id ?? ''}
               slug={course.slug || ''}

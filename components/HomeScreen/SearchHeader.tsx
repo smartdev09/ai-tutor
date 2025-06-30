@@ -3,9 +3,11 @@ import { Search } from 'lucide-react';
 
 interface SearchHeaderProps {
   title: string;
+  search: string;
+  setSearch: (value: string) => void;
 }
 
-const SearchHeader: React.FC<SearchHeaderProps> = ({ title }) => {
+const SearchHeader: React.FC<SearchHeaderProps> = ({ title, search, setSearch }) => {
   return (
     <div className="flex justify-between items-center mb-4">
       <h2 className="text-xl font-bold text-purple-500">{title}</h2>
@@ -16,6 +18,8 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({ title }) => {
             type="text" 
             placeholder="Search courses..." 
             className="pl-8 pr-4 py-1 border rounded-md text-sm w-64"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
           />
         </div>
       </div>

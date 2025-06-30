@@ -8,10 +8,16 @@ import { BotMessageSquare, X, Send, Bot, Loader, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { cleanText, cleanTextAR, cleanTextDE, parseMCQQuestions, parseMCQQuestionsAR, parseMCQQuestionsDE } from '@/lib/utils/quiz-parser';
 
-const TestMyKnowledge = () => {
+// Accept lessonContent as a prop
+interface TestMyKnowledgeProps {
+  lessonContent: string;
+}
+
+const TestMyKnowledge: React.FC<TestMyKnowledgeProps> = ({ lessonContent }) => {
   const t = useTranslations()
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const currentLessonContent = useAppSelector((state) => state.course.currentLessonContent);
+  // Remove useAppSelector for currentLessonContent
+  // const currentLessonContent = useAppSelector((state) => state.course.currentLessonContent);
   const currentLessonTitle = useAppSelector((state) => state.course.currentLessonTitle);
   const [questions, setQuestions] = useState<Array<{
     question: string;
@@ -52,7 +58,7 @@ const TestMyKnowledge = () => {
   } = useCompletion({
     api: '/api/generate-quiz',
     body: {
-      content: currentLessonContent,
+      content: lessonContent,
       type: 'mcq',
       lang
     },

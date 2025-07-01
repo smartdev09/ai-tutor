@@ -24,7 +24,7 @@ export default function FAQs({ faqs }: { faqs: Faqs[] }) {
           {faqs.map((faq, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="text-left font-medium text-purple-800 hover:text-purple-600">
-                {faq.question}
+                <span dangerouslySetInnerHTML={{ __html: faq.question }} />
               </AccordionTrigger>
               <AccordionContent className="text-gray-700 text-left">
                 {faq.answer}

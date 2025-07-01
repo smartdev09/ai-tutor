@@ -54,7 +54,7 @@ export function AICourseContent({
     api: "/api/generate-lesson",
     experimental_throttle:500,//This line will remove the error of Maximum update depth exceeded.
   })
-  console.log("Coure FAQ",course.faqs)
+  // console.log("Coure FAQ",course.faqs)
   // Effect to set hasMounted to true after the component mounts
   useEffect(() => {
     setHasMounted(true)
@@ -306,7 +306,10 @@ export function AICourseContent({
 
             </div>
           )}
-          <FAQs faqs={course.faqs || []} />
+          {/* Show FAQs only when no lesson/chapter is open */}
+          {selectedModuleIndex === null && selectedLessonIndex === null && (
+            <FAQs faqs={course.faqs || []} />
+          )}
           <FurtherReading slug={course.slug || ""} />
         </div>
 

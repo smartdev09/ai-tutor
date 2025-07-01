@@ -36,8 +36,7 @@ export async function POST(req: Request) {
     6. Code snippets if applicable (properly formatted)
     7. Practice exercises or activities with clear instructions
     8. A summary of key points that reinforces the main concepts
-    9. A "Further Reading" section with suggested topics (these will be internal links)
-    10. 3-5 FAQ questions with answers that target common search queries related to "${lessonTitle}"
+    9. 3-5 FAQ questions with answers that target common search queries related to "${lessonTitle}"
     Make sure the content is at least 1,500 words long for better SEO performance.
     Use varied paragraph lengths, bullet points, numbered lists, and other formatting to improve readability.
     Include transition words and phrases to improve content flow.

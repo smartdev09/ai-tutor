@@ -108,6 +108,21 @@ export function AICourseContent({
     }
   }, [completionError, hasMounted])
 
+  // Effect to update Redux store with current lesson data
+  useEffect(() => {
+    const currentModule = selectedModuleIndex !== null ? course.modules?.[selectedModuleIndex] : null
+    const currentLesson = currentModule && selectedLessonIndex !== null
+      ? currentModule.lessons?.[selectedLessonIndex]
+      : null
+
+    const lessonTitle = currentLesson
+      ? (typeof currentLesson === "string" ? currentLesson : currentLesson?.title || "Untitled Lesson")
+      : ""
+
+    dispatch(setCurrentLessonTitle(lessonTitle));
+    dispatch(setCurrentLessonContent(currentLesson?.content || ''));
+  }, [selectedModuleIndex, selectedLessonIndex, course.modules, dispatch])
+
   // Streaming state with partial content
   if (isStreaming) {
     return (
@@ -187,11 +202,6 @@ export function AICourseContent({
   const lessonTitle = currentLesson
     ? (typeof currentLesson === "string" ? currentLesson : currentLesson?.title || "Untitled Lesson")
     : ""
-
-useEffect(() => {
-  dispatch(setCurrentLessonTitle(lessonTitle));
-  dispatch(setCurrentLessonContent(currentLesson?.content || ''));
-}, [lessonTitle, currentLesson?.content, dispatch]);
 
   const handleSelectLesson = async (moduleIndex: number, lessonIndex: number) => {
     setSelectedModuleIndex(moduleIndex)

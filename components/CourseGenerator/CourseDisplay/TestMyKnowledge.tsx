@@ -33,8 +33,6 @@ const TestMyKnowledge: React.FC<TestMyKnowledgeProps> = ({ lessonContent }) => {
   const [score, setScore] = useState<number | null>(null);
   const [allQuestionsAnswered, setAllQuestionsAnswered] = useState(false);
   const [reviewMode, setReviewMode] = useState(false);
-  const [stableQuestionCount, setStableQuestionCount] = useState(0);
-  const [parsedQuestions, setParsedQuestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const lang = useLocale();
 
@@ -53,7 +51,6 @@ const TestMyKnowledge: React.FC<TestMyKnowledgeProps> = ({ lessonContent }) => {
   };
 
   const {
-    completion,
     complete,
   } = useCompletion({
     api: '/api/generate-quiz',
@@ -117,7 +114,7 @@ useEffect(() => {
   }, 100);
 
   return () => clearTimeout(timeout);
-}, [lessonContent, lang]);
+}, [lessonContent, lang, complete]);
 
 
 

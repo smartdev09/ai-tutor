@@ -18,10 +18,6 @@ interface CourseContentProps {
   setToggleBot: (value: boolean) => void
 }
 
-interface FAQ {
-  question: string
-  answer: string
-}
 
 // Util: Extract FAQ from markdown text
 function extractFAQsFromMarkdown(content: string): { question: string; answer: string }[] {

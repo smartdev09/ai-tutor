@@ -9,6 +9,7 @@ const FeaturedCourses: React.FC = () => {
 
   const [courses, setCourses] = useState<AiCourse[]>([]);
   const [loading, setLoading] = useState(false)
+  const [search, setSearch] = useState("")
 
   useEffect(() => {
     async function fetchCourses() {
@@ -23,7 +24,7 @@ const FeaturedCourses: React.FC = () => {
 
   return (
     <div className="w-full max-w-screen p-4">
-      <SearchHeader title="Featured Courses" />
+      <SearchHeader title="Explore Courses" search={search} setSearch={setSearch} />
 
 
       {loading ? (

@@ -88,6 +88,7 @@ export type DBCourse = {
   done?: string[];
   slug?: string;
   faqs?: Faqs[];
+  keywords:string|string[]|undefined
 };
 
 export type DBModule = {

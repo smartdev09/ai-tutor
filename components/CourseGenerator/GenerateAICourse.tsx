@@ -9,7 +9,7 @@ import { AiCourse, Faqs, Module } from '@/types';
 import { useLocale } from 'next-intl';
 
 export function GenerateAICourse() {
-  const buffer=useRef<AiCourse|null>(null)
+ // const buffer=useRef<AiCourse|null>(null)
   const searchParams = useSearchParams();
   const [course, setCourse] = useState<AiCourse | null>(null);
   const [error, setError] = useState<string | null>(null);

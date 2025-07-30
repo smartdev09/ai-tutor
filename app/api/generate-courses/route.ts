@@ -7,6 +7,7 @@ type CoursePayload = {
   id?: string;
   metaDescription?: string;
   title: string;
+  keywords:string|string[]|undefined,
   modules: {
     id?: string;
     title: string;

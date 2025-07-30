@@ -18,7 +18,7 @@ export const courseService = {
         .select("id")
         .eq("slug", course.slug)
         .maybeSingle();
-
+console.log(`(course.ts>createMeta:)existingCourse:${existingCourse}`)
       if (existingCourseError && existingCourseError.code !== 'PGRST116') {
         console.error("Error checking for existing course:", existingCourseError);
         throw existingCourseError;
@@ -44,7 +44,7 @@ const metaDescriptionParsed=CombineKeywordsAndMeta(course.metaDescription,course
           .insert(coursePayload)
           .select()
           .single();
-
+courseData=null
         if (insertError) throw insertError;
         courseData = newCourse;
 
@@ -290,9 +290,7 @@ if(course.modules)
       throw error
     }
   },
-async getAdminCourses(owners:string|string[]){
 
-},
   async getAllCourses(owners: string | string[]) {
     try {
       const { data: courses, error } = await supabase

@@ -1,29 +1,28 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation'
 import { courseService } from "@/lib/services/course"
-import { AiCourse, Owner, } from '@/types';
-import { DBCourse, DBModule, DBLesson, Faqs } from '@/types'; // adjust path as needed
-import { Divide } from 'lucide-react';
+import {  Owner, } from '@/types';
+import { DBCourse, DBModule, DBLesson } from '@/types'; // adjust path as needed
 
-type CourseMetadata = {
-  title: string;
-  slug: string;
-  keywords: string[];
-  description: string;
-  modules: DBModule[];
-  difficulty:string
-metaDescription: string
-};
+// type CourseMetadata = {
+//   title: string;
+//   slug: string;
+//   keywords: string[];
+//   description: string;
+//   modules: DBModule[];
+//   difficulty:string
+// metaDescription: string
+// };
 
 export default function GenerateMeta() {
   const searchParams = useSearchParams()
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+ // const inputRef = useRef<HTMLTextAreaElement>(null);
   const [metadata, setMetadata] = useState<DBCourse | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
+console.log(loading)
   //const handleSubmit = async (e: React.FormEvent) => {
     //e.preventDefault();const difficuconst difficulty:stringlty:string
     useEffect(()=>{
@@ -152,6 +151,8 @@ console.log(`diff be4 rqst:${difficulty} and ${DBcourse.difficulty}`)
               </>
             );
           } catch (err) {
+                        console.log(`invalid metaDescription JSON: ${err}`)
+
             return <p className="text-red-500">Invalid metaDescription JSON.</p>;
           }
         })()}

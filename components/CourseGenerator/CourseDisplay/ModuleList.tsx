@@ -22,7 +22,6 @@ import { toast } from "@/hooks/use-toast"
 import { ChatButton } from "../CourseControls/ChatButton"
 import ChatbotUI from "./ChatBot"
 import { useTranslations } from "next-intl"
-import { useRouter } from "next/navigation"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -51,12 +50,13 @@ export function ModuleList({
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
   const [toggleBot, setToggleBot] = useState(false)
 
-  const router = useRouter()
+  //const router = useRouter()
 
   const createCourseFromData = async () => {
     try {
       const dbCourse: DBCourse = {
         title: course.title,
+        keywords:course.keywords,
         difficulty: course.difficulty,
         metaDescription: course.metaDescription,
         slug: course.slug ? decodeURIComponent(course.slug) : '',
@@ -167,6 +167,7 @@ export function ModuleList({
         difficulty: course.difficulty,
         metaDescription: course.metaDescription,
         slug: course.slug,
+        keywords:course.keywords,
         modules: course.modules.map((module, moduleIndex) => ({
           title: module.title,
           position: moduleIndex,

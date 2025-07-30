@@ -69,7 +69,7 @@ export function LessonContent({
 
   const editingModuleTitle = useAppSelector((state) => state.course.editingModuleTitle);
   const editingModuleId = useAppSelector((state) => state.course.editingModuleId);
-
+console.log(currentModuleTitle)
   // --- FIX 1: `currentLessonTitle` definition and dispatch ---
   // Ensure currentLessonTitle is always a string.
   // It should get the title property directly from the lesson object.
@@ -99,7 +99,7 @@ export function LessonContent({
       await courseService.updateModule(editingModuleId, editingModuleTitle);
 
       if (currentModuleIndex !== null && generatedCourse?.modules) {
-        const updatedModules = [...generatedCourse.modules];
+       // const updatedModules = [...generatedCourse.modules];
         // Ensure you are updating the correct module in the local state.
         // `module` prop may not reflect the latest Redux state immediately.
         // It's better to update via Redux and let selectors pick it up.

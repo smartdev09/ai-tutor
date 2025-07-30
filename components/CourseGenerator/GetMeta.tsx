@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DBCourse } from '@/types';
-import { AICourseContent } from './CourseSlug/AICourseContent';
+//import { AICourseContent } from './CourseSlug/AICourseContent';
 import { courseService } from '@/lib/services/course';
 
 interface GetAICourseProps {

@@ -59,7 +59,6 @@ useEffect(()=>{
             difficulty={course.difficulty}
             title={course.title}
             metaDescription={course.metaDescription??''}
-            keywords={course.keywords??''}
               modules={course.modules}
             
            // description={course.description??''}            

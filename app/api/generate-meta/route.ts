@@ -23,7 +23,7 @@ const groq = new Groq({
   apiKey:  process.env.GROQ_API_KEY,
 });
 
-export async function generateMetadataFromPrompt(prompt: string) {
+async function generateMetadataFromPrompt(prompt: string) {
 const systemPrompt = `
 You are an expert AI course generator.
 

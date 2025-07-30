@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Module } from '@/types'; // adjust this path
 function parseMeta(raw:any) {
   // Remove surrounding braces
@@ -24,7 +23,6 @@ interface MetaCardProps {
   title: string;
   metaDescription: string;
   progress?: number;
-  keywords: string | string[];
   modules: Module[];
 }
 
@@ -33,18 +31,17 @@ const CourseCard: React.FC<MetaCardProps> = ({
   difficulty,
   title,
   metaDescription,
-  keywords,
   modules,
   progress
 }) => {
-  const router = useRouter();
+  //const router = useRouter();
   const [isPressed, setIsPressed] = useState(false);
 const [description,setDesc]=useState<string|string[]|undefined>(metaDescription)
 const[keyword,setKeyword]=useState<string|string[]|undefined>('')
   useEffect(() => {
     console.log(`${slug} and ${metaDescription}`);
     console.log('meta-card');
-const meta = '{metaDescription:here here, keywords:1,2,3,4}';
+//const meta = '{metaDescription:here here, keywords:1,2,3,4}';
 const{temp,key}=parseMeta(metaDescription)
 
 setDesc(temp)

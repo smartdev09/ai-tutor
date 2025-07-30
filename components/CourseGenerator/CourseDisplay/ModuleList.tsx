@@ -89,7 +89,7 @@ export function ModuleList({
     if (!isLoading) {
       collapseAll()
       createCourseFromData().then(() => {
-        router.push(`/ai/${decodeURIComponent(course.slug || "")}`)
+       // router.push(`/ai/${decodeURIComponent(course.slug || "")}`)
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -211,6 +211,7 @@ export function ModuleList({
 
   return (
     <div className="flex h-full">
+      
       <SidebarProvider>
         <Sidebar className="w-80 border-r">
           <SidebarHeader className="border-b border-purple-100 pb-4">
@@ -219,6 +220,7 @@ export function ModuleList({
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-600">
+      
                 {t('module-list.course_modules')}
               </h2>
               {!isLoading && streamingModuleIndex === -1 && (

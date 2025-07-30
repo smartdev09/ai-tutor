@@ -136,7 +136,7 @@ export function AICourseContent({
         </div>
 
         <div className="space-y-4">
-          {course?.modules?.length > 0 ? (
+          {course?.modules && course?.modules?.length > 0 ? (
             course.modules.map((module, index) => (
               <div key={index} className="border-b border-gray-200 pb-4 last:border-b-0">
                 <h2 className="text-lg font-semibold mb-2">
@@ -158,7 +158,7 @@ export function AICourseContent({
           ) : (
             <div className="text-sm text-blue-600 animate-pulse">{t("ai-course-content.generating_lessons")}</div>
           )}
-          {course?.modules?.length > 0 && (
+          {course?.modules&&course?.modules?.length > 0 && (
             <div className="text-sm text-blue-600 animate-pulse mt-2">{t("ai-course-content.generating_more")}</div>
           )}
         </div>
@@ -190,7 +190,7 @@ export function AICourseContent({
   const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
   // Get current module and lesson titles
-  const currentModule = selectedModuleIndex !== null ? course.modules[selectedModuleIndex] : null
+  const currentModule = selectedModuleIndex && course?.modules  ? course.modules[selectedModuleIndex] : null
   const currentLesson = currentModule && selectedLessonIndex !== null
     ? currentModule.lessons[selectedLessonIndex]
     : null
@@ -204,6 +204,7 @@ export function AICourseContent({
     : ""
 
   const handleSelectLesson = async (moduleIndex: number, lessonIndex: number) => {
+  if(course.modules){
     setSelectedModuleIndex(moduleIndex)
     setSelectedLessonIndex(lessonIndex)
     const currentModule = course.modules[moduleIndex]
@@ -230,7 +231,7 @@ export function AICourseContent({
           lessonTitle,
         },
       })
-    }
+    }}
   }
 
   const handleToggleCompletion = (moduleIndex: number, lessonIndex: number) => {

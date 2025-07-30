@@ -7,6 +7,8 @@ import YourCourses from '@/components/HomeScreen/Tabs/MyCourses';
 import FeaturedCourses from '@/components/HomeScreen/Tabs/StaffPicks';
 import ExploreCourses from '@/components/HomeScreen/Tabs/Community';
 import { TabType } from '@/components/HomeScreen/Sidebar';
+import Adminpanel from '@/components/HomeScreen/Tabs/Adminpanel';
+import AdminDashboard from '@/components/HomeScreen/Tabs/AdminDashboard';
 
 export default function Page() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -22,6 +24,10 @@ export default function Page() {
         return <FeaturedCourses />;
       case 'community':
         return <ExploreCourses />;
+      case 'adminPanel':
+         return <Adminpanel/>
+case 'dashboard':
+  return<AdminDashboard/>
       default:
         return <HomeScreen />;
     }

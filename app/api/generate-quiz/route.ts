@@ -5,7 +5,7 @@ const model = createGroq({ apiKey: process.env.GROQ_API_KEY! })("llama3-70b-8192
 
 export async function POST(req: Request) {
     const { content, lang } = await req.json();
-
+console.log('here')
     let language = 'English';
     if (lang === 'de') {
       language = 'German';

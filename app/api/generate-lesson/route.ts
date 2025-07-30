@@ -21,6 +21,7 @@ export async function POST(req: Request) {
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
+console.log(`dif:${difficulty} , modTitle:${moduleTitle}, lesTitile:${lessonTitle}, `)
 
     const systemPrompt = `You are an expert educator creating SEO-optimized content for a course titled "${moduleTitle}"
     at ${difficulty} difficulty level.
@@ -51,7 +52,7 @@ export async function POST(req: Request) {
       temperature: 0.7,
       maxTokens: 4000
     });
-
+    console.log(result)
     return result.toDataStreamResponse();
 
   } catch (error) {

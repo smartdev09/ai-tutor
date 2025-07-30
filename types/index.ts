@@ -30,6 +30,7 @@ export type AiCourse = {
   done: string[];
   slug?: string;
   faqs?: Faqs[];
+  keywords?:string | string[]
 };
 
 export type CourseFineTuneData = {
@@ -82,7 +83,7 @@ export type DBCourse = {
   id?: string;
   metaDescription?: string;
   title: string;
-  modules: DBModule[];
+  modules?: DBModule[];
   difficulty: string;
   done?: string[];
   slug?: string;

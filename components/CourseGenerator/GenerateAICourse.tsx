@@ -9,6 +9,7 @@ import { AiCourse, Faqs, Module } from '@/types';
 import { useLocale } from 'next-intl';
 
 export function GenerateAICourse() {
+  const buffer=useRef<AiCourse|null>(null)
   const searchParams = useSearchParams();
   const [course, setCourse] = useState<AiCourse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +46,7 @@ export function GenerateAICourse() {
       try {
         const parsedCourse = parseCourseFromMarkdown(completion);
         if (parsedCourse) {
+          //buffer.current=parsedCourse
           setCourse(parsedCourse);
         }
       } catch {

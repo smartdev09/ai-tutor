@@ -22,7 +22,6 @@ import { toast } from "@/hooks/use-toast"
 import { ChatButton } from "../CourseControls/ChatButton"
 import ChatbotUI from "./ChatBot"
 import { useTranslations } from "next-intl"
-import { useRouter } from "next/navigation"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -51,12 +50,13 @@ export function ModuleList({
   const [processingModuleIndex, setProcessingModuleIndex] = useState<number | null>(null)
   const [toggleBot, setToggleBot] = useState(false)
 
-  const router = useRouter()
+  //const router = useRouter()
 
   const createCourseFromData = async () => {
     try {
       const dbCourse: DBCourse = {
         title: course.title,
+        keywords:course.keywords,
         difficulty: course.difficulty,
         metaDescription: course.metaDescription,
         slug: course.slug ? decodeURIComponent(course.slug) : '',
@@ -89,7 +89,7 @@ export function ModuleList({
     if (!isLoading) {
       collapseAll()
       createCourseFromData().then(() => {
-        router.push(`/ai/${decodeURIComponent(course.slug || "")}`)
+       // router.push(`/ai/${decodeURIComponent(course.slug || "")}`)
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -167,6 +167,7 @@ export function ModuleList({
         difficulty: course.difficulty,
         metaDescription: course.metaDescription,
         slug: course.slug,
+        keywords:course.keywords,
         modules: course.modules.map((module, moduleIndex) => ({
           title: module.title,
           position: moduleIndex,
@@ -211,6 +212,7 @@ export function ModuleList({
 
   return (
     <div className="flex h-full">
+      
       <SidebarProvider>
         <Sidebar className="w-80 border-r">
           <SidebarHeader className="border-b border-purple-100 pb-4">
@@ -219,6 +221,7 @@ export function ModuleList({
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-600">
+      
                 {t('module-list.course_modules')}
               </h2>
               {!isLoading && streamingModuleIndex === -1 && (

@@ -1,7 +1,92 @@
 import type { DBCourse } from "@/types"
 import { supabase } from "../supabase/client"
 
+function CombineKeywordsAndMeta(desc:string|undefined,keywords:string|string[]|undefined){
+const keyword=
+  Array.isArray(keywords)?
+  keywords.join(','):keywords
+  
+const returnValue=`{metaDescription:${desc}, keywords:${keyword}}`
+return returnValue
+}
+
 export const courseService = {
+  async createMeta(course:DBCourse){
+    try{
+ const { data: existingCourse, error: existingCourseError } = await supabase
+        .from("courses")
+        .select("id")
+        .eq("slug", course.slug)
+        .maybeSingle();
+console.log(`(course.ts>createMeta:)existingCourse:${existingCourse}`)
+      if (existingCourseError && existingCourseError.code !== 'PGRST116') {
+        console.error("Error checking for existing course:", existingCourseError);
+        throw existingCourseError;
+      }
+       let courseData;
+       console.log(course.difficulty)
+const metaDescriptionParsed=CombineKeywordsAndMeta(course.metaDescription,course.keywords)
+      const coursePayload = {
+        title: course.title,
+        difficulty: course.difficulty,
+        slug: course.slug,
+        metaDescription: metaDescriptionParsed,
+        //module:course.modules,
+       done: course.done,
+        faqs: course.faqs,
+        owners: course.owners,
+      //  keywords:course.keywords
+      };
+        
+      // Create new course
+        const { data: newCourse, error: insertError } = await supabase
+          .from("courses")
+          .insert(coursePayload)
+          .select()
+          .single();
+courseData=null
+        if (insertError) throw insertError;
+        courseData = newCourse;
+
+        /////////////////////
+if(course.modules) 
+      // Insert modules and lessons
+      for (const courseModule of course.modules) {
+        const { data: moduleData, error: moduleError } = await supabase
+          .from("modules")
+          .insert({
+            course_id: courseData.id,
+            title: courseModule.title,
+            position: courseModule.position||0,
+          })
+          .select()
+          .single();
+
+        if (moduleError){ 
+          console.log("module Error")
+          throw moduleError;
+        }
+        // Insert lessons
+        const lessonInserts = courseModule.lessons.map(lesson =>
+          supabase.from("lessons").insert({
+            module_id: moduleData.id,
+            title: lesson.title,
+            content: lesson.content || "",
+            position: lesson.position||0,
+          })
+        );
+
+        const lessonResults = await Promise.all(lessonInserts);
+        for (const result of lessonResults) {
+          if (result.error) throw result.error;
+        }
+        /////////////////////
+    }}
+    catch(e){
+      console.log(`(course.ts>createMeta:)error in creaitng metadata:`)
+      console.log(e)
+    }
+  },
   async createCourse(course: DBCourse) {
     try {
       const { data: existingCourse, error: existingCourseError } = await supabase
@@ -59,7 +144,7 @@ export const courseService = {
         if (insertError) throw insertError;
         courseData = newCourse;
       }
-
+if(course.modules) 
       // Insert modules and lessons
       for (const courseModule of course.modules) {
         const { data: moduleData, error: moduleError } = await supabase
@@ -180,7 +265,7 @@ export const courseService = {
         console.error("Error fetching course:", error)
         throw error
       }
-
+      //console.log(`(index.ts>getcourse:) course id:${course.id?course.id:'no id found'}} `)
       return course
     } catch (error) {
       console.error("Error in getCourse:", error)

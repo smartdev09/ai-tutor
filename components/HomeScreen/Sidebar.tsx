@@ -4,7 +4,7 @@ import React from 'react';
 import { StarIcon, BookOpen, UsersIcon, Rocket, XIcon, Home } from 'lucide-react';
 import { useTranslations } from "next-intl";
 
-export type TabType = 'main' | 'myCourses' | 'staffPicks' | 'community';
+export type TabType = 'main' | 'myCourses' | 'staffPicks' | 'community'| 'adminPanel'|'dashboard';
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -93,6 +93,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
           text={t('landing.community')} 
           active={activeTab === 'community'}
           onClick={() => handleTabClick('community')} 
+        />
+         <SidebarItem 
+          icon={<UsersIcon size={18} />} 
+          text='Admin Panel' 
+          active={activeTab === 'adminPanel'}
+          onClick={() => handleTabClick('adminPanel')} 
+        />
+           <SidebarItem 
+          icon={<UsersIcon size={18} />} 
+          text='Admin Dashboard' 
+          active={activeTab === 'dashboard'}
+          onClick={() => handleTabClick('dashboard')} 
         />
       </div>
 

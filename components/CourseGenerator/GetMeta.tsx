@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DBCourse } from '@/types';
-import { AICourseContent } from './CourseSlug/AICourseContent';
+//import { AICourseContent } from './CourseSlug/AICourseContent';
 import { courseService } from '@/lib/services/course';
 
 interface GetAICourseProps {
@@ -17,6 +17,7 @@ export function GetAICourse({ courseSlug }: GetAICourseProps) {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    console.log('get-meta')
     if (!courseSlug) {
       router.push('/ai');
       return;
@@ -25,8 +26,9 @@ export function GetAICourse({ courseSlug }: GetAICourseProps) {
     setIsLoading(true);
     
     // Fetch the course from storage
-    const fetchCourse = async () => {
+    const fetchMeta = async () => {
       const fetchedCourse = await courseService.getCourse(courseSlug);
+      
       if (fetchedCourse) {
         setCourse(fetchedCourse);
         setIsLoading(false);
@@ -36,7 +38,7 @@ export function GetAICourse({ courseSlug }: GetAICourseProps) {
       }
     };
 
-    fetchCourse();
+    fetchMeta();
   }, [courseSlug, router]);
 
   // If course is still loading or not found
@@ -72,16 +74,21 @@ export function GetAICourse({ courseSlug }: GetAICourseProps) {
   }
 
   return (
-    <AICourseContent
-      courseSlug={courseSlug}
-      course={course}
-      isLoading={false}
-      error=""
-      onRegenerateOutline={() => {
-        // For regeneration, redirect to the search page with the topic and difficulty
-        router.push(`/ai/search?term=${encodeURIComponent(course.title)}&difficulty=${course.difficulty}`);
-      }}
-    />
-  
+    // <AICourseContent
+    //   courseSlug={courseSlug}
+    //   course={course}
+    //   isLoading={false}
+    //   error=""
+    //   onRegenerateOutline={() => {
+    //     // For regeneration, redirect to the search page with the topic and difficulty
+    //     router.push(`/ai/search?term=${encodeURIComponent(course.title)}&difficulty=${course.difficulty}`);
+    //   }}
+    // />
+ course.metaDescription&& <div style={{
+    width:'100%',
+    border:'1px solid black'
+  }}>
+{(course.metaDescription)}
+  </div>
   );
 }

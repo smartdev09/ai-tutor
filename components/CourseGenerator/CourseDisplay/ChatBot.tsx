@@ -1,15 +1,14 @@
 import { useAppSelector } from '@/store/hooks';
 import { useChat } from '@ai-sdk/react';
-import { useTranslations } from 'next-intl';
 import { useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-
+import obj from '../../../messages/en.json'
 const ChatbotUI = () => {
   const currentLessonContent = useAppSelector((state) => state.course.currentLessonContent);
   const currentLessonTitle = useAppSelector((state) => state.course.currentLessonTitle);
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const messageEndRef = useRef(null);
-  const t = useTranslations()
+  //const t = useTranslations()
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     body: {
@@ -57,7 +56,7 @@ const ChatbotUI = () => {
               }`}
           >
             <div className="font-bold mb-1">
-              {m.role === 'user' ? `👤 ${t('chatbot.you')}` : `🤖 ${t('chatbot.assistant')}`}
+              {m.role === 'user' ? `👤 ${obj.chatbot.you}` : `🤖 ${obj.chatbot.assistant}`}
             </div>
             <div className="prose max-w-none">
               <ReactMarkdown>{m.content}</ReactMarkdown>
@@ -88,7 +87,7 @@ const ChatbotUI = () => {
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder={t('chatbot.placeholder')}
+          placeholder={obj.chatbot.placeholder}
           className="flex-1 px-4 py-2 text-sm border border-purple-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
           disabled={isLoading}
         />
@@ -97,7 +96,7 @@ const ChatbotUI = () => {
           className="ml-3 px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-full transition disabled:bg-purple-400"
           disabled={isLoading || !input.trim()}
         >
-          {t('chatbot.send')}
+          {obj.chatbot.send}
         </button>
       </form>
     </div>

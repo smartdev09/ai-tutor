@@ -1,7 +1,7 @@
 "use client"
 // Move uuidv4 import to the top with other imports
 import { v4 as uuidv4 } from 'uuid';
-
+import obj from '../../../messages/en.json'
 import type React from "react"
 import type { Module } from "@/types"
 import { useCompletion } from "@ai-sdk/react"
@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import TestMyKnowledge from "./TestMyKnowledge"
 import ContextModalButton from "./EditPrompt"
-import { useLocale, useTranslations } from "next-intl"
+//import { useLocale, useTranslations } from "next-intl"
 
 interface LessonContentProps {
   module: Module
@@ -46,9 +46,9 @@ export function LessonContent({
   onLessonReached,
   slug,
 }: LessonContentProps) {
-  const t = useTranslations()
+  //const t = useTranslations()
   const dispatch = useAppDispatch()
-  const lang = useLocale();
+  const lang = 'en'
   const currentModuleIndex = useAppSelector((state) => state.course.currentModuleIndex)
   const reduxProcessedLessons = useAppSelector((state) => state.course.processedLessons)
   const isEditing = useAppSelector((state) => state.course.isEditing)
@@ -117,14 +117,14 @@ console.log(currentModuleTitle)
 
       dispatch(clearEditingTitles());
       toast({
-        title: t("lesson-content.success"),
-        description: t("lesson-content.moduleTitleUpdated"),
+        title: 'lesson content success',
+        description: 'module Title Updated',
       });
     } catch (error) {
       console.error("Error saving module title:", error);
       toast({
-        title: t("lesson-content.error"),
-        description: t("lesson-content.failedToSaveModuleTitle"),
+        title: obj['lesson-content'].errorMessage,
+        description:'failed to save module title',
         variant: "destructive",
       });
     } finally {
@@ -395,14 +395,14 @@ console.log(currentModuleTitle)
         await courseService.updateLessonByModuleAndPosition(currentModuleId, currentLessonIndex, editingLessonContent)
 
         toast({
-          title: t("lesson-content.success"),
-          description: t("lesson-content.lessonContentUpdated"),
+          title: 'lesson content successful',
+          description: 'lesson content updated',
         })
       } else {
         console.warn("Module ID not available, changes only saved locally")
         toast({
-          title: t("lesson-content.warning"),
-          description: t("lesson-content.changesSavedLocally"),
+          title:"lesson content warning",
+          description: 'lesson-content.changesSavedLocally',
           variant: "default",
         })
       }
@@ -411,8 +411,8 @@ console.log(currentModuleTitle)
     } catch (error) {
       console.error("Error saving lesson content:", error)
       toast({
-        title: t("lesson-content.error"),
-        description: t("lesson-content.failedToSaveLessonContent") + ": " + (error instanceof Error ? error.message : t("lesson-content.unknownError")),
+        title: obj["lesson-content"].errorMessage,
+        description: 'failed to save lesson content' + ": " + (error instanceof Error ? error.message : 'unknownError'),
         variant: "destructive",
       })
     } finally {
@@ -467,7 +467,7 @@ console.log(currentModuleTitle)
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    {t('lesson-content.cancelButton')}
+                    {obj['lesson-content'].cancelButton}
                   </Button>
                   <Button
                     size="sm"
@@ -479,12 +479,12 @@ console.log(currentModuleTitle)
                     {isSaving ? (
                       <>
                         <Loader className="h-4 w-4 mr-1 animate-spin" />
-                        {t('lesson-content.savingButton')}
+                        {obj['lesson-content'].savingButton}
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-1" />
-                        {t('lesson-content.saveButton')}
+                        {obj['lesson-content'].saveButton}
                       </>
                     )}
                   </Button>
@@ -508,14 +508,14 @@ console.log(currentModuleTitle)
           {isProcessingBackground && (
             <div className="flex items-center gap-2 text-sm text-white bg-white/20 px-3 py-1.5 rounded-full">
               <div className="h-2 w-2 bg-white rounded-full animate-pulse"></div>
-              <span>{t('lesson-content.generatingIndicator')}</span>
+              <span>{obj['lesson-content'].generatingIndicator}</span>
             </div>
           )}
         </div>
 
         <div className="mb-4">
           <div className="flex justify-between text-white/90 text-sm mb-1">
-            <span>{t('lesson-content.progressLabel')}</span>
+            <span>{obj['lesson-content'].progressLabel}</span>
             <span>{Math.round(progressPercentage)}%</span>
           </div>
           <Progress value={progressPercentage} className="h-2 bg-white/30" />
@@ -531,7 +531,7 @@ console.log(currentModuleTitle)
             {waitingForLesson && !isLessonGenerated && !isCurrentLessonBeingGenerated && (
               <span className="inline-flex items-center bg-white/20 px-2 py-1 rounded-full text-xs">
                 <Loader className="h-3 w-3 mr-1 animate-spin" />
-                {t('lesson-content.waitingIndicator')}
+                {obj['lesson-content'].waitingIndicator}
               </span>
             )}
           </p>
@@ -548,7 +548,7 @@ console.log(currentModuleTitle)
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    {t('lesson-content.cancelButton')}
+                    {obj['lesson-content'].cancelButton}
                   </Button>
                   <Button
                     size="sm"
@@ -560,12 +560,12 @@ console.log(currentModuleTitle)
                     {isSaving ? (
                       <>
                         <Loader className="h-4 w-4 mr-1 animate-spin" />
-                        {t('lesson-content.savingButton')}
+                        {obj['lesson-content'].savingButton}
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-1" />
-                        {t('lesson-content.saveButton')}
+                        {obj['lesson-content'].saveButton}
                       </>
                     )}
                   </Button>
@@ -578,7 +578,7 @@ console.log(currentModuleTitle)
                   onClick={handleEditToggle}
                 >
                   <Edit className="h-4 w-4 mr-1" />
-                  {t('lesson-content.editButton')}
+                  {obj['lesson-content'].editButton}
                 </Button>
               )}
             </div>
@@ -595,7 +595,7 @@ console.log(currentModuleTitle)
               clipRule="evenodd"
             />
           </svg>
-          {t('lesson-content.errorMessage')}
+          {obj['lesson-content'].errorMessage}
         </div>
       )}
 
@@ -612,9 +612,9 @@ console.log(currentModuleTitle)
               <div className="absolute -top-2 -right-2 h-4 w-4 bg-purple-500 rounded-full animate-ping"></div>
             </div>
             <div className="space-y-3">
-              <h3 className="text-xl font-bold text-gray-800">{t('lesson-content.loadingTitle')}</h3>
+              <h3 className="text-xl font-bold text-gray-800">{obj['lesson-content'].loadingTitle}</h3>
               <p className="text-muted-foreground max-w-md">
-                {t('lesson-content.loadingDescription')}
+                {obj['lesson-content'].loadingDescription}
               </p>
             </div>
           </div>
@@ -624,7 +624,7 @@ console.log(currentModuleTitle)
               value={editingLessonContent}
               onChange={handleContentChange}
               className="min-h-[70vh] font-mono text-sm p-4"
-              placeholder={`${t('lesson-content.contentPlaceholder')}`}
+              placeholder={`${obj['lesson-content'].contentPlaceholder}`}
             />
           </div>
         ) : (
@@ -644,7 +644,7 @@ console.log(currentModuleTitle)
                   disabled={!currentContent}
                 >
                   <FlaskConical />
-                  {t('lesson-content.testKnowledgeButton')}
+                  {obj['lesson-content'].testKnowledgeButton}
                 </Button>
               )
             )}

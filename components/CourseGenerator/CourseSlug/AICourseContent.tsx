@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { Owner, type DBCourse } from "@/types/index"
-import { useTranslations } from "next-intl"
 import { CourseSidebar } from "./CourseSidebar"
 import { CourseHeader } from "./CourseHeader"
 import { CourseContent } from "./CourseContent"
@@ -14,7 +13,7 @@ import ChatbotUI from "../CourseDisplay/ChatBot"
 import FurtherReading from "./FurtherReading"
 import { setCurrentLessonContent, setCurrentLessonTitle } from "@/store/courseSlice"
 import { useAppDispatch } from "@/store/hooks"
-
+import obj from '../../../messages/en.json'
 interface AICourseContentProps {
   courseSlug: string
   course: DBCourse
@@ -38,7 +37,6 @@ export function AICourseContent({
   const [regeneratePrompt, setRegeneratePrompt] = useState("")
   const [isRegenerateOpen, setIsRegenerateOpen] = useState(false)
   const [toggleBot, setToggleBot] = useState(false)
-  const t = useTranslations()
   const dispatch = useAppDispatch()
 
   // State to track if the component has mounted
@@ -132,7 +130,7 @@ export function AICourseContent({
             {course.title || "Generating Course..."}
             <span className="ml-3 inline-block h-4 w-4 rounded-full bg-blue-600 animate-pulse"></span>
           </h1>
-          <p className="text-gray-600 mt-2">{t("ai-course-content.generating_course")}</p>
+          <p className="text-gray-600 mt-2">{obj["ai-course-content"].generating_course}</p>
         </div>
 
         <div className="space-y-4">
@@ -151,15 +149,15 @@ export function AICourseContent({
                     ))}
                   </ul>
                 ) : (
-                  <div className="text-sm text-blue-600 animate-pulse">{t("ai-course-content.generating_lessons")}</div>
+                  <div className="text-sm text-blue-600 animate-pulse">{obj["ai-course-content"].generating_lessons}</div>
                 )}
               </div>
             ))
           ) : (
-            <div className="text-sm text-blue-600 animate-pulse">{t("ai-course-content.generating_lessons")}</div>
+            <div className="text-sm text-blue-600 animate-pulse">{obj["ai-course-content"].generating_lessons}</div>
           )}
           {course?.modules&&course?.modules?.length > 0 && (
-            <div className="text-sm text-blue-600 animate-pulse mt-2">{t("ai-course-content.generating_more")}</div>
+            <div className="text-sm text-blue-600 animate-pulse mt-2">{obj["ai-course-content"].generating_more}</div>
           )}
         </div>
       </div>
@@ -171,14 +169,14 @@ export function AICourseContent({
     return (
       <div className="max-w-5xl mx-auto p-4">
         <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
-          <h3 className="text-lg font-semibold mb-2">{t("ai-course-content.error_generating_course")}</h3>
+          <h3 className="text-lg font-semibold mb-2">{obj["ai-course-content"].error_generating_course}</h3>
           <p>{error}</p>
         </div>
         <button
           onClick={() => onRegenerateOutline()}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-          {t("ai-course-content.try_again")}
+          {obj["ai-course-content"].try_again}
         </button>
       </div>
     )
@@ -315,8 +313,8 @@ export function AICourseContent({
                   d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                 ></path>
               </svg>
-              <h3 className="text-xl font-medium mb-2">{t("ai-course-content.select_lesson_to_begin")}</h3>
-              <p className="text-gray-600 mb-4">{t("ai-course-content.click_module_expand")}</p>
+              <h3 className="text-xl font-medium mb-2">{obj["ai-course-content"].select_lesson_to_begin}</h3>
+              <p className="text-gray-600 mb-4">{obj["ai-course-content"].click_module_expand}</p>
 
             </div>
           )}

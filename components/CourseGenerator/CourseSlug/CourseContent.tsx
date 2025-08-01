@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from "next-intl"
 import { parseContentFromMarkdown } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { FlaskConical } from "lucide-react"
@@ -8,7 +7,7 @@ import { useState, useEffect } from "react"
 import TestMyKnowledge from "../CourseDisplay/TestMyKnowledge"
 import { ChatButton } from "../CourseControls/ChatButton"
 import FAQs from "./Faqs"
-
+import obj from '../../../messages/en.json'
 interface CourseContentProps {
   lessonContent: string
   lessonError: string
@@ -63,7 +62,6 @@ export function CourseContent({
   toggleBot,
   setToggleBot
 }: CourseContentProps) {
-  const t = useTranslations()
   const [testMyKnowledgeToggle, setTestMyKnowledgeToggle] = useState<boolean>(false)
 
   // Extract FAQ separately
@@ -83,13 +81,13 @@ export function CourseContent({
   if (lessonError) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4">
-        <h3 className="text-lg font-semibold mb-2">{t("ai-course-content.error_loading_lesson")}</h3>
+        <h3 className="text-lg font-semibold mb-2">{obj["ai-course-content"].error_loading_lesson}</h3>
         <p>{lessonError}</p>
         <button
           onClick={handleSelectLesson}
           className="mt-3 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
         >
-          {t("ai-course-content.try_again_short")}
+          {obj["ai-course-content"].try_again_short}
         </button>
       </div>
     )
@@ -121,7 +119,7 @@ export function CourseContent({
             <div className="h-4 bg-gray-200 rounded w-4/5 mb-6"></div>
           </div>
         ) : (
-          <p className="text-gray-500">{t("ai-course-content.no_content_available")}</p>
+          <p className="text-gray-500">{obj["ai-course-content"].no_content_available}</p>
         )}
       </div>
 
@@ -137,7 +135,7 @@ export function CourseContent({
             onClick={handleTestMyKnowledgeToggle}
           >
             <FlaskConical className="mr-2" />
-            {t('lesson-content.testKnowledgeButton')}
+            {obj['lesson-content'].testKnowledgeButton}
           </Button>
         )
       )}

@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation';
 import { ModuleList } from './CourseDisplay/ModuleList';
 import { ErrorState } from './CourseStates/ErrorState';
 import { AiCourse, Faqs, Module } from '@/types';
-import { useLocale } from 'next-intl';
 
 export function GenerateAICourse() {
  // const buffer=useRef<AiCourse|null>(null)
@@ -14,12 +13,11 @@ export function GenerateAICourse() {
   const [course, setCourse] = useState<AiCourse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
-  const lang = useLocale();
   
   // Track the highest module count we've seen to prevent fluctuations
   const highestModuleCountRef = useRef(0);
   const previousCompletionRef = useRef('');
-
+const lang='en'
   // Get parameters from URL
   const term = searchParams.get('term') || '';
   const difficulty = searchParams.get('difficulty') || 'beginner';
@@ -123,7 +121,7 @@ export function GenerateAICourse() {
   const parseCourseFromMarkdown = (markdown: string): AiCourse | null => {
     try {
       const lines = markdown.split('\n');
-      const currentCourse: AiCourse = { title: '', modules: [], difficulty: '', done: [], owners: [] };
+      const currentCourse: AiCourse = { title: '', modules: [], difficulty: '', done: [], owners: []};
       let currentModule: Module | null = null;
       let processingFAQs = false;
       let currentFaq: Faqs | null = null;

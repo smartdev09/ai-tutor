@@ -1,5 +1,5 @@
 import { GenerateAICourse } from '@/components/CourseGenerator/GenerateAICourse';
-import LanguageSwitcher from '@/components/lang-switch';
+//import LanguageSwitcher from '@/components/lang-switch';
 
 export const metadata = {
   title: 'Generating AI Course',
@@ -9,7 +9,7 @@ export const metadata = {
 export default function AISearchPage() {
   return (
     <main className="min-h-screen bg-gray-50">
-      <LanguageSwitcher/>
+      {/* <LanguageSwitcher/> */}
       <GenerateAICourse />
     </main>
   );

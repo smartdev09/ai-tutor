@@ -1,14 +1,12 @@
 "use client"
 
 import React, { useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { ArrowRightIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { storeFineTuneData } from '@/lib/utils/storage';
 import { useRouter } from 'next/navigation';
-
+import obj from '../../../messages/en.json'
 const HomeScreen: React.FC = () => {
-  const t = useTranslations();
   const [topic, setTopic] = useState('');
   const [explainMore, setExplainMore] = useState(false);
   const [about, setAboutSelf] = useState('');
@@ -41,8 +39,8 @@ const HomeScreen: React.FC = () => {
   return (
     <div className="h-full flex-1 flex flex-col items-center justify-center p-4 md:p-6">
       <div className="text-center max-w-xl mb-4 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2 md:mb-4">{t('landing.heading')}</h1>
-        <p className="text-purple-600 text-sm md:text-base">{t('landing.subheading')}</p>
+        <h1 className="text-2xl md:text-3xl font-bold mb-2 md:mb-4">{obj.landing.heading}</h1>
+        <p className="text-purple-600 text-sm md:text-base">{obj.landing.subheading}</p>
       </div>
 
       <div className="w-full max-w-3xl bg-white rounded-lg p-4 md:p-6 shadow-sm border border-purple-200">
@@ -51,7 +49,7 @@ const HomeScreen: React.FC = () => {
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)}
-          placeholder={t('landing.placeholder_topic')}
+          placeholder={obj.landing.placeholder_topic}
           className="w-full p-2 md:p-3 border border-purple-300 rounded-md mb-4 text-sm md:text-base"
         />
 
@@ -62,9 +60,9 @@ const HomeScreen: React.FC = () => {
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
               >
-                <option>{t('landing.beginner')}</option>
-                <option>{t('landing.intermediate')}</option>
-                <option>{t('landing.advanced')}</option>
+                <option>{obj.landing.beginner}</option>
+                <option>{obj.landing.intermediate}</option>
+                <option>{obj.landing.advanced}</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                 <svg className="h-4 w-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,7 +78,7 @@ const HomeScreen: React.FC = () => {
                 onChange={() => setExplainMore(!explainMore)}
                 className="mr-2"
               />
-              <span className="text-xs md:text-sm">{t('landing.explain_more')}</span>
+              <span className="text-xs md:text-sm">{obj.landing.explain_more}</span>
             </label>
           </div>
 
@@ -90,40 +88,40 @@ const HomeScreen: React.FC = () => {
             disabled={isSubmitting || !topic}
           >
             <ArrowRightIcon className="mr-2" size={16} />
-            {t('landing.generate_course')}
+            {obj.landing.generate_course}
           </Button>
         </div>
 
         {explainMore && (
           <div className="border-t border-purple-200 pt-4 space-y-4">
             <div>
-              <h3 className="text-xs md:text-sm font-medium mb-2">{t('landing.about_self_label')}</h3>
+              <h3 className="text-xs md:text-sm font-medium mb-2">{obj.landing.about_self_label}</h3>
               <input
                 type="text"
                 value={about}
                 onChange={(e) => setAboutSelf(e.target.value)}
-                placeholder={t('landing.about_self_placeholder')}
+                placeholder={obj.landing.about_self_placeholder}
                 className="w-full p-2 md:p-3 border border-purple-300 rounded-md text-sm"
               />
             </div>
 
             <div>
-              <h3 className="text-xs md:text-sm font-medium mb-2">{t('landing.goal_label')}</h3>
+              <h3 className="text-xs md:text-sm font-medium mb-2">{obj.landing.goal_label}</h3>
               <input
                 type="text"
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
-                placeholder={t('landing.goal_placeholder')}
+                placeholder={obj.landing.goal_placeholder}
                 className="w-full p-2 md:p-3 border border-purple-300 rounded-md text-sm"
               />
             </div>
 
             <div>
-              <h3 className="text-xs md:text-sm font-medium mb-2">{t('landing.custom_instructions_label')}</h3>
+              <h3 className="text-xs md:text-sm font-medium mb-2">{obj.landing.custom_instructions_label}</h3>
               <textarea
                 value={customInstructions}
                 onChange={(e) => setCustomInstructions(e.target.value)}
-                placeholder={t('landing.custom_instructions_placeholder')}
+                placeholder={obj.landing.custom_instructions_placeholder}
                 className="w-full p-2 md:p-3 border border-purple-300 rounded-md text-sm"
                 rows={3}
               />

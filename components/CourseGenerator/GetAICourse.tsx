@@ -77,6 +77,7 @@ export function GetAICourse({ courseSlug }: GetAICourseProps) {
       course={course}
       isLoading={false}
       error=""
+     // locale={course.language_code}
       onRegenerateOutline={() => {
         // For regeneration, redirect to the search page with the topic and difficulty
         router.push(`/ai/search?term=${encodeURIComponent(course.title)}&difficulty=${course.difficulty}`);

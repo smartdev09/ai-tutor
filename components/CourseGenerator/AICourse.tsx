@@ -5,12 +5,9 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { storeFineTuneData } from "@/lib/utils/storage"
 import { Sparkles, BookOpen, Brain, ChevronDown, ChevronUp, Rocket } from "lucide-react"
-import { useTranslations } from "next-intl"
-import LanguageSwitcher from "../lang-switch"
-
+import obj from'../../messages/en.json'
 export function AICourse() {
   const router = useRouter()
-  const t = useTranslations()
 
   const [term, setTerm] = useState("")
   const [difficulty, setDifficulty] = useState("beginner")
@@ -42,7 +39,7 @@ export function AICourse() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-indigo-50">
-      <LanguageSwitcher/>
+      {/* //<LanguageSwitcher/> */}
       <div className="w-full max-w-4xl mx-auto p-6">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center mb-4">
@@ -50,25 +47,25 @@ export function AICourse() {
               <Sparkles className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold mb-2 text-purple-800">{t('ai.title')}</h1>
-          <p className="text-purple-600 text-lg">{t('ai.subtitle')}</p>
+          <h1 className="text-4xl font-bold mb-2 text-purple-800">{obj.ai.title}</h1>
+          <p className="text-purple-600 text-lg">{obj.ai.subtitle}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-purple-600 p-4 flex items-center">
             <BookOpen className="h-6 w-6 text-white mr-2" />
-            <h2 className="text-xl font-bold text-white">{t('ai.section_title')}</h2>
+            <h2 className="text-xl font-bold text-white">{obj.ai.section_title}</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="bg-purple-100 p-4 rounded-xl">
               <label htmlFor="term" className="block text-sm font-bold text-purple-800 mb-2">
-                {t('ai.label_term')}
+                {obj.ai.label_term}
               </label>
               <input
                 type="text"
                 id="term"
-                placeholder={t('ai.placeholder_term')}
+                placeholder={obj.ai.placeholder_term}
                 value={term}
                 onChange={(e) => setTerm(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-purple-900"
@@ -78,7 +75,7 @@ export function AICourse() {
 
             <div className="bg-purple-100 p-4 rounded-xl">
               <label htmlFor="difficulty" className="block text-sm font-bold text-purple-800 mb-2">
-                {t('ai.label_difficulty')}
+                {obj.ai.label_difficulty}
               </label>
               <select
                 id="difficulty"
@@ -86,9 +83,9 @@ export function AICourse() {
                 onChange={(e) => setDifficulty(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-purple-900"
               >
-                <option value="beginner">{t('ai.difficulty_beginner')}</option>
-                <option value="intermediate">{t('ai.difficulty_intermediate')}</option>
-                <option value="advanced">{t('ai.difficulty_advanced')}</option>
+                <option value="beginner">{obj.ai.difficulty_beginner}</option>
+                <option value="intermediate">{obj.ai.difficulty_intermediate}</option>
+                <option value="advanced">{obj.ai.difficulty_advanced}</option>
               </select>
             </div>
 
@@ -100,7 +97,7 @@ export function AICourse() {
               >
                 <div className="flex items-center">
                   <Brain className="w-5 h-5 mr-2" />
-                  {t('ai.button_advanced_options')}
+                  {obj.ai.button_advanced_options}
                 </div>
                 {isAdvancedOptionsOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </button>
@@ -109,11 +106,11 @@ export function AICourse() {
                 <div className="mt-4 space-y-4 p-5 bg-indigo-50 rounded-xl border-2 border-indigo-100">
                   <div>
                     <label htmlFor="about" className="block text-sm font-bold text-indigo-800 mb-2">
-                      {t('ai.label_about')}
+                      {obj.ai.label_about}
                     </label>
                     <textarea
                       id="about"
-                      placeholder={t('ai.placeholder_about')}
+                      placeholder={obj.ai.placeholder_about}
                       value={about}
                       onChange={(e) => setAbout(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -123,11 +120,11 @@ export function AICourse() {
 
                   <div>
                     <label htmlFor="goal" className="block text-sm font-bold text-indigo-800 mb-2">
-                      {t('ai.label_goal')}
+                      {obj.ai.label_goal}
                     </label>
                     <textarea
                       id="goal"
-                      placeholder={t('ai.placeholder_goal')}
+                      placeholder={obj.ai.placeholder_goal}
                       value={goal}
                       onChange={(e) => setGoal(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -137,11 +134,11 @@ export function AICourse() {
 
                   <div>
                     <label htmlFor="customInstructions" className="block text-sm font-bold text-indigo-800 mb-2">
-                      {t('ai.label_custom_instructions')}
+                      {obj.ai.label_custom_instructions}
                     </label>
                     <textarea
                       id="customInstructions"
-                      placeholder={t('ai.placeholder_custom_instructions')}
+                      placeholder={obj.ai.placeholder_custom_instructions}
                       value={customInstructions}
                       onChange={(e) => setCustomInstructions(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -162,7 +159,7 @@ export function AICourse() {
                   }`}
               >
                 <Rocket className="w-5 h-5" />
-                <span>{isSubmitting ? t('ai.button_submitting') : t('ai.button_submit')}</span>
+                <span>{isSubmitting ? obj.ai.button_submitting : obj.ai.button_submit}</span>
               </button>
             </div>
           </form>

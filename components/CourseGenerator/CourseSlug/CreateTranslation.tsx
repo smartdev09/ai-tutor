@@ -2,15 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useCompletion } from '@ai-sdk/react';
-import { useSearchParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
 import { AiCourse, Faqs, Module } from '@/types';
 
 // Standalone utility function to parse markdown into a course object
 const parseCourseFromMarkdown = (markdown: string, difficulty: string): AiCourse | null => {
   try {
     const lines = markdown.split('\n');
-    const currentCourse: AiCourse = { title: '', modules: [], difficulty: '', done: [], owners: [],language_code:useLocale()==''?'en':useLocale() };
+    const currentCourse: AiCourse = { title: '', modules: [], difficulty: '', done: [], owners: [] };
     let currentModule: Module | null = null;
     let processingFAQs = false;
     let currentFaq: Faqs | null = null;
@@ -174,7 +172,7 @@ export function useGenerateAICourse(initialCourse: AiCourse | null, targetLang: 
 
 // Example of how a component would use the custom hook
 export function GenerateAICourse({ initialCourse, targetLang }: { initialCourse: AiCourse | null, targetLang: string }) {
-  const { course, isLoading, error, handleRegenerate } = useGenerateAICourse(initialCourse, targetLang);
+  const { course, isLoading, error } = useGenerateAICourse(initialCourse, targetLang);
 
   if (error) {
     // Assuming ErrorState is a component you have defined

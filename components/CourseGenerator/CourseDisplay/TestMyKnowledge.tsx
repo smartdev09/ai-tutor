@@ -5,7 +5,7 @@ import { useAppSelector } from '@/store/hooks';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useCompletion } from "@ai-sdk/react";
 import { BotMessageSquare, X, Send, Bot, Loader, User } from 'lucide-react';
-import { cleanText, cleanTextAR, cleanTextDE, parseMCQQuestions, parseMCQQuestionsAR, parseMCQQuestionsDE } from '@/lib/utils/quiz-parser';
+import { cleanText, parseMCQQuestions } from '@/lib/utils/quiz-parser';
 import obj from '../../../messages/en.json'
 // Accept lessonContent as a prop
 interface TestMyKnowledgeProps {

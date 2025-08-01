@@ -4,9 +4,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import ReduxProvider from "@/store/provider";
-import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
-import LanguageSwitcher from "@/components/lang-switch";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,15 +32,15 @@ export default async function RootLayout({
   
   const { locale } = await params;
   
-  try {
-    messages = (await import(`../../messages/${locale}.json`)).default;
-  } catch (error) {
-    if (locale !== 'en') {
-      console.error(`Locale messages not found for ${locale}:`, error);
-      notFound();
-    }
-    messages = (await import(`../../messages/en.json`)).default;
-  }
+  // try {
+  //   messages = (await import(`../../messages/${locale}.json`)).default;
+  // } catch (error) {
+  //   if (locale !== 'en') {
+  //     console.error(`Locale messages not found for ${locale}:`, error);
+  //     notFound();
+  //   }
+  //   messages = (await import(`../../messages/en.json`)).default;
+  // }
 
   return (
     <html lang={locale}>
@@ -53,10 +51,10 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable}`}
         suppressHydrationWarning
       >
-        <NextIntlClientProvider locale={locale} messages={messages}>
-        <LanguageSwitcher />
+        {/* <NextIntlClientProvider locale={locale} messages={messages}> */}
+    {/* //    <LanguageSwitcher /> */}
           <ReduxProvider>{children}</ReduxProvider>
-        </NextIntlClientProvider>
+        {/* </NextIntlClientProvider> */}
       </body>
     </html>
   );

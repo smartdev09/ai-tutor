@@ -4,50 +4,104 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation'
 import { courseService } from "@/lib/services/course"
 import {  Owner, } from '@/types';
-import { DBCourse, DBModule, DBLesson } from '@/types'; // adjust path as needed
+import { DBCourse, DBModule, DBLesson } from '@/types';
 
-// type CourseMetadata = {
-//   title: string;
-//   slug: string;
-//   keywords: string[];
-//   description: string;
-//   modules: DBModule[];
-//   difficulty:string
-// metaDescription: string
-// };
+type CourseProcessingStatus = {
+  course: string;
+  status: 'pending' | 'processing' | 'completed' | 'error';
+  error?: string;
+  metadata?: DBCourse;
+};
 
 export default function GenerateMeta() {
-  const searchParams = useSearchParams()
- // const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [metadata, setMetadata] = useState<DBCourse | null>(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-console.log(loading)
-  //const handleSubmit = async (e: React.FormEvent) => {
-    //e.preventDefault();const difficuconst difficulty:stringlty:string
-    useEffect(()=>{
+  const searchParams = useSearchParams();
+  const [coursesStatus, setCoursesStatus] = useState<CourseProcessingStatus[]>([]);
+  const [overallLoading, setOverallLoading] = useState(false);
+  const [completedCount, setCompletedCount] = useState(0);
 
-        async function fetchMeta(){
-             const term = searchParams.get('term') // string | null
-  const difficulty = searchParams.get('difficulty')
-          if(!term || !difficulty){
-            console.log("no term or difficulty in generateMeta.tsx received")
-          return;} 
-   
-  console.log(`params: "${difficulty}`)
-            setMetadata(null);
-    setError('');
-    setLoading(true);
+  useEffect(() => {
+    async function processCourses() {
+      // Get courses from URL params - could be single or multiple
+      const term = searchParams.get('term');
+      const difficulty = searchParams.get('difficulty');
+      const coursesParam = searchParams.get('courses'); // JSON string of courses array
+      
+      let coursesToProcess: string[] = [];
+      
+      if (coursesParam) {
+        // Multiple courses sent as JSON
+        try {
+          coursesToProcess = JSON.parse(coursesParam);
+        } catch (err) {
+          console.error('Failed to parse courses parameter:', err);
+          return;
+        }
+      } else if (term) {
+        // Single course (backwards compatibility)
+        coursesToProcess = [term];
+      }
 
-    //const prompt = inputRef.current?.value?.trim();
-    const prompt=term + ` difficulty:${difficulty}`
-    if (!prompt) {
-      setError('Please enter a prompt.');
-      setLoading(false);
-      return;
+      if (!coursesToProcess.length || !difficulty) {
+        console.log("No courses or difficulty provided");
+        return;
+      }
+
+      // Initialize status for all courses
+      const initialStatus: CourseProcessingStatus[] = coursesToProcess.map(course => ({
+        course,
+        status: 'pending'
+      }));
+      
+      setCoursesStatus(initialStatus);
+      setOverallLoading(true);
+      setCompletedCount(0);
+
+      // Process each course
+      for (let i = 0; i < coursesToProcess.length; i++) {
+        const course = coursesToProcess[i];
+        
+        // Update status to processing
+        setCoursesStatus(prev => prev.map(item => 
+          item.course === course 
+            ? { ...item, status: 'processing' }
+            : item
+        ));
+
+        try {
+          await processSingleCourse(course, difficulty);
+          
+          // Update status to completed
+          setCoursesStatus(prev => prev.map(item => 
+            item.course === course 
+              ? { ...item, status: 'completed' }
+              : item
+          ));
+          
+          setCompletedCount(prev => prev + 1);
+          
+        } catch (error) {
+          console.error(`Error processing course "${course}":`, error);
+          
+          // Update status to error
+          setCoursesStatus(prev => prev.map(item => 
+            item.course === course 
+              ? { ...item, status: 'error', error: error instanceof Error ? error.message : 'Unknown error' }
+              : item
+          ));
+        }
+      }
+
+      setOverallLoading(false);
     }
 
+    processCourses();
+  }, []);
+
+  const processSingleCourse = async (course: string, difficulty: string): Promise<void> => {
+    const prompt = `${course} difficulty:${difficulty}`;
+
     try {
+      // Fetch metadata from API
       const res = await fetch('../../api/generate-meta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,133 +109,171 @@ console.log(loading)
       });
 
       if (!res.ok) {
-        throw new Error('Failed to fetch metadata.');
+        throw new Error(`Failed to fetch metadata for "${course}"`);
       }
 
-      const metadata  = await res.json();
-      const jsonstring=JSON.stringify(metadata.metadata)
-      setMetadata(metadata);
-      console.log(`metadata after res.json:${metadata}`)
-//    const DBcourse:AiCourse={
-//     title:metadata.title,
-//     metaDescription:JSON.stringify({keywords:metadata.keywords,modules:metadata.modules,description:metadata.description}),
-//     //description:metadata.description,
-//  owners: [Owner.STAFF] ,
-// difficulty:difficulty,
-// modules: 
-// }
-console.log(jsonstring)
-const DBcourse=parseCourseJSON(jsonstring)
-     // setMetadata();
-setMetadata(DBcourse)
-try {
-  console.log("Creating course...");
-  console.log(DBcourse)
-console.log(`diff be4 rqst:${difficulty} and ${DBcourse.difficulty}`)
-  const result = await courseService.createMeta(DBcourse);
+      const metadata = await res.json();
+      const jsonstring = JSON.stringify(metadata.metadata);
+      
+      console.log(`Metadata for "${course}":`, metadata);
+      
+      // Parse the course data
+      const DBcourse = parseCourseJSON(jsonstring);
+      
+      // Update the status with metadata
+      setCoursesStatus(prev => prev.map(item => 
+        item.course === course 
+          ? { ...item, metadata: DBcourse }
+          : item
+      ));
 
-  console.log("Course created successfully:", result);
-} catch (error) {
-  console.log("Error while creating course:", error);
-}
+      // Save to database
+      console.log(`Creating course "${course}" in database...`);
+      console.log(`Difficulty: ${difficulty} -> ${DBcourse.difficulty}`);
+      
+      const result = await courseService.createMeta(DBcourse);
+      console.log(`Course "${course}" created successfully:`, result);
 
-    } catch (err) {
-      console.error(err);
-      setError('An error occurred while generating metadata.');
-    } finally {
-      setLoading(false);
-    }}
-    fetchMeta();
-  },[])
+    } catch (error) {
+      console.error(`Error processing "${course}":`, error);
+      throw error;
+    }
+  };
 
- return (
-  <main className="max-w-2xl mx-auto p-6">
-    <h1 className="text-2xl font-bold mb-4">Course Metadata Generator</h1>
-
-    {/* Optional Error Display */}
-    {error && (
-      <p className="text-red-600 bg-red-100 p-2 rounded mb-4">{error}</p>
-    )}
-
-    {/* Metadata Display */}
-    {metadata && (
-      <div className="bg-gray-100 p-4 rounded">
-        <h2 className="text-xl font-semibold mb-2">{metadata.title}</h2>
-        <p className="text-sm text-gray-600 mb-2">
-          <strong>Slug:</strong> <code>{metadata.slug}</code>
-        </p>
-        <p className="mb-2">
-          <strong>Difficulty:</strong> {metadata.difficulty}
-        </p>
-
-        {/* metaDescription is a JSON string, so we parse it first */}
-        {(() => {
-          try {
-            //const { description, keywords, modules } = JSON.parse(metadata.metaDescription);
-
-            return (
-              <>
-                <p className="mb-2">
-                  <strong>Description:</strong> 
-                  {metadata.metaDescription}
-                </p>
-
-                <p className="mb-2">
-                  <strong>Modules:</strong>
-                 </p>
-                <ul className="list-disc list-inside mb-2">
-                  {metadata.modules?.map((mod: DBModule, i: number) => (
-                    <li key={i}>{mod.title}</li>
-                  ))}
-                </ul>
-
-               <div>
-  <strong>Keywords:</strong>
-  <ul>
-    {Array.isArray(metadata.keywords) ? (
-      metadata.keywords.map((keyword, idx) => (
-        <li key={idx}>{keyword}</li>
-      ))
-    ) : (
-      <li>{metadata.keywords}</li>
-    )}
-  </ul>
-</div>
-
-              </>
-            );
-          } catch (err) {
-                        console.log(`invalid metaDescription JSON: ${err}`)
-
-            return <p className="text-red-500">Invalid metaDescription JSON.</p>;
-          }
-        })()}
-
-        {/* Optional Progress */}
-        {/* {metadata.progress !== undefined && (
-          <div className="mt-4">
-            <strong>Progress:</strong>{' '}
-            <span>{metadata.progress}% complete</span>
+  return (
+    <main className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Course Metadata Generator</h1>
+      
+      {/* Overall Progress */}
+      {overallLoading && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-medium">Processing Courses...</span>
+            <span className="text-sm text-gray-600">
+              {completedCount} / {coursesStatus.length} completed
+            </span>
           </div>
-        )} */}
-      </div>
-    )}
-  </main>
-);
-}
-//import { AiCourse, Module, Lesson, Owner } from './types'; // Adjust the import path as necessary
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(completedCount / coursesStatus.length) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
 
-/**
- * Parse JSON string into a valid AiCourse object.
- * Throws error if required fields are missing or malformed.
- */
+      {/* Completion Summary */}
+      {!overallLoading && coursesStatus.length > 0 && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded">
+          <h2 className="font-semibold text-green-800">Processing Complete!</h2>
+          <p className="text-green-700">
+            Successfully processed {coursesStatus.filter(c => c.status === 'completed').length} out of {coursesStatus.length} courses.
+          </p>
+        </div>
+      )}
+
+      {/* Individual Course Status */}
+      <div className="space-y-4">
+        {coursesStatus.map((courseStatus, index) => (
+          <div key={index} className="border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold">{courseStatus.course}</h3>
+              <StatusBadge status={courseStatus.status} />
+            </div>
+
+            {courseStatus.status === 'processing' && (
+              <div className="flex items-center space-x-2 text-blue-600">
+                <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                <span className="text-sm">Generating metadata...</span>
+              </div>
+            )}
+
+            {courseStatus.status === 'error' && (
+              <div className="text-red-600 bg-red-50 p-3 rounded">
+                <p className="font-medium">Error:</p>
+                <p className="text-sm">{courseStatus.error}</p>
+              </div>
+            )}
+
+            {courseStatus.status === 'completed' && courseStatus.metadata && (
+              <div className="bg-gray-50 p-4 rounded mt-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">
+                      <strong>Slug:</strong> <code>{courseStatus.metadata.slug}</code>
+                    </p>
+                    <p className="text-sm mb-2">
+                      <strong>Difficulty:</strong> {courseStatus.metadata.difficulty}
+                    </p>
+                    <p className="text-sm mb-2">
+                      <strong>Description:</strong> {courseStatus.metadata.metaDescription}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm mb-1"><strong>Modules ({courseStatus.metadata.modules?.length || 0}):</strong></p>
+                    <ul className="list-disc list-inside text-sm text-gray-700 mb-2">
+                      {courseStatus.metadata.modules?.slice(0, 3).map((mod: DBModule, i: number) => (
+                        <li key={i}>{mod.title}</li>
+                      ))}
+                      {(courseStatus.metadata.modules?.length || 0) > 3 && (
+                        <li className="text-gray-500">...and {(courseStatus.metadata.modules?.length || 0) - 3} more</li>
+                      )}
+                    </ul>
+
+                    <p className="text-sm mb-1"><strong>Keywords:</strong></p>
+                    <div className="flex flex-wrap gap-1">
+                      {Array.isArray(courseStatus.metadata.keywords) ? (
+                        courseStatus.metadata.keywords.slice(0, 4).map((keyword, idx) => (
+                          <span key={idx} className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
+                            {keyword}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
+                          {courseStatus.metadata.keywords}
+                        </span>
+                      )}
+                      {Array.isArray(courseStatus.metadata.keywords) && courseStatus.metadata.keywords.length > 4 && (
+                        <span className="text-gray-500 text-xs px-2 py-1">
+                          +{courseStatus.metadata.keywords.length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}
+
+// Status Badge Component
+const StatusBadge = ({ status }: { status: CourseProcessingStatus['status'] }) => {
+  const statusConfig = {
+    pending: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Pending' },
+    processing: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Processing' },
+    completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
+    error: { bg: 'bg-red-100', text: 'text-red-800', label: 'Error' }
+  };
+
+  const config = statusConfig[status];
+  
+  return (
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+      {config.label}
+    </span>
+  );
+};
 
 /**
  * Parses AI-generated course JSON into a DBCourse object.
  */
 export function parseCourseJSON(jsonString: string): DBCourse {
   try {
-   
     const parsed = JSON.parse(jsonString);
 
     if (
@@ -217,8 +309,7 @@ export function parseCourseJSON(jsonString: string): DBCourse {
 
     return dbCourse;
   } catch (err) {
-    console.error("(parse course json:)Failed to parse course JSON:", err);
+    console.error("(parse course json:) Failed to parse course JSON:", err);
     throw err;
   }
 }
-

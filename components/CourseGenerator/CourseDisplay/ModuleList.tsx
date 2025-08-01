@@ -10,6 +10,7 @@ import { LessonContent } from "./LessonContent"
 import { Button } from "@/components/ui/button"
 import { courseService } from "@/lib/services/course"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import obj from '../../../messages/en.json'
 import {
   setCurrentModule,
   setCurrentLesson,
@@ -21,7 +22,7 @@ import {
 import { toast } from "@/hooks/use-toast"
 import { ChatButton } from "../CourseControls/ChatButton"
 import ChatbotUI from "./ChatBot"
-import { useTranslations } from "next-intl"
+//import { useTranslations } from "next-intl"
 
 interface ModuleListProps {
   isLoading: boolean
@@ -42,7 +43,7 @@ export function ModuleList({
   const expandedModules = useAppSelector((state) => state.course.expandedModules)
   const isSaving = useAppSelector((state) => state.course.isSaving)
   const processedLessons = useAppSelector((state) => state.course.processedLessons)
-  const t = useTranslations()
+ // const t = useTranslations()
 
   const [waitingForLesson, setWaitingForLesson] = useState<boolean>(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -161,7 +162,7 @@ export function ModuleList({
   const handleSaveCourse = async () => {
     try {
       dispatch(setIsSaving(true));
-
+console.log('lesson:',course.modules[0].lessons)
       const dbCourse: DBCourse = {
         title: course.title,
         difficulty: course.difficulty,
@@ -178,7 +179,7 @@ export function ModuleList({
               : "";
 
             return {
-              title: String(lessonTitle),
+              title: String(lessonTitle.title),
               position: lessonIndex,
               content: content
             };
@@ -222,7 +223,7 @@ export function ModuleList({
               </div>
               <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-600">
       
-                {t('module-list.course_modules')}
+                {obj['module-list'].course_modules}
               </h2>
               {!isLoading && streamingModuleIndex === -1 && (
                 <button
@@ -290,12 +291,12 @@ export function ModuleList({
             {isSaving ? (
               <>
                 <Loader className="mr-2 h-4 w-4 animate-spin" />
-                {t('module-list.saving')}
+                {obj['module-list'].saving}
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                {t('module-list.save_course')}
+                {obj['module-list'].save_course}
               </>
             )}
           </Button>
@@ -309,8 +310,8 @@ export function ModuleList({
                 <div className="bg-primary/10 p-6 rounded-full">
                   <BookOpen className="h-12 w-12 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold">{t('module-list.select_module')}</h2>
-                <p className="text-muted-foreground max-w-md">{t('module-list.select_module_description')}</p>
+                <h2 className="text-2xl font-bold">{obj['module-list'].select_module}</h2>
+                <p className="text-muted-foreground max-w-md">{obj['module-list'].select_module_description}</p>
               </div>
             ) : (
               <LessonContent

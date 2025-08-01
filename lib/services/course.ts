@@ -67,15 +67,15 @@ if(course.modules)
           throw moduleError;
         }
         // Insert lessons
-        const lessonInserts = courseModule.lessons.map(lesson =>
-          supabase.from("lessons").insert({
+        const lessonInserts = courseModule.lessons.map(lesson =>{
+          console.log(`(course.ts> ):${lesson.title}`)
+          return supabase.from("lessons").insert({
             module_id: moduleData.id,
             title: lesson.title,
             content: lesson.content || "",
             position: lesson.position||0,
-          })
+          })}
         );
-
         const lessonResults = await Promise.all(lessonInserts);
         for (const result of lessonResults) {
           if (result.error) throw result.error;
@@ -87,6 +87,50 @@ if(course.modules)
       console.log(e)
     }
   },
+  async getTranslatedCourse(courseId:any,  languageCode:any) {
+  // The SQL query to find the correct translation.
+  // This query handles both cases: when the input courseId is the original
+  // and when it's a translation.
+  const query = `
+    SELECT
+        id,
+        title,
+        metaDescription,
+        difficulty,
+        slug,
+        done,
+        faqs,
+        owners,
+        language_code,
+        original_course_id,
+        created_at,
+        updated_at
+    FROM courses
+    WHERE
+        -- Find the original course ID first, which is the root of the translation family.
+        (id = (SELECT COALESCE(original_course_id, $1::UUID) FROM courses WHERE id = $1) AND language_code = $2)
+        OR
+        -- Then, look for a course that has that original course ID and the desired language code.
+        (original_course_id = (SELECT COALESCE(original_course_id, $1::UUID) FROM courses WHERE id = $1) AND language_code = $2);
+  `;
+
+  const values = [courseId, languageCode];
+
+  try {
+    // In a real application, you'd use your database client here.
+    // const result = await pool.query(query, values);
+    // return result.rows[0] || null;
+
+    // Placeholder for demonstration
+    console.log("Executing getTranslatedCourse query:", { query, values });
+    return null; // Return null as a placeholder
+  } catch (error) {
+    console.error("Error retrieving translated course:", error);
+    throw error;
+  }
+}
+
+  ,
   async createCourse(course: DBCourse) {
     try {
       const { data: existingCourse, error: existingCourseError } = await supabase
@@ -293,30 +337,39 @@ if(course.modules)
 
   async getAllCourses(owners: string | string[]) {
     try {
-      const { data: courses, error } = await supabase
-        .from("courses")
-        .select(`
-          *,
-          modules:modules!course_id (
-            *,
-            lessons:lessons!module_id (
-              *
-            )
-          )
-        `)
-        .contains("owners", Array.isArray(owners) ? owners : [owners])
+        const { data: courses, error } = await supabase
+            .from("courses")
+            .select(`
+                *,
+                modules:modules!course_id (
+                    *,
+                    lessons:lessons!module_id (
+                        *
+                    )
+                )
+            `)
+            .contains("owners", Array.isArray(owners) ? owners : [owners]);
 
-      if (error) {
-        console.error("Error fetching courses:", error)
-        throw error
-      }
+        if (error) {
+            console.error("Error fetching courses:", error);
+            throw error;
+        }
 
-      return courses
+        console.log("Raw courses data from Supabase:", JSON.stringify(courses, null, 2)); // Use JSON.stringify for deep inspection
+        // Or if in a browser, just:
+        // console.log("Raw courses data from Supabase:", courses);
+
+        // Let's specifically inspect lessons for one course/module
+        if (courses && courses.length > 0 && courses[0].modules && courses[0].modules.length > 0) {
+            console.log("First course's first module's lessons:", JSON.stringify(courses[0].modules[0].lessons, null, 2));
+        }
+
+        return courses;
     } catch (error) {
-      console.error("Error in getAllCourses:", error)
-      throw error
+        console.error("Error in getAllCourses:", error);
+        throw error;
     }
-  },
+},
 
   async addCourseOwners(courseId: string, newOwners: string[]) {
     try {

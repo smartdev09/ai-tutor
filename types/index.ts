@@ -31,6 +31,7 @@ export type AiCourse = {
   slug?: string;
   faqs?: Faqs[];
   keywords?:string | string[]
+  language_code?:string
 };
 
 export type CourseFineTuneData = {
@@ -88,7 +89,8 @@ export type DBCourse = {
   done?: string[];
   slug?: string;
   faqs?: Faqs[];
-  keywords:string|string[]|undefined
+  keywords:string|string[]|undefined // keyowrds are stored in metadexcription along with dscription, not a valid json object manual parsing logic used
+  language_code?:string
 };
 
 export type DBModule = {

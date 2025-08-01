@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { StarIcon, BookOpen, UsersIcon, Rocket, XIcon, Home } from 'lucide-react';
-import { useTranslations } from "next-intl";
 import obj from '../../messages/en.json'
 export type TabType = 'main' | 'myCourses' | 'staffPicks' | 'community'| 'adminPanel'|'dashboard';
 

@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Module } from '@/types'; // adjust this path
+import { useRouter } from 'next/navigation';
+
+
 function parseMeta(raw:any) {
   // Remove surrounding braces
   const trimmed = raw.trim().replace(/^\{|\}$/g, "");
@@ -52,8 +55,11 @@ console.log(key); // ["python", "flask"]
 
 
   }, []);
+  const router = useRouter();
 
   const handleSlug = (): void => {
+    router.push(`/ai/${slug}`)
+  
     setIsPressed(true);
     // router.push(`/ai/${slug}`)
   };

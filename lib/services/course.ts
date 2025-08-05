@@ -11,6 +11,79 @@ return returnValue
 }
 
 export const courseService = {
+  async signInWithEmail(email:string,password:string) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password,
+  })
+    if (error) {
+    console.error('❌ Sign-in failed:', error.message);
+    return { success: false, error: error.message };
+  }
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('role')
+  .eq('id', data.user.id)
+  .single()
+  console.log('✅ Sign-in successful:', data);
+  return { success: true, data };
+},
+  async signUpNewUser(email:string,password:string) {
+  const { data, error } = await supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+      emailRedirectTo: 'https://example.com/welcome',
+    },
+    
+  })
+    if (error) {
+    console.error('❌ Sign-in failed:', error.message);
+    return { success: false, error: error.message };
+  }
+
+  console.log('✅ Sign-in successful:', data);
+  return { success: true, data };
+},
+async getUser() {
+    
+  const { data: { session }, error } = await supabase.auth.getSession();
+if(!session)
+  return {notLoggedIn:true}
+const token = session?.access_token;
+  // Step 1: Get the authenticated user from the token
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(token)
+
+    if (userError || !user) {
+      console.error('❌ Not logged in:', userError?.message)
+      return { success: false, error: userError?.message || 'User not found' }
+    }
+
+    // Step 2: Get role from the 'profiles' table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) {
+      console.error('❌ Failed to fetch user role:', profileError.message)
+      return { success: false, error: profileError.message }
+    }
+
+    // Step 3: Return user info and role
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: profile.role,
+      },
+    }
+  },
   async createMeta(course:DBCourse){
     try{
  const { data: existingCourse, error: existingCourseError } = await supabase

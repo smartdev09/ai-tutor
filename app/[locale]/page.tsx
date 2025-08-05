@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { MenuIcon } from 'lucide-react';
 import Sidebar from '@/components/HomeScreen/Sidebar';
 import HomeScreen from '@/components/HomeScreen/Tabs/Main';
@@ -9,11 +9,25 @@ import ExploreCourses from '@/components/HomeScreen/Tabs/Community';
 import { TabType } from '@/components/HomeScreen/Sidebar';
 import Adminpanel from '@/components/HomeScreen/Tabs/Adminpanel';
 import AdminDashboard from '@/components/HomeScreen/Tabs/AdminDashboard';
-
+import {courseService} from '@/lib/services/course'
+import { useRouter } from 'next/navigation';
 export default function Page() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('main');
-  
+const router=useRouter()
+const[userData,setUserData]=useState<any>(null)
+useEffect(() => {
+  const fetchUser = async () => {
+    const authData = await courseService.getUser();
+    if (authData.notLoggedIn) {
+      router.replace('/auth');
+    } else {
+      setUserData(authData);
+    }
+  };
+
+  fetchUser();
+}, []);
   const renderTabContent = () => {
     switch (activeTab) {
       case 'main':
@@ -25,9 +39,9 @@ export default function Page() {
       case 'community':
         return <ExploreCourses />;
       case 'adminPanel':
-         return <Adminpanel/>
-case 'dashboard':
-  return<AdminDashboard/>
+         return userData?.user?.role=='admin' && <Adminpanel/>
+      case 'dashboard':
+         return userData?.user?.role=='admin' &&<AdminDashboard/>
       default:
         return <HomeScreen />;
     }

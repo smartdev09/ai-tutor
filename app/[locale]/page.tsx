@@ -19,7 +19,7 @@ const[userData,setUserData]=useState<any>(null)
 useEffect(() => {
   const fetchUser = async () => {
     const authData = await courseService.getUser();
-    if (authData.notLoggedIn) {
+    if (authData?.notLoggedIn) {
       router.replace('/auth');
     } else {
       setUserData(authData);

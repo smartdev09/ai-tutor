@@ -25,7 +25,7 @@ const { data: profile } = await supabase
   .select('role')
   .eq('id', data.user.id)
   .single()
-  console.log('✅ Sign-in successful:', data);
+  console.log('✅ Sign-in successful:', data,profile);
   return { success: true, data };
 },
   async signUpNewUser(email:string,password:string) {
@@ -46,9 +46,15 @@ const { data: profile } = await supabase
   return { success: true, data };
 },
 async getUser() {
-    
+try {
   const { data: { session }, error } = await supabase.auth.getSession();
-if(!session)
+
+  if (error) throw error;
+
+  console.log("✅ Session data:", session);
+
+
+  if(!session)
   return {notLoggedIn:true}
 const token = session?.access_token;
   // Step 1: Get the authenticated user from the token
@@ -81,8 +87,11 @@ const token = session?.access_token;
         id: user.id,
         email: user.email,
         role: profile.role,
-      },
-    }
+      } 
+}
+}catch (e) {
+  console.error("❌ Failed to get session:", e);
+}
   },
   async createMeta(course:DBCourse){
     try{

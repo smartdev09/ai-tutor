@@ -69,7 +69,7 @@ const AuthPage = () => {
       // Simulate success
      // alert(`${isLogin ? 'Login' : 'Signup'} successful! Check console for details.`);
     } catch (err) {
-      setError('Authentication failed. Please try again.');
+      setError(`Authentication failed. Please try again. ${err}`);
     }
 
     setLoading(false);

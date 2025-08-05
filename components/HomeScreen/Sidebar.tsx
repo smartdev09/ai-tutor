@@ -1,8 +1,10 @@
 "use client";
-
+import {useRouter} from 'next/navigation'
+import { useState,useEffect } from 'react';
 import React from 'react';
 import { StarIcon, BookOpen, UsersIcon, Rocket, XIcon, Home } from 'lucide-react';
 import obj from '../../messages/en.json'
+import { courseService } from '@/lib/services/course';
 export type TabType = 'main' | 'myCourses' | 'staffPicks' | 'community'| 'adminPanel'|'dashboard';
 
 interface SidebarItemProps {
@@ -33,13 +35,26 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActiveTab }) => {
  // const t = useTranslations();
+const[userData,setUserData]=useState<any>(null)
+const router=useRouter()
+useEffect(() => {
+  const fetchUser = async () => {
+    const authData = await courseService.getUser();
+    if (authData?.notLoggedIn) {
+      router.replace('/auth');
+    } else {
+      setUserData(authData);
+    }
+  };
 
+  fetchUser();
+}, []);
   const handleTabClick = (tab: TabType) => {
     setActiveTab(tab);
     if (window.innerWidth < 768) {
       onClose();
     }
-  };
+  }
 
   return (
     <div className={`
@@ -93,18 +108,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, setActive
           active={activeTab === 'community'}
           onClick={() => handleTabClick('community')} 
         />
-         <SidebarItem 
+         {userData?.user?.role==='admin'&&(<SidebarItem 
           icon={<UsersIcon size={18} />} 
           text='Admin Panel' 
           active={activeTab === 'adminPanel'}
           onClick={() => handleTabClick('adminPanel')} 
-        />
-           <SidebarItem 
+        />)}
+           {userData?.user?.role==='admin'&&<SidebarItem 
           icon={<UsersIcon size={18} />} 
           text='Admin Dashboard' 
           active={activeTab === 'dashboard'}
           onClick={() => handleTabClick('dashboard')} 
-        />
+        />}
       </div>
 
       <div className="mt-auto bg-purple-50 rounded-md p-3">
